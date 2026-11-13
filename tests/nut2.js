@@ -4,6 +4,8 @@ const R=[];let fails=0;const ok=(n,c,x='')=>{const l=(c?'PASS ':'FAIL ')+n+(x?' 
 const errs=[];p.on('pageerror',e=>errs.push(e.message));p.on('dialog',d=>d.accept());
 await p.clock.setFixedTime(new Date(2026,10,16,9).getTime()); // Mon 16 Nov
 await p.goto('http://localhost:8766/index.html');
+await p.evaluate(()=>{S.gm=false;for(const k of ['M','F']){S.d[k].pf.back=false;S.d[k].pf.inc={DB:2,M:2.5,C:1.25,SM:2.5}}save();go()}); // legacy list mode for this suite (V2 has its own tests)
+
 const E=(f,a)=>p.evaluate(f,a);const txt=async()=>(await p.textContent('#v')).replace(/[\u202f\u00a0]/g,' ');
 // --- Him defaults
 await p.click('nav >> text=Profil');

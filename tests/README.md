@@ -4,6 +4,9 @@ Browser suites (Playwright, iPhone emulation) simulate iPhone Safari strictly (s
 - typing only fires `input` events — `change` never reaches text fields (iOS does not blur a field when a button is tapped);
 - native `alert`/`confirm` are blocked and recorded (the app must not use them).
 
+Suites other than v2.js switch to the classic list mode (no back check-in, small increments) so they keep
+testing the core flows; v2.js uses the real defaults.
+
 Run from the repo root:
 
 ```
@@ -13,5 +16,7 @@ node tests/nut2.js                         # profile, nutrition, auto-adjustment
 node tests/ios.js                          # iPhone flows: ✓, rest timer, session clock, Terminer, Abandonner, history edit/delete
 node tests/all.js                          # every workout, guide/swap everywhere, library filters, planner, theme/language,
                                            # charts, corrupted/old storage, 300-session performance, DST, small/large screens
+node tests/v2.js                           # V2: offline, back check-in, warm-up, machine settings, real increments,
+                                           # guided mode, machine busy / replace today / time left, next-time targets
 node --test tests/session-history.test.cjs # unit tests (no browser): durations, pause, rest per profile, storage full, stale tabs, validation
 ```

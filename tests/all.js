@@ -7,6 +7,7 @@ const mkctx=async(dev='iPhone 13',extra={})=>{const c=await b.newContext({...dev
 const ctx=await mkctx();const p=await ctx.newPage();p.setDefaultTimeout(6000);const errs=[];p.on('pageerror',e=>errs.push(e.message));
 await p.clock.install({time:new Date(2026,10,16,18,0,0)}); // Monday
 await p.goto(URL);
+await p.evaluate(()=>{S.gm=false;for(const k of ['M','F']){S.d[k].pf.back=false;S.d[k].pf.inc={DB:2,M:2.5,C:1.25,SM:2.5}}save();go()}); // legacy list mode for this suite (V2 has its own tests)
 const E=(f,a)=>p.evaluate(f,a),txt=async()=>(await p.textContent('#v')).replace(/[  ]/g,' ');
 const typ=(loc,v)=>loc.evaluate((el,v)=>{el.focus();el.value='';for(const ch of String(v)){el.value+=ch;el.dispatchEvent(new Event('input',{bubbles:true}))}if(String(v)==='')el.dispatchEvent(new Event('input',{bubbles:true}))},v);
 const tap=loc=>loc.evaluate(el=>el.click());
@@ -43,9 +44,9 @@ for(const pf of ['M','F']){await E(pf=>{S.p=pf;go()},pf);
    await tap(p.locator('#v .c').filter({has:p.locator('h2')}).nth(i).locator('.hb >> text=Guide'));
    const alts=await E(i=>E[sid(i)][10].length,i);
    const sb=p.locator('#v .c').filter({has:p.locator('h2')}).nth(i).locator('.hb >> text=⇄');if(!alts){if(await sb.count())swapIssues.push(`${pf}${w}${i} shows swap without alternative`);continue}
-   await tap(sb);const n2=(await p.locator('#v .c').filter({has:p.locator('h2')}).nth(i).locator('h2').textContent()).trim();
+   await tap(sb);await tap(p.locator('#v .c').filter({has:p.locator('h2')}).nth(i).locator('.swr button:has-text("Toujours")').first());const n2=(await p.locator('#v .c').filter({has:p.locator('h2')}).nth(i).locator('h2').textContent()).trim();
    if(n2==name)swapIssues.push(`${pf}${w}${i} ${name} did not swap`);
-   if(alts){await tap(p.locator('#v .c').filter({has:p.locator('h2')}).nth(i).locator('.hb >> text=⇄'));const n3=(await p.locator('#v .c').filter({has:p.locator('h2')}).nth(i).locator('h2').textContent()).trim();if(n3!=name)swapIssues.push(`${pf}${w}${i} swap back gave ${n3}`)}}
+   if(alts){await tap(p.locator('#v .c').filter({has:p.locator('h2')}).nth(i).locator('.hb >> text=⇄'));await tap(p.locator('#v .c').filter({has:p.locator('h2')}).nth(i).locator('.swr').filter({hasText:name}).locator('button:has-text("Toujours")').first());const n3=(await p.locator('#v .c').filter({has:p.locator('h2')}).nth(i).locator('h2').textContent()).trim();if(n3!=name)swapIssues.push(`${pf}${w}${i} swap back gave ${n3}`)}}
   await tap(p.locator('#v >> text=Abandonner'));await tap(p.locator('#action-accept'))}}
 ok('Guide opens/closes on every exercise (both profiles, all workouts)',!guideIssues.length,guideIssues.join(','));
 ok('Swap → alternative and back on every exercise',!swapIssues.length,swapIssues.join(' | '));

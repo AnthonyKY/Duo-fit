@@ -16,6 +16,8 @@ p.on('dialog',d=>d.accept());
 const day=(n,h=18,mi=0)=>new Date(2026,10,2+n,h,mi).getTime();
 await p.clock.setFixedTime(day(0));
 await p.goto(URL);await p.waitForTimeout(200);
+await p.evaluate(()=>{S.gm=false;for(const k of ['M','F']){S.d[k].pf.back=false;S.d[k].pf.inc={DB:2,M:2.5,C:1.25,SM:2.5}}save();go()}); // legacy list mode for this suite (V2 has its own tests)
+
 ok('Home shows Monday workout A',(await p.textContent('#v')).includes("Aujourd'hui : A"));
 
 const E=async(fn)=>p.evaluate(fn);
@@ -60,7 +62,7 @@ await logSets('Tirage vertical',[[55,12],[55,12],[55,12]]);
 await logSets('Élévation latérale poulie',[[5,20],[5,20],[5,20]]);
 // swap reverse pec deck -> clr
 const rdfCard=p.locator('.c').filter({has:p.locator('h2',{hasText:'Oiseau à la machine'})}).first();
-await rdfCard.locator('.hb >> text=⇄').click();
+await rdfCard.locator('.hb >> text=⇄').click();await p.locator('.swr',{hasText:'Élévation latérale poulie'}).locator('button',{hasText:'Toujours'}).click();
 const hs=await p.locator('.c h2').allTextContents();
 ok('Swap replaced Oiseau with Élévation latérale poulie',hs.filter(h=>h.includes('Élévation latérale poulie')).length==2);
 // log swapped card (first card with that title is now the swapped one at index 2)
@@ -88,7 +90,7 @@ ok('Plank logged 0 kg × 30 s',JSON.stringify(logs[2].ex.pl)=='[{"w":0,"r":30}]'
 // ===== Week 2 =====
 await p.clock.setFixedTime(day(7));await p.reload();await startW('A');
 ok('A wk2: shoulder press prefilled 42.5 (+2.5 after 3×12)',await prefill('Développé épaules machine')=='42.5');
-ok('A wk2: clr prefilled 8.75 (from A, not B)',await prefill('Élévation latérale poulie')=='8.75',await prefill('Élévation latérale poulie'));
+ok('A wk2: clr stays 7.5 — next step 8.75 is a >10% jump, so aim 18 reps first (from A, not B)',await prefill('Élévation latérale poulie')=='7.5'&&(await sugText('Élévation latérale poulie')).includes('18 reps'),await prefill('Élévation latérale poulie'));
 ok('A wk2: incline DB keeps 22.5 (reps 10,10,9 < 12)',await prefill('Développé incliné haltères (30°)')=='22.5');
 // reps placeholder = last reps
 const ph=await p.locator('.c').filter({has:p.locator('h2',{hasText:'Développé incliné haltères'})}).first().locator('.s').nth(2).locator('input').nth(1).getAttribute('placeholder');
@@ -107,7 +109,7 @@ ok('A wk3: one miss -> keep 42.5',await prefill('Développé épaules machine')=
 await logSets('Développé épaules machine',[[null,7],[null,7],[null,6]]);
 await finish(day(14,19));
 await p.clock.setFixedTime(day(21));await p.reload();await startW('A');
-ok('A wk4: two misses in a row -> deload to 38.5',await prefill('Développé épaules machine')=='38.5',await prefill('Développé épaules machine'));
+ok('A wk4: two misses in a row -> deload 10% to 37.5 (2.5 kg machine steps)',await prefill('Développé épaules machine')=='37.5',await prefill('Développé épaules machine'));
 ok('Deload message shown',(await sugText('Développé épaules machine')).includes('décharge'));
 await p.click('text=Abandonner');await p.click('#action-accept');
 logs=await E(()=>S.d.M.logs);ok('Discard does not create a log',logs.length==5);
