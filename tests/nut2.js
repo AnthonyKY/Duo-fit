@@ -54,9 +54,9 @@ ok('Her home A: cardio 15 min listed + beginner note + ≈60 min',tx.includes('C
 await p.click('text=Commencer la séance');tx=await txt();
 ok('Beginner RIR +1 on leg press (2→3)',tx.includes('3×10–12 · Repos 120s · RIR 4')||tx.includes('RIR 4'),tx.match(/RIR \d/g)?.join(','));
 const cd=p.locator('.c',{hasText:'Cardio (optionnel)'});await cd.locator('input').fill('12');await cd.locator('input').dispatchEvent('change');await cd.locator('button').click();
-await p.clock.setFixedTime(new Date(2026,10,16,10).getTime());await p.click('text=Terminer la séance');tx=await txt();
+await p.clock.setFixedTime(new Date(2026,10,16,10).getTime());await p.click('text=Terminer la séance');await p.click('#action-accept');tx=await txt();
 ok('Cardio-only session saved with 12 min',tx.includes('🚶 12 min'),tx.slice(0,200));await p.click('text=Fermer');
-await p.click('nav >> text=Historique');ok('History shows cardio',(await txt()).includes('Cardio : 12 min'));
+await p.click('nav >> text=Historique');ok('History shows cardio',/Cardio . 12 min/.test(await txt()));
 // time 45 for her: cardio dropped first, no exercise removed
 await p.click('nav >> text=Profil');await p.locator('.sg button',{hasText:'45 min'}).click();await p.click('nav >> text=Séance');await p.click('button:text-is("A")');tx=await txt();
 ok('Her 45 min: cardio dropped, all 5 exercises kept',!tx.includes('Cardio (optionnel)')&&!tx.includes('retiré'),'');
@@ -71,7 +71,7 @@ const rows=await p.locator('.c').filter({has:p.locator('h2',{hasText:'Développ�
 // plan frozen during session
 await p.click('nav >> text=Profil');await p.locator('.sg button',{hasText:'45 min'}).click();await p.click('nav >> text=Séance');
 ok('Changing profile mid-session does not change current session',await p.locator('.c h2').count()>=6&&await E(()=>cur().pl[0][1]==4));
-await p.click('text=Abandonner');await p.click('#mdok');
+await p.click('text=Abandonner');await p.click('#action-accept');
 // --- measurements
 await p.click('nav >> text=Profil');
 await p.fill('#mdt','2026-11-01');await p.fill('#m_wa','82');await p.fill('#m_sh','120');await p.click('.c:has(#mdt) >> button:text-is("Enregistrer")');
@@ -80,7 +80,7 @@ let ms=await E(()=>D().ms);ok('Two measurement entries saved',ms.length==2&&ms[1
 await p.click('nav >> text=Progrès');await p.click('.pf >> text=Tout');tx=await txt();
 ok('Progress: waist chart −1 cm',tx.includes('▼ -1 cm'),tx.match(/[▲▼=][^()]*cm/)?.[0]);
 ok('Shoulder/waist ratio 1,48 shown for him',tx.includes('Ratio épaules / taille : 1,48'));
-await p.click('nav >> text=Profil');await p.locator('tr',{hasText:'15 nov.'}).locator('button').click();await p.click('#mdok');ok('Delete measurement',await E(()=>D().ms.length==1));
+await p.click('nav >> text=Profil');await p.locator('tr',{hasText:'15 nov.'}).locator('button').click();await p.click('#action-accept');ok('Delete measurement',await E(()=>D().ms.length==1));
 // --- persistence + profile separation
 await p.reload();ok('Profiles persist & stay separate',await E(()=>S.d.M.pf.time==45&&S.d.F.pf.age==26&&S.d.F.pf.time==45&&S.d.M.pf.age==27));
 // --- EN sweep for undefined

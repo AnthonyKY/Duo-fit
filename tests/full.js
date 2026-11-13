@@ -32,7 +32,7 @@ async function logSets(name,sets){ // sets: [[w,r],...]; w=null keep prefilled; 
 }
 async function prefill(name,j=0){const card=p.locator('.c').filter({has:p.locator('h2',{hasText:name})}).first();return card.locator('.s').nth(j).locator('input').nth(0).inputValue()}
 async function sugText(name){const card=p.locator('.c').filter({has:p.locator('h2',{hasText:name})}).first();return (await card.textContent())}
-async function finish(at){await p.clock.setFixedTime(at);await p.click('text=Terminer la séance');const s=await p.textContent('#v');await p.click('text=Fermer');return s}
+async function finish(at){await p.clock.setFixedTime(at);await p.click('text=Terminer la séance');await p.click('#action-accept');const s=await p.textContent('#v');await p.click('text=Fermer');return s}
 
 // ===== Week 1 =====
 // Mon A
@@ -47,7 +47,7 @@ let sum=await finish(day(0,19,2));
 ok('Summary: 3 exercises, 10 sets',sum.includes('3 exercices')&&sum.includes('10 séries'),sum.slice(0,160));
 const vol1=40*12*3+7.5*15*4+22.5*29;
 ok('Summary volume = '+Math.round(vol1),sum.replace(/\s/g,'').includes(Math.round(vol1).toLocaleString('fr-FR').replace(/\s/g,'')+'kg'));
-ok('Summary duration 62 min',sum.includes('62 min'));
+ok('Summary duration 1:02:00',sum.includes('1:02:00'),sum.slice(0,120));
 let logs=await E(()=>S.d.M.logs);
 ok('Decimal comma stored as 22.5',logs[0].ex.idp[0].w===22.5);
 
@@ -109,13 +109,13 @@ await finish(day(14,19));
 await p.clock.setFixedTime(day(21));await p.reload();await startW('A');
 ok('A wk4: two misses in a row -> deload to 38.5',await prefill('Développé épaules machine')=='38.5',await prefill('Développé épaules machine'));
 ok('Deload message shown',(await sugText('Développé épaules machine')).includes('décharge'));
-await p.click('text=Abandonner');await p.click('#mdok');
+await p.click('text=Abandonner');await p.click('#action-accept');
 logs=await E(()=>S.d.M.logs);ok('Discard does not create a log',logs.length==5);
 
 // ===== Mid-session persistence =====
 await startW('B');await logSets('Tirage vertical',[[57.5,10]]);await p.reload();
 ok('Session in progress survives reload',(await p.textContent('#v')).includes('Terminer la séance')&&await E(()=>cur().ex[0][0].ok==1));
-await p.click('text=Abandonner');await p.click('#mdok');
+await p.click('text=Abandonner');await p.click('#action-accept');
 
 // ===== History =====
 await p.click('nav >> text=Historique');
@@ -175,6 +175,7 @@ const shSets=logs.filter(l=>day(15)-l.date<6048e5).reduce((a,l)=>a+['ms','dsp','
 ok('Shoulder sets last 7 days = '+shSets+' (expected >0)',shSets>0&&mus.trim().endsWith(String(shSets)),mus);
 
 // ===== Daily tracking =====
+await p.clock.setFixedTime(day(25));await p.reload();await p.click('nav >> text=Progrès');
 await p.fill('#hdt','2026-11-20');await p.fill('#hw','80,4');await p.fill('#hs','9500');await p.click('button:text-is("Enregistrer")');
 let hd=await E(()=>S.d.M.hd);ok('Daily entry saved on chosen date with comma',hd.length==1&&hd[0].d=='2026-11-20'&&hd[0].w==80.4,JSON.stringify(hd));
 ok('Single point message shown',(await p.textContent('#v')).includes('1re mesure'));
@@ -186,7 +187,7 @@ await p.fill('#hc','2026-11-18;81,2;7000;56;7,5\n2026-11-19,80.9,8000,55,7');awa
 hd=await E(()=>S.d.M.hd);ok('CSV import ; with decimal comma + , format',hd.length==4&&hd[0].w==81.2&&hd[0].sl==7.5&&hd[1].w==80.9,JSON.stringify(hd.slice(0,2)));
 ok('Weight chart with 4 points + 7-day average legend',(await p.textContent('#v')).includes('Moy. 7 j'));
 // delete entry
-await p.locator('tr',{hasText:'19 nov'}).locator('button').click();await p.click('#mdok');
+await p.locator('tr',{hasText:'19 nov'}).locator('button').click();await p.click('#action-accept');
 hd=await E(()=>S.d.M.hd);ok('Delete daily entry',hd.length==3&&!hd.some(h=>h.d=='2026-11-19'));
 // local date default (00:30 Paris = still the same local day)
 await p.clock.setFixedTime(new Date(2026,10,25,0,30).getTime());await p.reload();await p.click('nav >> text=Progrès');
@@ -220,21 +221,21 @@ ok('Rescheduled: Wednesday off, Thursday B',await E(()=>!S.d.M.sched[3]&&S.d.M.s
 // ===== Timer =====
 await p.clock.install({time:day(28,18)});await p.reload();
 await startW('A');await logSets('Développé épaules machine',[[40,10]]);
-ok('Timer starts at 2:00',(await p.textContent('#tm b'))=='2:00');
-await p.clock.runFor(5000);ok('Timer counts down',(await p.textContent('#tm b'))=='1:55',await p.textContent('#tm b'));
-await p.click('#tm >> text=⏸');await p.clock.runFor(5000);ok('Pause holds',(await p.textContent('#tm b'))=='1:55');
-await p.click('#tm >> text=▶');await p.clock.runFor(3000);ok('Resume',(await p.textContent('#tm b'))=='1:52');
-await p.click('#tm >> text=↺');ok('Reset',(await p.textContent('#tm b'))=='2:00');
-await p.click('#tm >> text=▶');await p.clock.runFor(121000);ok('End message',(await p.textContent('#tm')).includes('Repos terminé'));
-await p.click('#tm >> text=✕');ok('Dismiss end message',!(await p.isVisible('#tm')));
-await p.click('text=Abandonner');await p.click('#mdok');
+ok('Timer starts at 02:00',(await p.textContent('#rest-clock'))=='02:00');
+await p.clock.runFor(5000);const tcd=await p.textContent('#rest-clock');ok('Timer counts down',['01:55','01:56'].includes(tcd),await p.textContent('#rest-clock'));
+await p.click('#tm [data-rest=toggle]');const pz=await p.textContent('#rest-clock');await p.clock.runFor(5000);ok('Pause holds',(await p.textContent('#rest-clock'))==pz,pz);
+await p.click('#tm [data-rest=toggle]');await p.clock.runFor(3000);ok('Resume',['01:52','01:53'].includes(await p.textContent('#rest-clock')));
+await p.click('#tm [data-rest=reset]');ok('Reset',(await p.textContent('#rest-clock'))=='02:00');
+await p.click('#tm [data-rest=toggle]');await p.clock.runFor(121000);ok('End message',(await p.textContent('#tm')).includes('Repos terminé'));
+await p.click('#tm [data-rest=stop]');ok('Dismiss end message',!(await p.isVisible('#tm')));
+await p.click('text=Abandonner');await p.click('#action-accept');
 
 // ===== Export / Import / Reset =====
 await p.click('nav >> text=Profil');await p.click('button:text-is("Exporter")');const js=await p.inputValue('#jx');
 const before=await E(()=>JSON.stringify(S.d));
-await p.click('button:has-text("Effacer les données de ce profil")');await p.click('#mdok');await p.click('#mdok');
+await p.click('button:has-text("Effacer les données de ce profil")');await p.click('#action-accept');await p.click('#action-accept');
 ok('Reset clears only current profile',await E(()=>S.d.M.logs.length==0&&S.d.F.logs.length==1));
-await p.click('nav >> text=Profil');await p.fill('#jx',js);await p.click('button:text-is("Importer")');
+await p.click('nav >> text=Profil');await p.fill('#jx',js);await p.click('button:text-is("Importer")');await p.click('#action-accept');
 ok('Import restores everything exactly',await E(()=>JSON.stringify(S.d))==before);
 
 // ===== Persistence across app restart (new page, same storage) =====

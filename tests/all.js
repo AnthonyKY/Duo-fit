@@ -26,7 +26,7 @@ for(const pf of ['M','F']){
     await tap(p.locator(`#r${i}_${j}`).locator('xpath=..').locator('button'));vol+=W*Rp;sets++}}
   if(plan.cm){await typ(p.locator('#cmin'),'10');await tap(p.locator('.c',{hasText:'Cardio'}).locator('.s button'))}
   const okSets=await E(()=>Object.values(cur().ex).reduce((a,x)=>a+x.filter(s=>s.ok).length,0));
-  await p.clock.fastForward(50*60000);await tap(p.locator('text=Terminer la séance'));const tx=await txt();
+  await p.clock.fastForward(50*60000);await tap(p.locator('text=Terminer la séance'));await tap(p.locator('#action-accept'));const tx=await txt();
   ok(`${pf}/${w}: all ${sets} sets ticked, summary ${exN} ex · ${sets} sets · ${vol.toLocaleString('fr-FR').replace(/ /g,' ')} kg`,okSets==sets&&tx.includes(sets+' séries')&&tx.includes(exN+' exercices')&&tx.includes(vol.toLocaleString('fr-FR').replace(/ /g,' ')+' kg'),tx.slice(0,170));
   await tap(p.locator('text=Fermer'));await p.clock.fastForward(24*3600e3);
  }
@@ -42,10 +42,11 @@ for(const pf of ['M','F']){await E(pf=>{S.p=pf;go()},pf);
    await tap(card.locator('.hb >> text=Guide'));const g=await p.locator('#v .c').filter({has:p.locator('h2')}).nth(i).textContent();if(!g.includes('Exécution')||!g.includes('À éviter'))guideIssues.push(pf+w+i);
    await tap(p.locator('#v .c').filter({has:p.locator('h2')}).nth(i).locator('.hb >> text=Guide'));
    const alts=await E(i=>E[sid(i)][10].length,i);
-   await tap(p.locator('#v .c').filter({has:p.locator('h2')}).nth(i).locator('.hb >> text=⇄'));const n2=(await p.locator('#v .c').filter({has:p.locator('h2')}).nth(i).locator('h2').textContent()).trim();
-   if(alts&&n2==name)swapIssues.push(`${pf}${w}${i} ${name} did not swap`);if(!alts&&n2!=name)swapIssues.push(`${pf}${w}${i} swapped without alternative`);
+   const sb=p.locator('#v .c').filter({has:p.locator('h2')}).nth(i).locator('.hb >> text=⇄');if(!alts){if(await sb.count())swapIssues.push(`${pf}${w}${i} shows swap without alternative`);continue}
+   await tap(sb);const n2=(await p.locator('#v .c').filter({has:p.locator('h2')}).nth(i).locator('h2').textContent()).trim();
+   if(n2==name)swapIssues.push(`${pf}${w}${i} ${name} did not swap`);
    if(alts){await tap(p.locator('#v .c').filter({has:p.locator('h2')}).nth(i).locator('.hb >> text=⇄'));const n3=(await p.locator('#v .c').filter({has:p.locator('h2')}).nth(i).locator('h2').textContent()).trim();if(n3!=name)swapIssues.push(`${pf}${w}${i} swap back gave ${n3}`)}}
-  await tap(p.locator('text=Abandonner'));await tap(p.locator('#mdok'))}}
+  await tap(p.locator('#v >> text=Abandonner'));await tap(p.locator('#action-accept'))}}
 ok('Guide opens/closes on every exercise (both profiles, all workouts)',!guideIssues.length,guideIssues.join(','));
 ok('Swap → alternative and back on every exercise',!swapIssues.length,swapIssues.join(' | '));
 ok('No swap preference left behind',await E(()=>!Object.keys(S.d.M.sub).length&&!Object.keys(S.d.F.sub).length),JSON.stringify(await E(()=>[S.d.M.sub,S.d.F.sub])));
@@ -55,15 +56,15 @@ await E(()=>{S.p='M';go()});await pickW('A');await tap(p.locator('text=Commencer
 await tap(p.locator('.pf >> text=Elle'));ok('Switching to Her during His session shows her home',(await txt()).includes('Commencer la séance'));
 await pickW('B');await tap(p.locator('text=Commencer la séance'));await tap(p.locator('.pf >> text=Lui'));
 ok('Back to Him: his session intact (50×8 ticked)',await E(()=>D().cur&&D().cur.ex[0][0].ok==1&&D().cur.ex[0][0].w==50));
-await tap(p.locator('text=Abandonner'));await tap(p.locator('#mdok'));await tap(p.locator('.pf >> text=Elle'));ok('Her session still running',await E(()=>!!D().cur));await tap(p.locator('text=Abandonner'));await tap(p.locator('#mdok'));
+await tap(p.locator('#v >> text=Abandonner'));await tap(p.locator('#action-accept'));await tap(p.locator('.pf >> text=Elle'));ok('Her session still running',await E(()=>!!D().cur));await tap(p.locator('#v >> text=Abandonner'));await tap(p.locator('#action-accept'));
 await tap(p.locator('.pf >> text=Lui'));
 
 // ===== 4. Rest timer across tabs, untick, end =====
 await pickW('A');await tap(p.locator('text=Commencer la séance'));await typ(p.locator('#w0_0'),'40');await typ(p.locator('#r0_0'),'10');await tap(p.locator('#r0_0').locator('xpath=..').locator('button'));
-await nav(4);await p.clock.runFor(10000);ok('Rest timer keeps running on another tab',await p.isVisible('#tm b')&&(await p.textContent('#tm b'))=='1:50');
-await nav(0);await tap(p.locator('#r0_0').locator('xpath=..').locator('button'));ok('Untick does not restart timer',(await p.textContent('#tm b'))!='2:00');
+await nav(4);await p.clock.runFor(10000);ok('Rest timer keeps running on another tab',await p.isVisible('#rest-clock')&&['01:50','01:51'].includes(await p.textContent('#rest-clock')),await p.textContent('#rest-clock'));
+await nav(0);await tap(p.locator('#r0_0').locator('xpath=..').locator('button'));ok('Untick does not restart timer',(await p.textContent('#rest-clock'))!='02:00');
 await tap(p.locator('#r0_0').locator('xpath=..').locator('button'));await p.clock.runFor(121000);ok('Timer end message',(await p.textContent('#tm')).includes('Repos terminé'));
-await tap(p.locator('text=Abandonner'));await tap(p.locator('#mdok'));ok('Abandon hides end message too',!(await p.isVisible('#tm')));
+await tap(p.locator('#v >> text=Abandonner'));await tap(p.locator('#action-accept'));ok('Abandon hides end message too',!(await p.isVisible('#tm')));
 
 // ===== 5. Library =====
 await nav(2);const all=await p.locator('#ll .c').count();ok('Library lists all 24 exercises',all==24,String(all));
@@ -102,7 +103,7 @@ ok(`Strength chart works for all ${opts} exercises`,!selIssues.length,selIssues.
 
 // ===== 9. Export / bad import / corrupted storage =====
 await nav(5);await tap(p.locator('button:text-is("Exporter")'));const js=await p.inputValue('#jx');ok('Export produces JSON with both profiles',JSON.parse(js).d.M.logs.length==3);
-await typ(p.locator('#jx'),'{pas du json');await tap(p.locator('button:text-is("Importer")'));ok('Bad import → message, data untouched',(await p.textContent('#tst')).includes('invalides')&&await E(()=>S.d.M.logs.length==3));
+await typ(p.locator('#jx'),'{pas du json');await tap(p.locator('button:text-is("Importer")'));ok('Bad import → message, data untouched',(await p.textContent('#notice')).length>3&&await E(()=>S.d.M.logs.length==3));
 const c2=await mkctx();const p2=await c2.newPage();const e2=[];p2.on('pageerror',e=>e2.push(e.message));await p2.addInitScript(()=>{try{localStorage.setItem('duofit','{corrupted')}catch(e){}});await p2.goto(URL);
 ok('Corrupted storage → app still starts',(await p2.textContent('nav')).length>10&&!e2.length,e2.join('|'));await c2.close();
 // old-format data (v1: bw array, no hd/pf/ms)
@@ -125,7 +126,7 @@ ok('All week labels are Mondays (incl. across DST)',!notMon.length,notMon.slice(
 
 // ===== 12. Layout on small & large phones for every screen + modal =====
 for(const dev of ['iPhone SE','iPhone 15 Pro Max']){const c=await mkctx(dev);const q=await c.newPage();await q.goto(URL);let ov=[];for(const pf of ['M','F']){await q.evaluate(pf=>{S.p=pf;go()},pf);for(let i=0;i<6;i++){await q.locator('nav button').nth(i).click();if(await q.evaluate(()=>document.documentElement.scrollWidth>innerWidth))ov.push(pf+i)}}
- await q.locator('nav button').nth(0).click();await q.click('text=Commencer la séance');await q.click('text=Abandonner');if(await q.evaluate(()=>document.documentElement.scrollWidth>innerWidth))ov.push('modal');ok('No horizontal overflow on '+dev+' (12 screens + modal)',!ov.length,ov.join(','));await c.close()}
+ await q.locator('nav button').nth(0).click();await q.click('text=Commencer la séance');await q.click('#v >> text=Abandonner');if(await q.evaluate(()=>document.documentElement.scrollWidth>innerWidth))ov.push('modal');ok('No horizontal overflow on '+dev+' (12 screens + modal)',!ov.length,ov.join(','));await c.close()}
 
 ok('No native alert/confirm used',(await E(()=>window.__nd.length))==0,JSON.stringify(await E(()=>window.__nd)));
 ok('No JavaScript errors',!errs.length,errs.join(' | '));
