@@ -11,4 +11,5 @@ python3 -m http.server 8766 &   # serve index.html
 node tests/full.js   # whole app: sessions, progression engine, history, progress, tracking, profiles, export/import
 node tests/nut2.js   # profile, nutrition, auto-adjustment, adaptive sessions, measurements
 node tests/ios.js    # iPhone flows: ✓, rest timer, stopwatch, Terminer, Abandonner, history edit/delete
+node tests/all.js    # every remaining feature: all workouts, guide/swap everywhere, library filters, planner, theme/language, charts, edge cases, performance
 ```

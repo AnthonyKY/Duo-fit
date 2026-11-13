@@ -7,7 +7,7 @@ const p=await ctx.newPage();p.setDefaultTimeout(6000);const errs=[];p.on('pageer
 await p.clock.install({time:new Date(2026,10,16,18,0,0)});
 await p.goto('http://localhost:8766/index.html');
 const E=(f,a)=>p.evaluate(f,a),txt=async()=>(await p.textContent('#v')).replace(/[  ]/g,' ');
-const typ=(loc,v)=>loc.evaluate((el,v)=>{el.focus();el.value='';for(const ch of String(v)){el.value+=ch;el.dispatchEvent(new Event('input',{bubbles:true}))}},v);
+const typ=(loc,v)=>loc.evaluate((el,v)=>{el.focus();el.value='';for(const ch of String(v)){el.value+=ch;el.dispatchEvent(new Event('input',{bubbles:true}))}if(String(v)==='')el.dispatchEvent(new Event('input',{bubbles:true}))},v);
 const tap=loc=>loc.evaluate(el=>el.click());
 const card=name=>p.locator('.c').filter({has:p.locator('h2',{hasText:name})}).first();
 const row=(name,j)=>card(name).locator('.s').nth(j);
