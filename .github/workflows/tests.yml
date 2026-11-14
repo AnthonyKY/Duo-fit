@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        suite: [session-history.test.cjs, full.js, nut2.js, ios.js, all.js, v2.js, variety.js, pages.js, budget.test.cjs, budget-iphone.js, priorities.js, backup.js]
+        suite: [session-history.test.cjs, full.js, nut2.js, ios.js, all.js, v2.js, variety.js, pages.js, budget.test.cjs, budget-iphone.js, priorities.js, backup.js, erase.js]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

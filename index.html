@@ -23,7 +23,8 @@ nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--cd);bor
 #tm strong{flex:1;color:var(--ac)}#tm button:disabled{opacity:.45}
 #nv{z-index:4}.saved-note,#action-detail{white-space:pre-wrap;overflow-wrap:anywhere}
 dialog{width:min(92vw,390px);box-sizing:border-box;color:var(--tx);background:var(--cd);border:1px solid var(--bd);border-radius:16px;padding:20px}
-dialog::backdrop{background:rgb(0 0 0 / .58)}dialog .r{margin-top:18px}dialog button{min-height:44px}
+dialog::backdrop{background:rgb(0 0 0 / .58)}dialog .r{margin-top:18px}
+#action-word{width:100%;box-sizing:border-box;margin-top:4px;font-size:18px;letter-spacing:.08em;text-transform:uppercase}#action-accept[data-danger]{background:#e5484d;color:#fff;border:0}#action-accept:disabled{opacity:.4}dialog button{min-height:44px}
 #notice,#storage-warning{max-width:680px;margin:8px auto;padding:10px 14px;border:1px solid var(--ac);border-radius:10px;background:var(--cd);color:var(--tx)}
 #notice{position:fixed;left:12px;right:12px;bottom:calc(122px + env(safe-area-inset-bottom,0px));z-index:5;pointer-events:none}
 @media(max-width:480px){input,textarea,select{font-size:16px}.history-entry>.r{align-items:flex-start}.session-clock button,#tm button,.s button{min-height:40px}.session-clock{padding:7px 12px}}
@@ -46,7 +47,7 @@ dialog::backdrop{background:rgb(0 0 0 / .58)}dialog .r{margin-top:18px}dialog bu
 .budget{margin:10px 0;border:1px solid var(--bd);border-radius:10px;padding:9px 12px}.budget summary{cursor:pointer;font-weight:600}.budget dl{margin:8px 0}.budget dl>div{display:flex;justify-content:space-between;gap:8px}.budget dd,.budget dt{margin:3px 0}.budget dd{white-space:nowrap;font-variant-numeric:tabular-nums}.gear{min-width:0;margin:12px 0;padding:8px 10px;border:1px solid var(--bd);border-radius:10px}.gear label{display:inline-flex;align-items:center;margin:4px 10px 4px 0}.gear input{width:auto}#varc{scroll-margin-top:70px}
 </style></head><body><div id="upb" style="display:none;position:fixed;top:calc(8px + env(safe-area-inset-top,0px));left:12px;right:12px;z-index:9;background:var(--ac);color:var(--on);font-weight:700;text-align:center;padding:12px;border-radius:12px;cursor:pointer"></div><div id="storage-warning" role="alert" hidden></div><main id="v"></main><div id="notice" role="status" hidden></div><div id="tm" hidden></div><nav id="nv"></nav>
 <dialog id="action-dialog" aria-labelledby="action-title" aria-describedby="action-detail">
-  <h2 id="action-title"></h2><p id="action-detail"></p><div class="r">
+  <h2 id="action-title"></h2><p id="action-detail"></p><input id="action-word" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" hidden><div class="r">
     <button type="button" id="action-cancel"></button><button type="button" id="action-accept" class="p"></button>
   </div>
 </dialog>
@@ -194,6 +195,9 @@ Object.assign(L.en,{
   pinN:n=>`${n} pinned: it stays in this place.`,unpinN:"Unpinned: this place rotates again.",
   timX:"The workout adapts to this time: warm-up length, sets, bonus exercises.",
   nothingLeft:"Every set of this exercise is already entered: nothing left to replace.",
+  rq1n:n=>`Erase all data of ${n}?`,rqD:(s,m)=>`${s} workout${s>1?"s":""}, ${m} measurement/tracking entr${m>1?"ies":"y"}, settings and nutrition of this profile will be deleted. The other profile is not touched. Tip: send a backup copy first.`,cont:"Continue",
+  rq2:"Last check",rqW:w=>`Type ${w} to confirm.`,eraseWord:"ERASE",erasedN:d=>`Profile erased. You can undo it until ${d} (Profile).`,erasedX:"Profile erased.",
+  erasedL:d=>`Data erased on ${d}`,undoB:"Undo the erase",undoQ:"Bring back the erased data?",undoQd:"The workouts recorded since the erase will be replaced.",undone:"Data restored.",
   bkn2:"Your data saves itself on this phone, in the app opened from its home-screen icon. A copy protects you if you change phones or delete the icon.",
   bkLast:(d,a)=>`Last copy: ${d}${a?` (${a} day${a>1?"s":""} ago)`:" (today)"}`,bkNever:"No copy sent yet.",
   bkSend:"Send a copy (Mail, WhatsApp, Notes, Files…)",bkSendS:"Send a copy",bkSendX:"Your phone's share menu opens: pick Mail, WhatsApp (your own chat), Notes or Files. The file restores everything in one tap.",
@@ -222,6 +226,9 @@ Object.assign(L.fr,{
   pinN:n=>`${n} épinglé : il reste à cette place.`,unpinN:"Désépinglé : cette place tourne à nouveau.",
   timX:"La séance s'adapte à ce temps : durée d'échauffement, nombre de séries, exercices bonus.",
   nothingLeft:"Toutes les séries de cet exercice sont déjà saisies : rien à remplacer.",
+  rq1n:n=>`Effacer toutes les données de ${n} ?`,rqD:(s,m)=>`${s} séance${s>1?"s":""}, ${m} mesure${m>1?"s":""} ou suivi${m>1?"s":""}, les réglages et la nutrition de ce profil seront supprimés. L'autre profil n'est pas touché. Conseil : envoie une copie de sauvegarde avant.`,cont:"Continuer",
+  rq2:"Dernière vérification",rqW:w=>`Tape ${w} pour confirmer.`,eraseWord:"EFFACER",erasedN:d=>`Profil effacé. Tu peux annuler jusqu'au ${d} (dans Profil).`,erasedX:"Profil effacé.",
+  erasedL:d=>`Données effacées le ${d}`,undoB:"Annuler l'effacement",undoQ:"Remettre les données effacées ?",undoQd:"Les séances enregistrées depuis l'effacement seront remplacées.",undone:"Données restaurées.",
   bkn2:"Tes données s'enregistrent toutes seules sur ce téléphone, dans l'app ouverte depuis son icône. Une copie te protège si tu changes de téléphone ou supprimes l'icône.",
   bkLast:(d,a)=>`Dernière copie : ${d}${a?` (il y a ${a} jour${a>1?"s":""})`:" (aujourd'hui)"}`,bkNever:"Aucune copie envoyée pour l'instant.",
   bkSend:"Envoyer une copie (Mail, WhatsApp, Notes, Fichiers…)",bkSendS:"Envoyer une copie",bkSendX:"Le menu de partage du téléphone s'ouvre : choisis Mail, WhatsApp (ta propre discussion), Notes ou Fichiers. Le fichier restaure tout en un geste.",
@@ -296,15 +303,20 @@ function notice(message){
   messageTimeout=setTimeout(()=>{el.hidden=true},5500);
 }
 let pendingAction=null;
+let actionWord=null;
 function closeAction(){
-  const dialog=$("action-dialog");pendingAction=null;
+  const dialog=$("action-dialog");pendingAction=null;actionWord=null;
+  const word=$("action-word"),accept=$("action-accept");word.hidden=true;word.value="";word.oninput=null;accept.disabled=false;accept.removeAttribute("data-danger");
   if(dialog.open)dialog.close();
 }
-function askAction(title,detail,accept,callback,cancel=t("cancel")){
-  closeAction();const dialog=$("action-dialog");
+// opts.word: the accept button stays disabled until that word is typed (any case); opts.danger: red accept button
+function askAction(title,detail,accept,callback,cancel=t("cancel"),opts={}){
+  closeAction();const dialog=$("action-dialog"),ok=$("action-accept"),word=$("action-word");
   $("action-title").textContent=title;$("action-detail").textContent=detail;
-  $("action-cancel").textContent=cancel;$("action-accept").textContent=accept;
-  pendingAction=callback;dialog.showModal();$("action-cancel").focus();
+  $("action-cancel").textContent=cancel;ok.textContent=accept;if(opts.danger)ok.setAttribute("data-danger","1");
+  if(opts.word){actionWord=opts.word;word.hidden=false;word.placeholder=opts.word;word.setAttribute("aria-label",detail);ok.disabled=true;
+    word.oninput=()=>{ok.disabled=word.value.trim().toUpperCase()!==actionWord}}
+  pendingAction=callback;dialog.showModal();(opts.word?word:$("action-cancel")).focus();
 }
 function clearView(){
   closeAction();Object.assign(U,{ed:null,sum:null,open:-1,pick:null,ex:"",gi:null,sw:null,note:null,tl:false,chk:null,bk:false,wuo:0,rf:null,rfy:false});
@@ -781,7 +793,7 @@ function workoutSummary(){
 }
 
 function today(){const d=D(),k=li();if(U.sum)return workoutSummary();if(cur())return activeWorkout();if(U.chk)return checkIn(U.chk);
-const wd=wkd(),w=U.pick||wd||"A",c=prog()[w],ef=eff(w),nn=nut();return`<h1>${t("hi")}</h1><p class=mu>${wd?t("tod")+" : "+wd+" — "+prog()[wd].n[k]:t("recday")}</p>${bkRemind()}<div class=r>${["A","B","C"].map(x=>`<button class="${x==w?"p":""}" onclick="U.pick='${x}';go()">${x}</button>`).join("")}</div>${ef.unavailable?`<div class=c><h2>${c.n[k]}</h2><p role=status>${t(ef.tooShort?"tooLittle":"noPlan")}</p><button class=w onclick="navigate('set')">${t("editProfile")}</button></div>`:`<div class=c><h2>${c.n[k]}</h2><p class=mu>${t("selectionMode")} <button class=hb onclick="navigate('set');document.getElementById('varc')?.scrollIntoView({block:'start'})">${t("var_"+vmode())}</button></p><div class=wul>🔥 <b>${t("wuT")}</b> <span class=mu>≈ ${ef.wm} min · ${nmW(ef.g)} ${ef.gm} min · ${ef.wu.map(nmW).join(" · ")} · ${t("rampT")} ${ef.ramp} min</span></div>${ef.ex.map((e,i)=>{const o=e[7]??i,id=e[0],g=sug(id,e,w),sl=slotOf(w,o),fresh=d.logs.length>0&&!d.logs.some(l=>l.ex[id]);return`<div class=exl data-planned="${id}">${nm(id)} <span class=mu>${e[1]}×${e[2]}–${e[3]}${isT(id)?' s':''}${g.w>0?" · "+f1(g.w)+" kg":""}</span>${d.sub[w+o]===id?` <span class=xtg title="${t("pinT")}">📌</span>`:""}${sl&&sl[1]==="m"&&vmode()!=="fix"?` <span class=xtg>${t("mainT")}</span>`:""}${fresh?` <span class="xtg nw">${t("newT")}</span>`:""}${e[8]?` <span class=xtg>🔁 ${t("ssT")}</span>`:""}</div>`}).join("")}${ef.cm?`<div>🚶 ${t("cdT")} <span class=mu>${ef.cm} min</span></div>`:""}<p class=mu>${t("durE")(ef.dur,ef.wm)}${ef.ss?" "+t("ssS"):""}${ef.red?" "+t("redS")(+d.pf.time||60):""}${ef.cut?" "+t("trim")(ef.cut,+d.pf.time||60):""}${ef.add?" "+t("addS"):""}${ef.bon?" "+t("bonS")(ef.bon):""}${d.pf.lvl=="beg"?" "+t("begx"):""}</p>${vmode()!=="fix"?`<button class="w rr" onclick="reroll('${w}')">🎲 ${t("reroll")}</button><p class=mu>${vmode()==="bal"?t("blkL")(fd(blkInfo().end))+" ":""}${t("rrX")}</p>`:""}${ef.missing.length?`<p class=mu>${t("missingSlots")}: ${ef.missing.map(o=>nm(slotOf(w,o)[2])).join(", ")}</p>`:""}${budgetPanel(ef)}<button class="p w" onclick="begin('${w}')">${t("start")}</button></div>`}${nn?`<div class=c><span class=ts>${t("todN")(nn.kc.toLocaleString(S.lg),nn.P)}</span> <a href=# onclick="U.tab='set';go();return false" class=mu>${t("more")}</a></div>`:`<div class=c><span class=mu>${t("nutNo2")}</span> <a href=# onclick="U.tab='set';go();return false" class=mu>${t("more")}</a></div>`}<div class=c><b>${d.logs.filter(l=>Date.now()-l.date<6048e5).length}/3</b> <span class=mu>${t("wk7")} · ${d.logs.length} ${t("totalLogs")} · 🔥 ${streak()} ${t("streak")}</span></div>`}
+const wd=wkd(),w=U.pick||wd||"A",c=prog()[w],ef=eff(w),nn=nut();return`<h1>${t("hi")}</h1><p class=mu>${wd?t("tod")+" : "+wd+" — "+prog()[wd].n[k]:t("recday")}</p>${undoLine()}${bkRemind()}<div class=r>${["A","B","C"].map(x=>`<button class="${x==w?"p":""}" onclick="U.pick='${x}';go()">${x}</button>`).join("")}</div>${ef.unavailable?`<div class=c><h2>${c.n[k]}</h2><p role=status>${t(ef.tooShort?"tooLittle":"noPlan")}</p><button class=w onclick="navigate('set')">${t("editProfile")}</button></div>`:`<div class=c><h2>${c.n[k]}</h2><p class=mu>${t("selectionMode")} <button class=hb onclick="navigate('set');document.getElementById('varc')?.scrollIntoView({block:'start'})">${t("var_"+vmode())}</button></p><div class=wul>🔥 <b>${t("wuT")}</b> <span class=mu>≈ ${ef.wm} min · ${nmW(ef.g)} ${ef.gm} min · ${ef.wu.map(nmW).join(" · ")} · ${t("rampT")} ${ef.ramp} min</span></div>${ef.ex.map((e,i)=>{const o=e[7]??i,id=e[0],g=sug(id,e,w),sl=slotOf(w,o),fresh=d.logs.length>0&&!d.logs.some(l=>l.ex[id]);return`<div class=exl data-planned="${id}">${nm(id)} <span class=mu>${e[1]}×${e[2]}–${e[3]}${isT(id)?' s':''}${g.w>0?" · "+f1(g.w)+" kg":""}</span>${d.sub[w+o]===id?` <span class=xtg title="${t("pinT")}">📌</span>`:""}${sl&&sl[1]==="m"&&vmode()!=="fix"?` <span class=xtg>${t("mainT")}</span>`:""}${fresh?` <span class="xtg nw">${t("newT")}</span>`:""}${e[8]?` <span class=xtg>🔁 ${t("ssT")}</span>`:""}</div>`}).join("")}${ef.cm?`<div>🚶 ${t("cdT")} <span class=mu>${ef.cm} min</span></div>`:""}<p class=mu>${t("durE")(ef.dur,ef.wm)}${ef.ss?" "+t("ssS"):""}${ef.red?" "+t("redS")(+d.pf.time||60):""}${ef.cut?" "+t("trim")(ef.cut,+d.pf.time||60):""}${ef.add?" "+t("addS"):""}${ef.bon?" "+t("bonS")(ef.bon):""}${d.pf.lvl=="beg"?" "+t("begx"):""}</p>${vmode()!=="fix"?`<button class="w rr" onclick="reroll('${w}')">🎲 ${t("reroll")}</button><p class=mu>${vmode()==="bal"?t("blkL")(fd(blkInfo().end))+" ":""}${t("rrX")}</p>`:""}${ef.missing.length?`<p class=mu>${t("missingSlots")}: ${ef.missing.map(o=>nm(slotOf(w,o)[2])).join(", ")}</p>`:""}${budgetPanel(ef)}<button class="p w" onclick="begin('${w}')">${t("start")}</button></div>`}${nn?`<div class=c><span class=ts>${t("todN")(nn.kc.toLocaleString(S.lg),nn.P)}</span> <a href=# onclick="U.tab='set';go();return false" class=mu>${t("more")}</a></div>`:`<div class=c><span class=mu>${t("nutNo2")}</span> <a href=# onclick="U.tab='set';go();return false" class=mu>${t("more")}</a></div>`}<div class=c><b>${d.logs.filter(l=>Date.now()-l.date<6048e5).length}/3</b> <span class=mu>${t("wk7")} · ${d.logs.length} ${t("totalLogs")} · 🔥 ${streak()} ${t("streak")}</span></div>`}
 function plan(){return`<h1>${t("plan")}</h1>`+[1,2,3,4,5,6,0].map(n=>`<div class="c r"><b style="flex:.4">${DN[S.lg][n]}</b><select onchange="this.value?D().sched[${n}]=this.value:delete D().sched[${n}];save();go()">${["","A","B","C"].map(x=>`<option value="${x}" ${(D().sched[n]||"")==x?"selected":""}>${x?x+" — "+prog()[x].n[li()]:t("recov")}</option>`).join("")}</select></div>`).join("")}
 // not drawn for a back-sensitive profile: axial loading, hinging, or repeated loaded flexion (cable crunch)
 const AX=["ssq","dsp","hsq","rdl","cc"];
@@ -1161,15 +1173,27 @@ function restoreBackup(){
     clearView();go();notice(t("ok"));
   });
 }
+// erasing a profile: what will go, type the word, then 7 days to undo (copy kept on this phone only)
+const UNDO_KEY="duofit-undo",UNDO_DAYS=7;
+function undoAll(){try{const u=JSON.parse(localStorage.getItem(UNDO_KEY)||"{}");return isRecord(u)?u:{}}catch{return{}}}
+function undoOf(key){const u=undoAll()[key];return isRecord(u)&&Number.isFinite(u.at)&&isRecord(u.d)&&Date.now()-u.at<UNDO_DAYS*864e5?u:null}
+function setUndo(key,v){const u=undoAll();if(v)u[key]=v;else delete u[key];for(const k of Object.keys(u))if(!isRecord(u[k])||!(Date.now()-u[k].at<UNDO_DAYS*864e5))delete u[k];
+  try{Object.keys(u).length?localStorage.setItem(UNDO_KEY,JSON.stringify(u)):localStorage.removeItem(UNDO_KEY);return true}catch{return false}}
 function eraseProfile(){
-  const key=S.p;
-  askAction(t("rq1"),t("rstx"),t("del"),()=>askAction(t("rq2"),t(key==="M"?"him":"her"),t("del"),()=>{
-    const previous=D(),fresh={...mk(),pf:{...PFD[key]}};
+  const key=S.p,name=t(key==="M"?"him":"her"),d=S.d[key];
+  askAction(t("rq1n")(name),t("rqD")(d.logs.length,d.ms.length+d.hd.length),t("cont"),()=>askAction(t("rq2"),t("rqW")(t("eraseWord")),t("del"),()=>{
+    const previous=S.d[key],fresh={...mk(),pf:{...PFD[key]}};
+    const kept=setUndo(key,{at:Date.now(),d:JSON.parse(JSON.stringify(previous))});
     S.d[key]=fresh;
-    if(!save()){if(S.d[key]===fresh)S.d[key]=previous;return}
-    clearView();navigate("today");
-  }));
+    if(!save()){if(S.d[key]===fresh)S.d[key]=previous;setUndo(key,null);return}
+    clearView();navigate("today");notice(kept?t("erasedN")(fd(Date.now()+UNDO_DAYS*864e5)):t("erasedX"));
+  },t("cancel"),{word:t("eraseWord"),danger:true}),t("cancel"));
 }
+function undoErase(){const key=S.p,u=undoOf(key);if(!u)return;
+  const apply=()=>{const previous=S.d[key];try{S.d[key]=readState(JSON.stringify({p:key,d:{...S.d,[key]:u.d}})).d[key]}catch{notice(t("bad"));return}
+    if(!save()){S.d[key]=previous;return}setUndo(key,null);clearView();go();notice(t("undone"))};
+  if(S.d[key].logs.length)askAction(t("undoQ"),t("undoQd"),t("undoB"),apply);else apply()}
+function undoLine(){const u=undoOf(S.p);return u?`<div class="bkr"><span>🗑️ ${t("erasedL")(fd(u.at))}</span><button class=hb onclick="undoErase()">↩︎ ${t("undoB")}</button></div>`:""}
 // ===== Backup copy: share sheet (Mail, WhatsApp, Notes, Files…) with a .json file, restore from that file, weekly reminder =====
 const BK_DAYS=7,DAYMS=864e5;
 function bkAge(){return S.bk&&S.bk.at?Math.max(0,Math.floor((Date.now()-S.bk.at)/DAYMS)):null}
@@ -1379,17 +1403,17 @@ function msCard(){const d=D(),ms=d.ms.map(m=>({...m,x:dms(m.d)})).filter(m=>m.x&
 function set(){return`<h1>${t("pfT")}</h1>${profileCards()}${varCard()}${gymCard()}<div class=c><b>${t("theme")}</b><div class=r>${["","dark","light"].map(x=>`<button class="${S.th==x?"p":""}" onclick="S.th='${x}';th();save();go()">${x?(x=="dark"?"🌙":"☀️"):t("auto")}</button>`).join("")}</div></div><div class=c id=bkc><b>💾 ${t("bk")}</b><p class=mu>${t("bkn2")}</p><p class=ts>${S.bk&&S.bk.at?t("bkLast")(fd(S.bk.at),bkAge()):t("bkNever")}</p>
   <button class="p w" onclick="shareBackup()">📤 ${t("bkSend")}</button><p class=mu>${t("bkSendX")}</p>
   <label class="w lbtn" for=bkf>📂 ${t("bkFile")}</label><input type=file id=bkf class=vh accept=".json,.txt,application/json,text/plain" onchange="fileRestore(this)">
-  <details class=bkm><summary>${t("bkManual")}</summary><p class=mu>${t("bkn")}</p><textarea id=jx></textarea><div class=r><button onclick="exp()">${t("exp")}</button><button onclick="restoreBackup()">${t("imp")}</button></div></details></div><div class=c><b>${t("rst")}</b><p class=mu>${t("rstx")}</p><button class=w style="color:#e5484d" onclick="eraseProfile()">${t("rst")} (${t(S.p=='M'?'him':'her')})</button></div><p class=mu style=text-align:center>v ${VER}</p>`}
+  <details class=bkm><summary>${t("bkManual")}</summary><p class=mu>${t("bkn")}</p><textarea id=jx></textarea><div class=r><button onclick="exp()">${t("exp")}</button><button onclick="restoreBackup()">${t("imp")}</button></div></details></div><div class=c id=erc><b>${t("rst")}</b><p class=mu>${t("rstx")}</p>${undoLine()}<button class=w style="color:#e5484d" onclick="eraseProfile()">${t("rst")} (${t(S.p=='M'?'him':'her')})</button></div><p class=mu style=text-align:center>v ${VER}</p>`}
 
 function th(){const r=document.documentElement;S.th?r.setAttribute("data-theme",S.th):r.removeAttribute("data-theme");r.lang=S.lg}
 function go(){th();CH=[];const ids=["today","plan","lib","prg","hist","set"],f={today,plan,lib,prg,hist,set}[U.tab];
 document.getElementById("v").innerHTML=`<div class=pf><div><button class="${S.p=="M"?"on":""}" onclick="switchProfile('M')">${t("him")}</button><button class="${S.p=="F"?"on":""}" onclick="switchProfile('F')">${t("her")}</button></div><div><button class="${S.lg=="fr"?"on":""}" onclick="S.lg='fr';save();go()">FR</button><button class="${S.lg=="en"?"on":""}" onclick="S.lg='en';save();go()">EN</button></div></div>`+f();
 document.getElementById("nv").innerHTML=ids.map((x,i)=>`<button class="${U.tab==x?"on":""}" onclick="navigate('${x}')">${t("tab")[i]}</button>`).join("");renderRest();hook()}
-const VER="2026-11-14h";
+const VER="2026-11-14i";
 function upd(){if(!/^https?:/.test(location.protocol))return;fetch(location.pathname+"?nocache="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(h=>{const m=/const VER="([^"]+)"/.exec(h);if(!m||m[1]==VER)return;
 if(!S.d.M.cur&&!S.d.F.cur&&!$("action-dialog").open&&U.ed==null){location.replace(location.pathname+"?v="+m[1]);return}
 const b=document.getElementById("upb");b.style.display="block";b.textContent=t("upd");b.onclick=()=>location.replace(location.pathname+"?v="+m[1])}).catch(()=>{})}
-$("action-accept").onclick=()=>{const action=pendingAction;closeAction();if(action)action()};
+$("action-accept").onclick=()=>{if(actionWord&&$("action-word").value.trim().toUpperCase()!==actionWord)return;const action=pendingAction;closeAction();if(action)action()};
 $("action-cancel").onclick=closeAction;
 $("action-dialog").addEventListener("cancel",()=>{pendingAction=null});
 $("tm").addEventListener("click",e=>{const control=e.target.closest("[data-rest]");if(control)restControl(control.dataset.rest)});
