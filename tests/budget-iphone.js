@@ -1,12 +1,12 @@
 // Exercise the actual settings and session controls with iOS-style input events on a narrow screen.
 const assert=require("node:assert/strict");
-const {chromium,devices}=require("playwright");
+const {devices}=require("playwright");const BR=require("./browser.js");
 const ios=require("./iosinit.js");
 const url=process.env.URL||"http://localhost:8766/index.html";
 (async()=>{
-  const browser=await chromium.launch();
+  const browser=await BR.launch();
   try{
-    const context=await browser.newContext({...devices["iPhone SE"],locale:"fr-FR",timezoneId:"Europe/Paris"});
+    const context=await browser.newContext({...BR.dev("iPhone SE"),locale:"fr-FR",timezoneId:"Europe/Paris"});
     await context.addInitScript(ios);
     const p=await context.newPage(),errors=[];p.on("pageerror",e=>errors.push(e.message));
     const nav=n=>p.locator("nav button").nth(n).click();

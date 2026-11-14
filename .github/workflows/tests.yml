@@ -16,6 +16,23 @@ jobs:
       fail-fast: false
       matrix:
         suite: [session-history.test.cjs, full.js, nut2.js, ios.js, all.js, v2.js, variety.js, pages.js, budget.test.cjs, budget-iphone.js, priorities.js, backup.js, erase.js, coach.js, tanita.js]
+        engine: [chromium]
+        device: ['']
+        # the same browser suites again in WebKit (Safari's engine, used by every browser on iPhone) on an iPhone 16 Plus
+        include:
+          - {suite: full.js, engine: webkit, device: 'iPhone 16 Plus'}
+          - {suite: nut2.js, engine: webkit, device: 'iPhone 16 Plus'}
+          - {suite: ios.js, engine: webkit, device: 'iPhone 16 Plus'}
+          - {suite: all.js, engine: webkit, device: 'iPhone 16 Plus'}
+          - {suite: v2.js, engine: webkit, device: 'iPhone 16 Plus'}
+          - {suite: variety.js, engine: webkit, device: 'iPhone 16 Plus'}
+          - {suite: pages.js, engine: webkit, device: 'iPhone 16 Plus'}
+          - {suite: budget-iphone.js, engine: webkit, device: 'iPhone 16 Plus'}
+          - {suite: priorities.js, engine: webkit, device: 'iPhone 16 Plus'}
+          - {suite: backup.js, engine: webkit, device: 'iPhone 16 Plus'}
+          - {suite: erase.js, engine: webkit, device: 'iPhone 16 Plus'}
+          - {suite: coach.js, engine: webkit, device: 'iPhone 16 Plus'}
+          - {suite: tanita.js, engine: webkit, device: 'iPhone 16 Plus'}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -24,11 +41,13 @@ jobs:
       - if: "${{ !endsWith(matrix.suite, '.test.cjs') }}"
         run: |
           npm install --no-save --package-lock=false playwright@1.56.1
-          npx playwright install --with-deps chromium
+          npx playwright install --with-deps ${{ matrix.engine }}
       - name: Run ${{ matrix.suite }}
         shell: bash
         env:
           SUITE: ${{ matrix.suite }}
+          BROWSER: ${{ matrix.engine }}
+          DEVICE: ${{ matrix.device }}
         run: |
           set -euo pipefail
           if [[ "$SUITE" == *.test.cjs ]]; then node --test "tests/$SUITE"; exit 0; fi

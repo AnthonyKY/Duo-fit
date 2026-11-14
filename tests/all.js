@@ -1,9 +1,9 @@
 // Every remaining feature, strict iPhone simulation.
-const {chromium,devices}=require('playwright');const IOS=require('./iosinit.js');
+const {devices}=require('playwright');const BR=require('./browser.js');const IOS=require('./iosinit.js');
 const URL=process.env.URL||'http://localhost:8766/index.html';
 const R=[];let fails=0;const ok=(n,c,x='')=>{const l=(c?'PASS ':'FAIL ')+n+(x?' — '+x:'');R.push(l);console.log(l);if(!c)fails++};
-(async()=>{const b=await chromium.launch();
-const mkctx=async(dev='iPhone 13',extra={})=>{const c=await b.newContext({...devices[dev],locale:'fr-FR',timezoneId:'Europe/Paris',...extra});await c.addInitScript(IOS);return c};
+(async()=>{const b=await BR.launch();
+const mkctx=async(dev,extra={})=>{const c=await b.newContext({...(dev?devices[dev]:BR.dev('iPhone 13')),locale:'fr-FR',timezoneId:'Europe/Paris',...extra});await c.addInitScript(IOS);return c};
 const ctx=await mkctx();const p=await ctx.newPage();p.setDefaultTimeout(6000);const errs=[];p.on('pageerror',e=>errs.push(e.message));
 await p.clock.install({time:new Date(2026,10,16,18,0,0)}); // Monday
 await p.goto(URL);

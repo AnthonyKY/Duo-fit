@@ -1,9 +1,9 @@
 // Erasing a profile: 1) what will be deleted 2) type EFFACER (button disabled until then) 3) undo for 7 days. Strict iPhone simulation.
-const {chromium,devices}=require('playwright');const IOS=require('./iosinit.js');
+const {devices}=require('playwright');const BR=require('./browser.js');const IOS=require('./iosinit.js');
 const URL=process.env.URL||'http://localhost:8766/index.html';
 const R=[];let fails=0;const ok=(n,c,x='')=>{const l=(c?'PASS ':'FAIL ')+n+(x?' — '+x:'');R.push(l);console.log(l);if(!c)fails++};
-(async()=>{const b=await chromium.launch();
-const ctx=await b.newContext({...devices['iPhone SE'],locale:'fr-FR',timezoneId:'Europe/Paris'});await ctx.addInitScript(IOS);
+(async()=>{const b=await BR.launch();
+const ctx=await b.newContext({...BR.dev('iPhone SE'),locale:'fr-FR',timezoneId:'Europe/Paris'});await ctx.addInitScript(IOS);
 const p=await ctx.newPage();p.setDefaultTimeout(8000);const errs=[];p.on('pageerror',e=>errs.push(e.message));
 const DAY=864e5;await p.clock.install({time:Date.UTC(2026,10,16,9)});
 const E=(f,a)=>p.evaluate(f,a),txt=async()=>(await p.textContent('#v')).replace(/[  ]/g,' ');

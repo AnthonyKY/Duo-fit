@@ -3,7 +3,7 @@
 // 2. a real 20-minute "Back & Arms" with only a cable station (warm-up, ramp-up, rests, station changes included)
 // 3. in-session reliability: timer, pause, replace after a logged set, shortening, airplane mode, abandon, finish, history, old data
 const fs=require("node:fs"),path=require("node:path"),http=require("node:http");
-const {chromium,devices}=require("playwright");const IOS=require("./iosinit.js");
+const {devices}=require("playwright");const BR=require("./browser.js");const IOS=require("./iosinit.js");
 const root=path.join(__dirname,".."),base="/Duo-fit/",FILES=["index.html","sw.js","manifest.webmanifest","icon-180.png","icon-192.png","icon-512.png"];
 const R=[];let fails=0,tx='';const ok=(n,c,x='')=>{const l=(c?'PASS ':'FAIL ')+n+(x?' — '+x:'');R.push(l);console.log(l);if(!c)fails++};
 (async()=>{
@@ -12,7 +12,7 @@ const server=http.createServer((req,res)=>{const route=new URL(req.url,"http://x
   res.setHeader("Content-Type",name.endsWith("html")?"text/html; charset=utf-8":name.endsWith("js")?"application/javascript":name.endsWith("png")?"image/png":"application/manifest+json");
   res.end(fs.readFileSync(path.join(root,name)))});
 await new Promise(r=>server.listen(0,"127.0.0.1",r));const url="http://127.0.0.1:"+server.address().port+base;
-const b=await chromium.launch(),ctx=await b.newContext({...devices["iPhone SE"],locale:"fr-FR",timezoneId:"Europe/Paris"});await ctx.addInitScript(IOS);
+const b=await BR.launch(),ctx=await b.newContext({...BR.dev("iPhone SE"),locale:"fr-FR",timezoneId:"Europe/Paris"});await ctx.addInitScript(IOS);
 // ---- old data from before this update (v 2026-11-14c format: no gear, no draw, no variety settings)
 const T0=Date.UTC(2026,10,9,8),DAY=864e5;
 const oldLogs=[{date:T0-14*DAY,wk:"A",dur:52,durSec:3120,ex:{ms:[{w:40,r:10},{w:40,r:9}],cc:[{w:30,r:12}]},note:"ancienne",vol:1120,sets:3,pr:[]},

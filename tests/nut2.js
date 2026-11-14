@@ -1,6 +1,6 @@
-const {chromium,devices}=require('playwright');const IOS=require('./iosinit.js');
+const {devices}=require('playwright');const BR=require('./browser.js');const IOS=require('./iosinit.js');
 const R=[];let fails=0;const ok=(n,c,x='')=>{const l=(c?'PASS ':'FAIL ')+n+(x?' — '+x:'');R.push(l);console.log(l);if(!c)fails++};
-(async()=>{const b=await chromium.launch();const ctx=await b.newContext({...devices['iPhone 13'],locale:'fr-FR',timezoneId:'Europe/Paris'});await ctx.addInitScript(IOS);const p=await ctx.newPage();p.setDefaultTimeout(6000);
+(async()=>{const b=await BR.launch();const ctx=await b.newContext({...BR.dev('iPhone 13'),locale:'fr-FR',timezoneId:'Europe/Paris'});await ctx.addInitScript(IOS);const p=await ctx.newPage();p.setDefaultTimeout(6000);
 const errs=[];p.on('pageerror',e=>errs.push(e.message));p.on('dialog',d=>d.accept());
 await p.clock.setFixedTime(new Date(2026,10,16,9).getTime()); // Mon 16 Nov
 await p.goto('http://localhost:8766/index.html');

@@ -1,5 +1,5 @@
 // Exhaustive DUOFIT test suite — iPhone emulation, fake clock, real UI typing.
-const {chromium,devices}=require('playwright');const IOS=require('./iosinit.js');
+const {devices}=require('playwright');const BR=require('./browser.js');const IOS=require('./iosinit.js');
 const path=require('path');
 const URL='http://localhost:8766/index.html';
 const R=[];let fails=0;
@@ -7,8 +7,8 @@ const ok=(n,c,extra='')=>{R.push((c?'PASS ':'FAIL ')+n+(extra?' — '+extra:''))
 const near=(a,b,e=0.051)=>Math.abs(a-b)<e;
 
 (async()=>{
-const b=await chromium.launch();
-const ctx=await b.newContext({...devices['iPhone 13'],locale:'fr-FR',timezoneId:'Europe/Paris'});await ctx.addInitScript(IOS);
+const b=await BR.launch();
+const ctx=await b.newContext({...BR.dev('iPhone 13'),locale:'fr-FR',timezoneId:'Europe/Paris'});await ctx.addInitScript(IOS);
 const p=await ctx.newPage();
 const errs=[];p.on('pageerror',e=>errs.push('PAGEERR '+e.message));p.on('console',m=>{if(m.type()=='error')errs.push('CONSOLE '+m.text())});
 p.on('dialog',d=>d.accept());
@@ -241,7 +241,7 @@ await p.click('nav >> text=Profil');await p.click('#bkc summary');await p.fill('
 ok('Import restores everything exactly',await E(()=>JSON.stringify(S.d))==before);
 
 // ===== Persistence across app restart (new page, same storage) =====
-const st=await ctx.storageState();const ctx2=await b.newContext({...devices['iPhone 13'],locale:'fr-FR',storageState:st});await ctx2.addInitScript(IOS);const p2=await ctx2.newPage();
+const st=await ctx.storageState();const ctx2=await b.newContext({...BR.dev('iPhone 13'),locale:'fr-FR',storageState:st});await ctx2.addInitScript(IOS);const p2=await ctx2.newPage();
 await p2.goto(URL);ok('Data survives full app restart',await p2.evaluate(()=>S.d.M.logs.length==5&&S.d.F.logs.length==1&&S.d.M.hd.length==3));
 await ctx2.close();
 

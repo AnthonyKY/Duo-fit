@@ -5,7 +5,7 @@
 //    the next workout is pre-filled with that same target.
 // 3) add an exercise compatible with the profile and equipment, see the time it adds, time it, find it in History; today only.
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http');
-const {chromium,devices}=require('playwright');const IOS=require('./iosinit.js');
+const {devices}=require('playwright');const BR=require('./browser.js');const IOS=require('./iosinit.js');
 const root=path.join(__dirname,'..'),base='/Duo-fit/',FILES=['index.html','sw.js','manifest.webmanifest','icon-180.png','icon-192.png','icon-512.png'];
 const R=[];let fails=0;const ok=(n,c,x='')=>{const l=(c?'PASS ':'FAIL ')+n+(x?' — '+x:'');R.push(l);console.log(l);if(!c)fails++};
 (async()=>{
@@ -14,7 +14,7 @@ const server=http.createServer((req,res)=>{const route=new URL(req.url,'http://x
   res.setHeader('Content-Type',name.endsWith('html')?'text/html; charset=utf-8':name.endsWith('js')?'application/javascript':name.endsWith('png')?'image/png':'application/manifest+json');
   res.end(fs.readFileSync(path.join(root,name)))});
 await new Promise(r=>server.listen(0,'127.0.0.1',r));const url='http://127.0.0.1:'+server.address().port+base;
-const b=await chromium.launch(),ctx=await b.newContext({...devices['iPhone SE'],locale:'fr-FR',timezoneId:'Europe/Paris'});await ctx.addInitScript(IOS);
+const b=await BR.launch(),ctx=await b.newContext({...BR.dev('iPhone SE'),locale:'fr-FR',timezoneId:'Europe/Paris'});await ctx.addInitScript(IOS);
 let p=await ctx.newPage();p.setDefaultTimeout(8000);const errs=[];const watch=()=>p.on('pageerror',e=>errs.push(e.message));watch();
 const T0=Date.UTC(2026,10,16,9);await p.clock.install({time:T0});await p.clock.pauseAt(T0+1000); // time only moves when the test says so
 await p.goto(url);await p.evaluate(()=>navigator.serviceWorker.ready.then(()=>true));

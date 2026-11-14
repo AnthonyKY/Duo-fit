@@ -1,7 +1,7 @@
 // The app as GitHub Pages serves it: under the /Duo-fit/ sub-path, installed icon, offline, auto-update.
 // Idea taken from astra's V2 tests: a local server that mimics the Pages sub-path and can publish a "next" version.
 const fs=require("node:fs"),path=require("node:path"),http=require("node:http");
-const {chromium,devices}=require("playwright");const IOS=require("./iosinit.js");
+const {devices}=require("playwright");const BR=require("./browser.js");const IOS=require("./iosinit.js");
 const root=path.join(__dirname,".."),base="/Duo-fit/",FILES=["index.html","sw.js","manifest.webmanifest","icon-180.png","icon-192.png","icon-512.png"];
 const R=[];let fails=0;const ok=(n,c,x='')=>{const l=(c?'PASS ':'FAIL ')+n+(x?' — '+x:'');R.push(l);console.log(l);if(!c)fails++};
 const CUR=/const VER="([^"]+)"/.exec(fs.readFileSync(path.join(root,"index.html"),"utf8"))[1];let served=CUR;
@@ -12,7 +12,7 @@ const server=http.createServer((req,res)=>{const route=new URL(req.url,"http://x
   res.setHeader("Cache-Control","max-age=600"); // like GitHub Pages
   let body=fs.readFileSync(path.join(root,name));if(name==="index.html")body=body.toString().replace(`const VER="${CUR}"`,`const VER="${served}"`);res.end(body)});
 await new Promise(r=>server.listen(0,"127.0.0.1",r));const url="http://127.0.0.1:"+server.address().port+base;
-const b=await chromium.launch(),ctx=await b.newContext({...devices["iPhone SE"],locale:"fr-FR"});await ctx.addInitScript(IOS);
+const b=await BR.launch(),ctx=await b.newContext({...BR.dev("iPhone SE"),locale:"fr-FR"});await ctx.addInitScript(IOS);
 let p=await ctx.newPage();const errs=[];const watch=()=>p.on("pageerror",e=>errs.push(e.message));watch();
 await p.goto(url);await p.evaluate(()=>navigator.serviceWorker.ready.then(()=>true));await p.reload();
 ok("Service worker controls the page under /Duo-fit/",await p.evaluate(()=>!!navigator.serviceWorker.controller&&navigator.serviceWorker.controller.scriptURL.includes("/Duo-fit/sw.js")));

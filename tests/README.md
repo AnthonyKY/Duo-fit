@@ -37,4 +37,11 @@ node --test tests/budget.test.cjs          # 324 plan combinations, equipment, e
 node --test tests/session-history.test.cjs # unit tests (no browser): durations, pause, rest per profile, storage full, stale tabs, validation
 ```
 
-GitHub Actions (`.github/workflows/tests.yml`) runs every suite on each push to main, claude/** and astra/**.
+Engine and phone: browser suites run in Chromium with the iPhone each one names (iPhone SE = narrowest screen) unless told otherwise:
+
+```
+BROWSER=webkit DEVICE="iPhone 16 Plus" node tests/tanita.js   # WebKit = Safari's engine, used by every browser on iPhone
+```
+
+GitHub Actions (`.github/workflows/tests.yml`) runs every suite on each push to main, claude/** and astra/**: once in Chromium,
+and every browser suite again in WebKit on an iPhone 16 Plus.

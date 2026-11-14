@@ -1,14 +1,14 @@
 // Backup copy: discreet weekly reminder (✕ hides it 7 days), share sheet with a .json file (Mail / WhatsApp / Notes / Files),
 // cancel, no-share fallback (download), restore from that file. Strict iPhone simulation; the share sheet is simulated.
-const {chromium,devices}=require('playwright');const IOS=require('./iosinit.js');const fs=require('fs'),os=require('os'),path=require('path');
+const {devices}=require('playwright');const BR=require('./browser.js');const IOS=require('./iosinit.js');const fs=require('fs'),os=require('os'),path=require('path');
 const URL=process.env.URL||'http://localhost:8766/index.html';
 const R=[];let fails=0;const ok=(n,c,x='')=>{const l=(c?'PASS ':'FAIL ')+n+(x?' — '+x:'');R.push(l);console.log(l);if(!c)fails++};
 // simulated iOS share sheet: records what is shared; window.__shareMode = "ok" | "cancel"
 const SHARE=`window.__shared=[];window.__shareMode="ok";navigator.canShare=d=>!!(d&&d.files&&d.files.length);
 navigator.share=async d=>{const f=d.files&&d.files[0];window.__shared.push({name:f&&f.name,type:f&&f.type,text:d.text,body:f?await f.text():null});
   if(window.__shareMode==="cancel"){const e=new Error("cancel");e.name="AbortError";throw e}};`;
-(async()=>{const b=await chromium.launch();
-const ctx=await b.newContext({...devices['iPhone SE'],locale:'fr-FR',timezoneId:'Europe/Paris',acceptDownloads:true});await ctx.addInitScript(IOS);await ctx.addInitScript(SHARE);
+(async()=>{const b=await BR.launch();
+const ctx=await b.newContext({...BR.dev('iPhone SE'),locale:'fr-FR',timezoneId:'Europe/Paris',acceptDownloads:true});await ctx.addInitScript(IOS);await ctx.addInitScript(SHARE);
 const p=await ctx.newPage();p.setDefaultTimeout(8000);const errs=[];p.on('pageerror',e=>errs.push(e.message));
 const DAY=864e5,T0=Date.UTC(2026,10,16,9);await p.clock.install({time:T0});
 const E=(f,a)=>p.evaluate(f,a),txt=async()=>(await p.textContent('#v')).replace(/[  ]/g,' ');
