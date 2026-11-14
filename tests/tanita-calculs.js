@@ -6,8 +6,10 @@ const ios=require('./iosinit.js');
   const browser=await chromium.launch();let count=0;
   try{
     for(const name of ['iPhone SE','iPhone 16 Plus']){
-      assert.ok(devices[name]);
-      const ctx=await browser.newContext({...devices[name],locale:'fr-FR'});await ctx.addInitScript(ios);
+      // Playwright 1.56 does not ship a named 16 Plus preset. Its portrait screen
+      // is 1290 × 2796 pixels at 3×, or 430 × 932 CSS pixels.
+      const device=devices[name]||{...devices['iPhone 15 Plus'],viewport:{width:430,height:932},screen:{width:430,height:932},isMobile:true,hasTouch:true,deviceScaleFactor:3};
+      const ctx=await browser.newContext({...device,locale:'fr-FR'});await ctx.addInitScript(ios);
       const p=await ctx.newPage();await p.goto(process.env.URL||'http://localhost:8766/index.html');
       const check=(label,ok)=>{assert.ok(ok,label);count++;console.log('PASS '+name+' '+label)};
       await p.evaluate(()=>{Object.assign(D().pf,{h:180,sex:'m'});U.tab='set';go();bOpen();bWhen('after')});
@@ -39,6 +41,11 @@ const ios=require('./iosinit.js');
       check('English and separate female height and sex',english[0].includes('26.6')&&english[0].includes('22.5')&&english[0].includes('Calculations')&&!english[1]);
       check('legacy backup',await p.evaluate(()=>{const data=JSON.parse(JSON.stringify(S));delete data.d.M.body;return readState(JSON.stringify(data)).d.M.body.length===0}));
       check('no horizontal overflow',await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+      await p.evaluate(()=>{const backup=localStorage.getItem('duofit');applyStorage(backup);S.p='M';U.bd=null;go()});
+      check('reading restored without derived fields',await p.evaluate(()=>D().body[0].fatPct===15.5&&D().body[0].fatKg==null&&Math.abs(bCalc(D().body[0]).fatKg.value-11.222)<.001));
+      await p.evaluate(()=>{U.tab='today';start('A',0);go()});
+      await p.locator('#v .xt.x0').first().click();
+      check('exercise stopwatch starts',await p.evaluate(()=>cur().xr===xkey(0)));
       await ctx.close();
     }
     console.log(count+'/'+count+' passed');

@@ -52,7 +52,7 @@ dialog::backdrop{background:rgb(0 0 0 / .58)}dialog .r{margin-top:18px}
 .swr{grid-template-columns:1fr 1fr;padding:6px 0;border-bottom:1px solid var(--bd)}.swr span{grid-column:1/-1;font-weight:600}
 .budget{margin:10px 0;border:1px solid var(--bd);border-radius:10px;padding:9px 12px}.budget summary{cursor:pointer;font-weight:600}.budget dl{margin:8px 0}.budget dl>div{display:flex;justify-content:space-between;gap:8px}.budget dd,.budget dt{margin:3px 0}.budget dd{white-space:nowrap;font-variant-numeric:tabular-nums}.gear{min-width:0;margin:12px 0;padding:8px 10px;border:1px solid var(--bd);border-radius:10px}.gear label{display:inline-flex;align-items:center;margin:4px 10px 4px 0}.gear input{width:auto}#varc{scroll-margin-top:70px}
 .bdc .bwc button{flex:1 1 40%}.bgr{display:grid;grid-template-columns:minmax(0,1fr) 82px 82px;gap:6px;align-items:center;margin:6px 0}.bgr>span:first-child{font-size:14px;min-width:0}.bgh span{font-size:12px;color:var(--mu);text-align:center}.bgh span:first-child{text-align:left}.bu{position:relative;display:block;min-width:0}.bu input{width:100%;box-sizing:border-box;padding:8px 26px 8px 6px;text-align:right}.bu i{position:absolute;right:7px;top:50%;transform:translateY(-50%);font-style:normal;font-size:12px;color:var(--mu);pointer-events:none}.bu2{grid-column:2/4}.bu2.bk input{padding-right:72px}.bu input[aria-invalid=true]{border-color:#e5484d}.bseg{margin:8px 0;border:1px solid var(--bd);border-radius:10px;padding:8px 10px}.bseg summary{cursor:pointer;font-weight:600;font-size:14px}.bnt{display:block;margin:8px 0}.bnt input{width:100%;box-sizing:border-box;text-align:left;margin-top:4px}.bdr{border-top:1px solid var(--bd);padding:8px 0}.bdr summary{cursor:pointer;display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;font-size:14px}.bdr summary{list-style:none;position:relative;padding-right:22px}.bdr summary::-webkit-details-marker{display:none}.bdr summary::after{content:"▾";position:absolute;right:2px;top:2px;color:var(--mu);transition:transform .15s}.bdr[open] summary::after{transform:rotate(180deg)}.bdr summary b{font-weight:700}.bdv{font-variant-numeric:tabular-nums}.bw{display:inline-block;border-radius:99px;padding:2px 9px;font-size:12px;font-weight:700;background:var(--c2);white-space:nowrap}.bw-fast{background:var(--ac);color:var(--on)}.bw-after{background:#f5a524;color:#1a1a1a}.bdl{margin:6px 0 0;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 10px;font-size:14px}.bdl dt{color:var(--mu);min-width:0}.bdl dd{margin:0;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}.bcm{margin:8px 0 4px;font-size:13px}.bdr .r{margin-top:6px}#action-detail{white-space:pre-line}
-</style></head><body><div id="upb" style="display:none;position:fixed;top:calc(8px + env(safe-area-inset-top,0px));left:12px;right:12px;z-index:9;background:var(--ac);color:var(--on);font-weight:700;text-align:center;padding:12px;border-radius:12px;cursor:pointer"></div><div id="storage-warning" role="alert" hidden></div><main id="v"></main><div id="notice" role="status" hidden></div><div id="tm" hidden></div><nav id="nv"></nav>
+.bdc .bu input::placeholder{color:var(--mu);opacity:1}.bdc .bcalc-lines dd{white-space:normal;overflow-wrap:anywhere}</style></head><body><div id="upb" style="display:none;position:fixed;top:calc(8px + env(safe-area-inset-top,0px));left:12px;right:12px;z-index:9;background:var(--ac);color:var(--on);font-weight:700;text-align:center;padding:12px;border-radius:12px;cursor:pointer"></div><div id="storage-warning" role="alert" hidden></div><main id="v"></main><div id="notice" role="status" hidden></div><div id="tm" hidden></div><nav id="nv"></nav>
 <dialog id="action-dialog" aria-labelledby="action-title" aria-describedby="action-detail">
   <h2 id="action-title"></h2><p id="action-detail"></p><input id="action-word" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" hidden><div class="r">
     <button type="button" id="action-cancel"></button><button type="button" id="action-accept" class="p"></button>
@@ -1743,9 +1743,11 @@ function bCalc(raw){
 function bComputedText(k,m,unit){
   const [lo,hi]=bBounds(m),err=Math.max(m.value-lo,hi-m.value);
   const v=k==="bmr"?Math.round(m.value/10)*10:m.value;
-  const digits=k==="bmr"||err>=10?0:1;
+  const digits=k==="bmr"||err>=5?0:1;
   const format=n=>n.toLocaleString(S.lg,{maximumFractionDigits:digits});
-  return "≈ "+format(v)+(unit==="kg"&&err>.30000001?" ± "+format(Math.ceil((err-1e-9)*10)/10):"");
+  const quantum=k==="bmr"?10:digits===0?1:.1;
+  const uncertainty=Math.ceil((err-1e-9)/quantum)*quantum;
+  return "≈ "+format(v)+(err>(k==="bmr"?5:.30000001)?" ± "+format(uncertainty):"");
 }
 function bLegend(c){
   let s=bText("≈ = calculé","≈ = calculated");
@@ -1756,7 +1758,7 @@ function bLegend(c){
 function bDerived(c){
   const labels={lean:["Masse maigre","Fat-free mass","kg"],bone:["Masse osseuse estimée","Estimated bone mass","kg"],bmi:["IMC","BMI","kg/m²"],ffmi:["FFMI","FFMI","kg/m²"],adjusted:["FFMI ramené à 1,80 m","FFMI normalized to 1.80 m","kg/m²"],arms:["Écart musculaire des bras","Arm muscle difference","%"],legs:["Écart musculaire des jambes","Leg muscle difference","%"],bmr:["Métabolisme estimé","Estimated metabolism",t("bKcal")]};
   const lines=Object.entries(labels).filter(([k])=>c[k]?.origin).map(([k,[fr,en,u]])=>`<dt>${bText(fr,en)}</dt><dd>${bComputedText(k,c[k],u)} ${u}</dd>`);
-  return `<b>${bText("Calculs","Calculations")}</b><p class=mu>${bLegend(c)}</p><dl class=bdl>${lines.join("")}</dl>
+  return `<b>${bText("Calculs","Calculations")}</b><p class=mu>${bLegend(c)}</p><dl class="bdl bcalc-lines">${lines.join("")}</dl>
   ${c.badBone?`<p>${bText("Valeurs incohérentes pour estimer la masse osseuse.","Inconsistent values for estimating bone mass.")}</p>`:""}
   ${c.adjusted?`<p class=mu>${bText("Repère masculin : autour de 18–20 dans la population étudiée. Environ 25 était la limite observée chez les sportifs déclarés sans stéroïdes dans une étude, sans constituer un plafond individuel.","Male reference: around 18–20 in the population studied. Around 25 was the upper value observed in one sample of athletes reporting no steroids, not an individual ceiling.")}</p>`:""}`;
 }
@@ -1777,7 +1779,7 @@ function bCmp(r,rows){
         const a=now[k],b=prev[k],delta=a.value-b.value;
         if(!a.origin&&!b.origin)return t(l)+" "+bSg(delta)+" "+u;
         const [al,ah]=bBounds(a),[bl,bh]=bBounds(b),err=Math.max(delta-(al-bh),ah-bl-delta);
-        return t(l)+" ≈ "+bSg(delta)+(u==="kg"&&err>.30000001?" ± "+f1(Math.ceil((err-1e-9)*10)/10):"")+" "+u;
+        return t(l)+" ≈ "+bSg(delta)+(err>.30000001?" ± "+f1(Math.ceil((err-1e-9)*10)/10):"")+" "+u;
       });
     return parts.length?t("bCmp")(bDate(same.d),parts.join(" · ")):t("bCmp0")(bDate(same.d));
   }
