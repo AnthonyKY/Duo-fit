@@ -39,6 +39,11 @@ dialog::backdrop{background:rgb(0 0 0 / .58)}dialog .r{margin-top:18px}
 .wtx{min-width:0;overflow-wrap:break-word}.wds{color:var(--ac);font-weight:700;font-size:13px}
 .wub{margin:6px 0;text-align:left}
 .ssl{margin:4px 0;font-size:13px;color:var(--ac);font-weight:600}
+.xrow{display:flex;flex-wrap:wrap;align-items:center;gap:6px}.xt{font-size:13px;padding:3px 9px;border-radius:99px;font-variant-numeric:tabular-nums;white-space:nowrap;border:1px solid var(--bd)}
+.xt.xok{background:var(--ac);color:var(--on);border-color:var(--ac)}.xt.xwarn{background:#f5a524;color:#1b1300;border-color:#f5a524}.xt.xover{background:#e5484d;color:#fff;border-color:#e5484d}.xt.x0{background:none;color:var(--ac);border-color:var(--ac)}
+.coach{margin:10px 0 4px;padding:8px 10px;border-radius:10px;background:var(--c2);font-size:13px}.coach b{display:block;margin-bottom:4px}.cl{margin:3px 0}.cl.warn{color:var(--tx)}
+.aiw{margin:12px 0}.aiw>b{display:block}.aiq{white-space:pre-wrap;font-size:12px;background:var(--c2);padding:8px;border-radius:8px;overflow-wrap:anywhere}.aib{text-decoration:none}
+.rmx{margin-top:8px}.addp .swr{grid-template-columns:minmax(0,1fr) auto}.addp .swr>span{grid-column:auto;font-weight:600}.addp .swr .mu{font-weight:400}.lcb .coach{margin-top:0}
 .bkr{display:flex;align-items:center;gap:8px;margin:8px 0;padding:6px 8px 6px 12px;border:1px solid var(--bd);border-radius:12px;background:var(--cd);font-size:13px}
 .bkr span{flex:1;min-width:0}.bkr .hb{padding:6px 10px;white-space:nowrap}.bkr .bkx2{background:none;border:0;color:var(--mu);font-size:16px;padding:6px 8px}
 .lbtn{display:block;box-sizing:border-box;text-align:center;font:inherit;color:var(--tx);background:var(--c2);border:1px solid var(--bd);border-radius:10px;cursor:pointer}.vh{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none}
@@ -195,6 +200,17 @@ Object.assign(L.en,{
   pinN:n=>`${n} pinned: it stays in this place.`,unpinN:"Unpinned: this place rotates again.",
   timX:"The workout adapts to this time: warm-up length, sets, bonus exercises.",
   nothingLeft:"Every set of this exercise is already entered: nothing left to replace.",
+  xStart:"Start this exercise's timer",xPause:"Stop this exercise's timer",xGo:"Resume this exercise's timer",realT:"actual time = sum of the exercises",clockT:"stopwatch",planned:"planned",
+  coachT:"Review",c_heavy:(r,lo,u,w)=>`Too heavy from set 1 (${r}${u} < ${lo}): about ${w} kg next time.`,c_hardBW:(r,lo,u)=>`Too hard from set 1 (${r}${u} < ${lo}): use an easier version or more assistance.`,
+  c_light:(hi,u,w)=>`Too light: well above ${hi}${u} everywhere. Go to ${w} kg from the next set.`,c_easyBW:(hi,u)=>`Too easy: well above ${hi}${u}. Slow the tempo or use a harder version.`,
+  c_top:w=>`Top of the range on every set: ${w} kg next time.`,c_topBW:(hi,u)=>`Top of the range (${hi}${u}) on every set: add a little difficulty next time.`,
+  c_good:(a,b,lo,hi,u)=>`Good load: ${a}–${b}${u}, inside the ${lo}–${hi} target.`,c_drop:(a,b,rest)=>`Big rep drop from first to last set (${a} → ${b}): take the full ${rest} s rest, or lighten the last sets.`,
+  c_up:"Better than last time.",c_down:"Below last time (fatigue, sleep, food?): keep the same load next time.",c_slow:(a,b)=>`Took longer than planned (${a} / ${b}): long rests or waiting for a station.`,
+  aiT:"Analysis by an AI",aiGo:"Ask Google's AI",aiCopy:"Copy the question (Gemini, ChatGPT, Claude…)",aiSee:"See the text sent",
+  aiNote:"It contains your profile (age, height, weight, goal, sensitive back) and your sets. It goes to Google only when you tap the button.",
+  aiOff:"No network: try again when you are online (the workout stays in History).",aiCopied:"Question copied: paste it into the AI of your choice.",
+  addB:"Add an exercise",addSug:"For this workout",addAll:"Other exercises",addOne:"Add",addNone:"Nothing available with your equipment and settings.",
+  added:n=>`${n} added at the end of the workout.`,remB:"Remove",removed:n=>`${n} removed.`,
   rq1n:n=>`Erase all data of ${n}?`,rqD:(s,m)=>`${s} workout${s>1?"s":""}, ${m} measurement/tracking entr${m>1?"ies":"y"}, settings and nutrition of this profile will be deleted. The other profile is not touched. Tip: send a backup copy first.`,cont:"Continue",
   rq2:"Last check",rqW:w=>`Type ${w} to confirm.`,eraseWord:"ERASE",erasedN:d=>`Profile erased. You can undo it until ${d} (Profile).`,erasedX:"Profile erased.",
   erasedL:d=>`Data erased on ${d}`,undoB:"Undo the erase",undoQ:"Bring back the erased data?",undoQd:"The workouts recorded since the erase will be replaced.",undone:"Data restored.",
@@ -226,6 +242,17 @@ Object.assign(L.fr,{
   pinN:n=>`${n} épinglé : il reste à cette place.`,unpinN:"Désépinglé : cette place tourne à nouveau.",
   timX:"La séance s'adapte à ce temps : durée d'échauffement, nombre de séries, exercices bonus.",
   nothingLeft:"Toutes les séries de cet exercice sont déjà saisies : rien à remplacer.",
+  xStart:"Lancer le chrono de cet exercice",xPause:"Arrêter le chrono de cet exercice",xGo:"Reprendre le chrono de cet exercice",realT:"durée réelle = somme des exercices",clockT:"chrono",planned:"prévu",
+  coachT:"Bilan",c_heavy:(r,lo,u,w)=>`Trop lourd dès la 1re série (${r}${u} < ${lo}) : environ ${w} kg la prochaine fois.`,c_hardBW:(r,lo,u)=>`Trop difficile dès la 1re série (${r}${u} < ${lo}) : prends une version plus facile ou plus d'assistance.`,
+  c_light:(hi,u,w)=>`Trop léger : bien au-dessus de ${hi}${u} partout. Passe à ${w} kg dès la prochaine série.`,c_easyBW:(hi,u)=>`Trop facile : bien au-dessus de ${hi}${u}. Ralentis le tempo ou prends une version plus dure.`,
+  c_top:w=>`Haut de fourchette sur toutes les séries : ${w} kg la prochaine fois.`,c_topBW:(hi,u)=>`Haut de fourchette (${hi}${u}) partout : ajoute un peu de difficulté la prochaine fois.`,
+  c_good:(a,b,lo,hi,u)=>`Bonne charge : ${a}–${b}${u}, dans l'objectif ${lo}–${hi}.`,c_drop:(a,b,rest)=>`Grosse baisse de reps entre la 1re et la dernière série (${a} → ${b}) : prends tout le repos (${rest} s) ou allège les dernières séries.`,
+  c_up:"Mieux que la dernière fois.",c_down:"En dessous de la dernière fois (fatigue, sommeil, repas ?) : garde la même charge la prochaine fois.",c_slow:(a,b)=>`Plus long que prévu (${a} / ${b}) : repos trop longs ou attente d'un poste.`,
+  aiT:"Analyse par une IA",aiGo:"Demander à l'IA de Google",aiCopy:"Copier la question (Gemini, ChatGPT, Claude…)",aiSee:"Voir le texte envoyé",
+  aiNote:"Il contient ton profil (âge, taille, poids, objectif, dos sensible) et tes séries. Il part chez Google seulement quand tu touches le bouton.",
+  aiOff:"Pas de réseau : réessaie quand tu es connecté (la séance reste dans l'Historique).",aiCopied:"Question copiée : colle-la dans l'IA de ton choix.",
+  addB:"Ajouter un exercice",addSug:"Pour cette séance",addAll:"Autres exercices",addOne:"Ajouter",addNone:"Rien de disponible avec ton matériel et tes réglages.",
+  added:n=>`${n} ajouté en fin de séance.`,remB:"Retirer",removed:n=>`${n} retiré.`,
   rq1n:n=>`Effacer toutes les données de ${n} ?`,rqD:(s,m)=>`${s} séance${s>1?"s":""}, ${m} mesure${m>1?"s":""} ou suivi${m>1?"s":""}, les réglages et la nutrition de ce profil seront supprimés. L'autre profil n'est pas touché. Conseil : envoie une copie de sauvegarde avant.`,cont:"Continuer",
   rq2:"Dernière vérification",rqW:w=>`Tape ${w} pour confirmer.`,eraseWord:"EFFACER",erasedN:d=>`Profil effacé. Tu peux annuler jusqu'au ${d} (dans Profil).`,erasedX:"Profil effacé.",
   erasedL:d=>`Données effacées le ${d}`,undoB:"Annuler l'effacement",undoQ:"Remettre les données effacées ?",undoQd:"Les séances enregistrées depuis l'effacement seront remplacées.",undone:"Données restaurées.",
@@ -290,7 +317,8 @@ function readState(raw){
       requireData(isRecord(c)&&known(P[key],c.wk)&&Number.isFinite(c.start)&&isRecord(c.ex));
       const plan=c.pl||P[key][c.wk].ex;
       requireData(Array.isArray(plan)&&plan.length&&plan.every((entry,i)=>Array.isArray(entry)&&known(E,entry[0])&&entry.slice(1,7).length===6&&entry.slice(1,7).every(nonnegative)&&Array.isArray(c.ex[i])&&c.ex[i].every(isRecord)));
-      c.note=String(c.note??"");if(c.swp!=null){requireData(isRecord(c.swp));for(const [k,v] of Object.entries(c.swp))if(!known(E,v))delete c.swp[k]}if(c.back!=null&&![0,1,2].includes(c.back))c.back=null;if(c.wd!=null&&!(isRecord(c.wd)&&Array.isArray(c.wd.d)&&c.wd.d.every(x=>known(WU,x))&&known(WU,c.wd.g)))delete c.wd;if(c.rest&&!(nonnegative(c.rest.totalMs)&&nonnegative(c.rest.remainingMs)&&(c.rest.end==null||Number.isFinite(c.rest.end))))delete c.rest;
+      c.note=String(c.note??"");if(c.swp!=null){requireData(isRecord(c.swp));for(const [k,v] of Object.entries(c.swp))if(!known(E,v))delete c.swp[k]}if(c.back!=null&&![0,1,2].includes(c.back))c.back=null;if(c.xt!=null){if(!isRecord(c.xt))delete c.xt;else for(const [k,x] of Object.entries(c.xt))if(!isRecord(x)||!nonnegative(x.ms)||(x.at!=null&&!Number.isFinite(x.at)))delete c.xt[k]}if(c.xr!=null&&!(c.xt&&c.xt[c.xr]))c.xr=null;
+      if(c.wd!=null&&!(isRecord(c.wd)&&Array.isArray(c.wd.d)&&c.wd.d.every(x=>known(WU,x))&&known(WU,c.wd.g)))delete c.wd;if(c.rest&&!(nonnegative(c.rest.totalMs)&&nonnegative(c.rest.remainingMs)&&(c.rest.end==null||Number.isFinite(c.rest.end))))delete c.rest;
     }
     state.d[key]=profile;
   }
@@ -319,7 +347,7 @@ function askAction(title,detail,accept,callback,cancel=t("cancel"),opts={}){
   pendingAction=callback;dialog.showModal();(opts.word?word:$("action-cancel")).focus();
 }
 function clearView(){
-  closeAction();Object.assign(U,{ed:null,sum:null,open:-1,pick:null,ex:"",gi:null,sw:null,note:null,tl:false,chk:null,bk:false,wuo:0,rf:null,rfy:false});
+  closeAction();Object.assign(U,{ed:null,sum:null,open:-1,pick:null,ex:"",gi:null,sw:null,note:null,tl:false,chk:null,bk:false,wuo:0,rf:null,rfy:false,add:0,addg:"",lcx:0});
 }
 function applyStorage(raw){
   const next=raw===null?freshState():readState(raw);
@@ -395,10 +423,10 @@ function restControl(action){
 function toggleSessionClock(){
   const c=cur();if(!c)return;const now=Date.now(),r=c.rest;
   if(c.pausedAt==null){
-    c.pausedAt=now;
+    c.pausedAt=now;const x=c.xr&&c.xt?.[c.xr];if(x&&x.at!=null){x.ms+=Math.max(0,now-x.at);x.at=null}
     if(r?.end!=null){r.remainingMs=restRemaining(r,now);r.end=null;r.withSession=r.remainingMs>0}
   }else{
-    c.pausedMs=(c.pausedMs||0)+Math.max(0,now-c.pausedAt);c.pausedAt=null;
+    c.pausedMs=(c.pausedMs||0)+Math.max(0,now-c.pausedAt);c.pausedAt=null;const x=c.xr&&c.xt?.[c.xr];if(x&&x.at==null)x.at=now;
     if(r?.withSession){r.end=now+r.remainingMs;r.withSession=false}
   }
   save();go();
@@ -416,6 +444,7 @@ function renderRest(){
 function tick(){
   const c=cur();if(!c)return;const now=Date.now(),clock=$("session-clock");
   if(clock){const text=timeText(elapsedSeconds(c,now));if(clock.textContent!==text)clock.textContent=text}
+  xTick(now);
   const r=c.rest;if(r?.end==null)return;const left=restRemaining(r,now);
   if(left===0){
     const recent=now-r.end<3000;r.end=null;r.remainingMs=0;save();renderRest();
@@ -449,6 +478,7 @@ function start(wk,back){
     ex[i]=Array.from({length:entry[1]},()=>({w,r:"",ok:0}));
   });
   D().cur={wk,start:Date.now(),ex,note:"",pl:plan.ex,cm:back===2?0:plan.cm,cmv:"",cmok:0,back,swp,snapshot:true,budget:plan.budget,mode:vmode(),wu:[],wd:{g:plan.g,gm:plan.gm,m:plan.wm,d:plan.wu,ramp:plan.ramp,ok:[],x:0}};
+  {const c=D().cur;c.xt={wu:{ms:0,at:c.start}};c.xr="wu";c.rk="k"+(plan.ex[0]?.[7]??0)}
   U.pick=null;U.sum=null;U.open=-1;U.gi=null;U.sw=null;U.tl=false;U.wuo=0;save();go();scrollTo(0,0);
 }
 function num(value){
@@ -486,6 +516,8 @@ function done(i,j){
     if(!value){setError(i,j);return}
     Object.assign(s,value,{ok:1});
     const next=sets[j+1];if(next&&!next.ok&&!next.touchedR&&!next.touchedW)next.w=s.w;
+    {const k=xkey(i);if(c.xr!==k){const e=[...entry];e[0]=id;xRun(k,Date.now(),c.xt&&c.xt[k]?0:setSeconds(e)*1000)}}
+    if(sets.every(x=>x.ok)){c.lc=xkey(i);U.lcx=0}
     beginRest(entry[4]);
   }
   save();go();
@@ -638,7 +670,7 @@ function guidedWorkout(){
   const c=cur(),plan=cx(),sets=Object.values(c.ex).flat(),count=sets.filter(s=>s.ok).length,pos=curPos(),k=li();
   let main="";
   if(pos){const [i,j]=pos,e=plan[i],id=sid(i),s=c.ex[i][j],prev=last(id,0,c.wk),bw=isBW(id),g=sug(id,e,c.wk),ps=prev?prev.ex[id][j]||prev.ex[id][prev.ex[id].length-1]:null;
-    main=`<div class="c gd"><div class=mu>${t("exN")} ${i+1}/${plan.length} · ${t("series")} ${j+1}/${c.ex[i].length}</div>
+    main=`<div class="c gd"><div class="mu xrow">${xChip(i)}<span>${t("exN")} ${i+1}/${plan.length} · ${t("series")} ${j+1}/${c.ex[i].length}</span></div>
     <h2 class=gx>${nm(id)}</h2>
     <div class=mu>${e[2]}–${e[3]}${isT(id)?" s":" reps"} · RIR ${e[5]} · <button class=rest-link onclick="manualRest(${i})">${t("rest")} ${e[4]} s</button></div>
     ${ssLine(i)}<div class=mu>${t("last")} : ${ps?fs(id,ps)+" ("+fd(prev.date)+")":"—"}</div><div class=tip-text>${g.t}</div>
@@ -654,7 +686,7 @@ function guidedWorkout(){
     <div class="session-clock"><div><span class=mu>${t("timer")}${c.pausedAt!=null?" · "+t("paused"):""}</span><strong id="session-clock" role="timer" aria-live="off">${timeText(elapsedSeconds(c))}</strong></div>
     <button onclick="toggleSessionClock()">${t(c.pausedAt==null?"pause":"resume")}</button></div>
     <div class=bar><i style="width:${count/sets.length*100}%"></i></div><p class=mu>${count}/${sets.length} ${t("sets")}</p>
-    ${backBanner()}${wuCard()}${main}${list}${cardio}${tlPanel()}
+    ${backBanner()}${wuCard()}${lastCoach()}${main}${list}${cardio}${tlPanel()}${addPanel()}
     <textarea aria-label="${t("notes")}" placeholder="${t("notes")}" oninput="cur().note=this.value;save()">${escapeHtml(c.note)}</textarea>
     <button class="p w" onclick="fin()">${t("fin")}</button><button class=w onclick="abandon()">${t("disc")}</button>`;
 }
@@ -713,8 +745,8 @@ function fin(){
     if(!Number.isSafeInteger(cardio)||cardio<=0){notice(t("cardioError"));return}
   }
   const ents={};cx().forEach((e,i)=>{ents[sid(i)]=e});
-  const totals=workoutTotals(ex),end=Date.now(),seconds=elapsedSeconds(c,end);
-  const detail=totals.sets||cardio?[timeText(seconds),unit(totals.sets,"oneSet","sets"),totals.vol.toLocaleString(S.lg)+" kg",cardio?cardio+" min "+t("cdl"):""].filter(Boolean).join(" · ")+(pending?"\n"+t("autoSets")(pending):""):t("emptyFinish");
+  const totals=workoutTotals(ex),end=Date.now(),seconds=elapsedSeconds(c,end),real=c.xt?Math.floor(Object.keys(c.xt).reduce((a,k)=>a+xMs(k,end),0)/1000):0;
+  const detail=totals.sets||cardio?[timeText(real||seconds),unit(totals.sets,"oneSet","sets"),totals.vol.toLocaleString(S.lg)+" kg",cardio?cardio+" min "+t("cdl"):""].filter(Boolean).join(" · ")+(pending?"\n"+t("autoSets")(pending):""):t("emptyFinish");
   askAction(t("finishQ"),detail,t("saveSession"),()=>{
     if(cur()!==c)return;
     const prev=D().logs.filter(l=>l.wk===c.wk).at(-1),prs=[];
@@ -723,11 +755,15 @@ function fin(){
       const top=Math.max(...sets.map(s=>s.w));
       if(past.length&&past.every(s=>s.w<top))prs.push(nm(id)+" "+f1(top)+" kg");
     }
-    const log={pr:prs,date:end,wk:c.wk,dur:Math.round(seconds/60),durSec:seconds,ex,note:c.note,...totals};
+    xStop(end);const parts=c.xt?Object.keys(c.xt).filter(k=>k!=="wu"&&c.xt[k].ms>0).map(k=>({ids:[...new Set(xIdx(k).map(sid))],sec:Math.floor(c.xt[k].ms/1000),plan:Math.round(xPlan(k))})):[];
+    const sum=c.xt?Math.floor(Object.values(c.xt).reduce((a,x)=>a+x.ms,0)/1000):0,durSec=sum>0?sum:seconds;
+    const tg={};cx().forEach((e,i)=>{tg[sid(i)]=[e[1],e[2],e[3],e[5]]});
+    const log={pr:prs,date:end,wk:c.wk,dur:Math.round(durSec/60),durSec,ex,note:c.note,...totals,tg};
+    if(sum>0){log.clock=seconds;log.xt=parts;if(c.xt.wu)log.wu=Math.floor(c.xt.wu.ms/1000);log.plan=Math.round(Object.keys(c.xt).reduce((a,k)=>a+xPlan(k),0)/60)}
     if(c.snapshot){log.mode=c.mode;log.budget=c.budget}
     if(cardio)log.cardio=cardio;if(c.back!=null)log.back=c.back;
     if(!writeSessionEnd(log))return;
-    U.open=-1;U.ed=null;U.sum={lg:log,prs,pv:prev?.vol??null,nx:Object.keys(ex).map(id=>({id,p:progLine(id,c.wk),n:nextLine(id,ents[id],c.wk)}))};
+    U.open=-1;U.ed=null;U.sum={lg:log,prs,pv:prev?.vol??null,nx:Object.keys(ex).map(id=>({id,p:progLine(id,c.wk),n:nextLine(id,ents[id],c.wk),co:coach(id,ex[id],ents[id],last(id,1,c.wk)?.ex[id]),x:parts.find(q=>q.ids.includes(id))}))};
     go();scrollTo(0,0);
   },t("keepTraining"));
 }
@@ -765,9 +801,9 @@ function exerciseCard(entry,i){
     </div>`;
   }).join("");
   return `<div class=c><div class=r><h2 style="flex:3">${nm(id)}</h2><button class=hb onclick="U.open=U.open===${i}?-1:${i};go()">${t("guide")}</button>${canSwap?`<button class=hb aria-label="${t("swap")} · ${nm(id)}" onclick="U.sw=U.sw===${i}?null:${i};go()">⇄</button>`:""}<button class=hb aria-label="${t("busyB")} · ${nm(id)}" onclick="busy(${i})">⏭</button></div>
-    <div class=mu>${entry[1]}×${entry[2]}–${entry[3]}${isT(id)?" s":""} · <button class=rest-link aria-label="${t("startRest")} · ${entry[4]} s" onclick="manualRest(${i})">${t("rest")} ${entry[4]} s</button> · RIR ${entry[5]}</div>
+    <div class="mu xrow">${xChip(i)}<span>${entry[1]}×${entry[2]}–${entry[3]}${isT(id)?" s":""} · <button class=rest-link aria-label="${t("startRest")} · ${entry[4]} s" onclick="manualRest(${i})">${t("rest")} ${entry[4]} s</button> · RIR ${entry[5]}</span></div>
     ${ssLine(i)}<div class=mu>${t("last")}: ${previous?fd(previous.date)+" — "+previous.ex[id].map(s=>fs(id,s)).join(", "):"—"}</div>
-    <div class=tip-text>${sug(id,entry,c.wk).t}</div>${U.sw===i?swapPanel(i):""}${U.open===i?card(id):""}${noteLine(id)}<div id="ramp-${i}">${wuHtml(i)}</div>${rows}</div>`;
+    <div class=tip-text>${sug(id,entry,c.wk).t}</div>${U.sw===i?swapPanel(i):""}${U.open===i?card(id):""}${noteLine(id)}<div id="ramp-${i}">${wuHtml(i)}</div>${rows}${c.ex[i].length&&c.ex[i].every(s=>s.ok)?coachBox(nm(id),coach(id,c.ex[i].map(s=>({w:num(s.w)||0,r:num(s.r)})),entry,last(id,0,c.wk)?.ex[id],xFor(i))):""}${(entry[7]??0)>=200&&!c.ex[i].some(s=>s.ok||s.touchedR||s.touchedW)?`<button class="hb rmx" onclick="removeEx(${i})">🗑 ${t("remB")}</button>`:""}</div>`;
 }
 function activeWorkout(){
   if(S.gm===true)return guidedWorkout();
@@ -778,17 +814,18 @@ function activeWorkout(){
     <div class="session-clock"><div><span class=mu>${t("timer")}${c.pausedAt!=null?" · "+t("paused"):""}</span><strong id="session-clock" role="timer" aria-live="off">${timeText(elapsedSeconds(c))}</strong></div>
     <button onclick="toggleSessionClock()">${t(c.pausedAt==null?"pause":"resume")}</button></div>
     <div class=bar><i style="width:${count/sets.length*100}%"></i></div><p class=mu>${count}/${sets.length} ${t("sets")} · ${t("seriesHelp")}</p>
-    ${backBanner()}${wuCard()}${plan.map(exerciseCard).join("")}${cardio}${tlPanel()}
+    ${backBanner()}${wuCard()}${plan.map(exerciseCard).join("")}${cardio}${tlPanel()}${addPanel()}
     <textarea aria-label="${t("notes")}" placeholder="${t("notes")}" oninput="cur().note=this.value;save()">${escapeHtml(c.note)}</textarea>
     <button class="p w" onclick="fin()">${t("fin")}</button><button class=w onclick="abandon()">${t("disc")}</button>`;
 }
 function workoutSummary(){
   const {lg,prs,pv}=U.sum;
   return `<h1>${t("done")}</h1><div class=c><h2>${prog()[lg.wk].n[li()]}</h2>
-    ⏱ ${durationText(lg)} · ${unit(Object.keys(lg.ex).length,"oneExercise","exs")} · ${unit(lg.sets,"oneSet","sets")} · ${lg.vol.toLocaleString(S.lg)} kg${lg.cardio?" · 🚶 "+lg.cardio+" min":""}
+    ⏱ ${durationText(lg)}${lg.clock!=null?` <span class=mu>(${t("realT")} · ${t("clockT")} ${timeText(lg.clock)}${lg.plan?` · ${t("planned")} ${lg.plan} min`:""})</span>`:""} · ${unit(Object.keys(lg.ex).length,"oneExercise","exs")} · ${unit(lg.sets,"oneSet","sets")} · ${lg.vol.toLocaleString(S.lg)} kg${lg.cardio?" · 🚶 "+lg.cardio+" min":""}
     <p>${pv==null?t("first"):t("prev")+" : "+pv.toLocaleString(S.lg)+" kg ("+(lg.vol>=pv?"+":"")+(lg.vol-pv).toLocaleString(S.lg)+" kg)"}</p>
     ${lg.sets?`<p>${prs.length?t("prs")+" · "+prs.join(", "):t("nopr")}</p>`:""}
-    ${U.sum.nx&&U.sum.nx.length?`<div class=nxt><b>${t("nxT")}</b>${U.sum.nx.map(r=>`<div class=nxr><b>${nm(r.id)}</b><br><span class="${r.p.c}">${r.p.x}</span> · → ${r.n}</div>`).join("")}</div>`:""}
+    ${U.sum.nx&&U.sum.nx.length?`<div class=nxt><b>${t("nxT")}</b>${U.sum.nx.map(r=>`<div class=nxr><b>${nm(r.id)}</b>${r.x?` <span class="xt ${xCls(r.x.sec*1000,r.x.plan)}">⏱ ${mmss(r.x.sec)} / ${mmss(r.x.plan)}</span>`:""}<br><span class="${r.p.c}">${r.p.x}</span> · → ${r.n}${r.co&&r.co.length?coachBox("",r.co):""}</div>`).join("")}</div>`:""}
+    ${lg.sets?aiBox(lg,true):""}
     <button class="p w" onclick="navigate('hist')">${t("seeHistory")}</button><button class=w onclick="navigate('today')">${t("close")}</button></div>`;
 }
 
@@ -994,7 +1031,7 @@ function finishPrep(){const w=cur()?.wd;if(!w)return;w.ok=Array(w.d.length+1).fi
 function wuCard(){const c=cur(),w=c.wd;if(!isRecord(w)||!Array.isArray(w.d)||!known(WU,w.g))return"";const k=li();w.ok=Array.isArray(w.ok)?w.ok:[];
   const its=[[w.g,w.gm+" min",WU[w.g][4+k]],...w.d.map(x=>[x,WU[x][2+k],WU[x][4+k]])],n=its.filter((_,j)=>w.ok[j]).length,started=Object.values(c.ex).flat().some(s=>s.ok);
   if(w.x||(started&&!U.wuo))return`<button class="w wub" onclick="U.wuo=1;cur().wd.x=0;save();go()">🔥 ${t("wuT")} · ${n}/${its.length} ✓ — ${t("wuShow")}</button>`;
-  return`<div class="c wuc"><div class="r wuh"><h2>🔥 ${t("wuT")}</h2><span class=mu>≈ ${w.m||""} min</span></div>${its.map(([x,dose,how],j)=>`<button class="wur ${w.ok[j]?"ok":""}" aria-pressed="${!!w.ok[j]}" onclick="wdT(${j})"><span class=wck>${w.ok[j]?"✓":""}</span><span class=wtx><b>${nmW(x)}</b>${dose?` <span class=wds>${dose}</span>`:""}<br><span class=mu>${how}</span></span></button>`).join("")}<p class=mu>${t("wuThen")}</p><button class=w onclick="finishPrep()">${t("wuClose")}</button></div>`}
+  return`<div class="c wuc"><div class="r wuh"><h2>🔥 ${t("wuT")}</h2>${c.xt?xChip("wu"):`<span class=mu>≈ ${w.m||""} min</span>`}</div>${its.map(([x,dose,how],j)=>`<button class="wur ${w.ok[j]?"ok":""}" aria-pressed="${!!w.ok[j]}" onclick="wdT(${j})"><span class=wck>${w.ok[j]?"✓":""}</span><span class=wtx><b>${nmW(x)}</b>${dose?` <span class=wds>${dose}</span>`:""}<br><span class=mu>${how}</span></span></button>`).join("")}<p class=mu>${t("wuThen")}</p><button class=w onclick="finishPrep()">${t("wuClose")}</button></div>`}
 function wdT(j){const c=cur();if(!c||!isRecord(c.wd))return;const w=c.wd;w.ok=Array.isArray(w.ok)?w.ok:[];w.ok[j]=!w.ok[j];if(w.ok.filter(Boolean).length>=w.d.length+1){w.x=1;U.wuo=0}save();go()}
 const planLabels={
   gearTitle:["Available gym equipment","Matériel disponible dans ta salle"],gearHint:["Bodyweight movements remain available.","Les mouvements au poids du corps restent disponibles."],
@@ -1119,7 +1156,7 @@ function hist(){
       ${Object.entries(log.ex).map(([id,sets])=>`<div>${nm(id)} : <span class=mu>${sets.map(s=>fs(id,s)).join(", ")}</span></div>`).join("")}
       ${log.cardio?`<div>🚶 ${t("cdl")} · ${log.cardio} min</div>`:""}
       ${!log.sets&&!log.cardio?`<div class=mu>${t("timedOnly")}</div>`:""}
-      ${log.note?`<p class="mu saved-note">📝 ${escapeHtml(log.note)}</p>`:""}</div>`;
+      ${log.note?`<p class="mu saved-note">📝 ${escapeHtml(log.note)}</p>`:""}${log.clock!=null?`<div class=mu>⏱ ${t("realT")} · ${t("clockT")} ${timeText(log.clock)}</div>`:""}${log.sets?aiBox(log,false):""}</div>`;
   }
   return html;
 }
@@ -1194,6 +1231,77 @@ function undoErase(){const key=S.p,u=undoOf(key);if(!u)return;
     if(!save()){S.d[key]=previous;return}setUndo(key,null);clearView();go();notice(t("undone"))};
   if(S.d[key].logs.length)askAction(t("undoQ"),t("undoQd"),t("undoB"),apply);else apply()}
 function undoLine(){const u=undoOf(S.p);return u?`<div class="bkr"><span>🗑️ ${t("erasedL")(fd(u.at))}</span><button class=hb onclick="undoErase()">↩︎ ${t("undoB")}</button></div>`:""}
+// ===== Per-exercise timers: planned time from the time model; green, amber up to +10 %, red beyond; real duration = sum =====
+// a superset pair shares one timer (key of its first exercise); the warm-up has its own ("wu"); the running timer stops when another starts
+function xkey(i){const pl=cx(),e=pl[i];if(!e)return null;const j=e[8]===2&&pl[i-1]?.[8]===1?i-1:i;return"k"+(pl[j][7]??j)}
+function xIdx(k){return cx().map((_,i)=>i).filter(i=>xkey(i)===k)}
+function xPlan(k){const c=cur();if(k==="wu"){const w=c.wd;return isRecord(w)&&Array.isArray(w.d)?((+w.gm||0)+w.d.length)*60:0}
+  const es=xIdx(k).map(i=>{const e=[...cx()[i]];e[0]=sid(i);return e});if(!es.length)return 0;
+  return budgetParts(es,0,0).total+(c.rk===k&&isRecord(c.wd)?(+c.wd.ramp||0)*60:0)}
+function xMs(k,now=Date.now()){const x=(cur().xt||{})[k];return x?x.ms+(x.at!=null?Math.max(0,now-x.at):0):0}
+function xStop(now=Date.now()){const c=cur(),k=c.xr,x=k&&c.xt&&c.xt[k];if(x&&x.at!=null){x.ms+=Math.max(0,now-x.at);x.at=null}c.xr=null}
+function xRun(k,now=Date.now(),back=0){const c=cur();if(!c||!k)return;c.xt=c.xt||{};if(c.xr===k&&c.xt[k]?.at!=null)return;
+  const prev=c.xr&&c.xt[c.xr],from=Math.max(now-back,prev&&prev.at!=null?prev.at:c.start);xStop(from);
+  const x=c.xt[k]||(c.xt[k]={ms:0,at:null});if(c.pausedAt==null)x.at=from;c.xr=k}
+function xTap(i){const c=cur();if(!c)return;const k=i==="wu"?"wu":xkey(i);if(c.xr===k)xStop();else xRun(k);save();go()}
+function xCls(ms,plan){if(!plan)return"";const r=ms/1000/plan;return r<=1?"xok":r<=1.1?"xwarn":"xover"}
+function mmss(s){s=Math.max(0,Math.floor(s));return Math.floor(s/60)+":"+String(s%60).padStart(2,"0")}
+function xFor(i){const k=xkey(i),c=cur();return c.xt&&c.xt[k]?{sec:xMs(k)/1000,plan:xPlan(k)}:null}
+function xChip(i){const c=cur();if(!c.xt)return"";const k=i==="wu"?"wu":xkey(i);if(!k)return"";const plan=Math.round(xPlan(k)),ms=xMs(k),run=c.xr===k,arg=i==="wu"?"'wu'":i;
+  if(!c.xt[k])return`<button class="xt x0" onclick="xTap(${arg})" aria-label="${t("xStart")}">▶ ${mmss(plan)}</button>`;
+  return`<button class="xt ${xCls(ms,plan)}${run?" xrun":""}" data-xk="${k}" data-xp="${plan}" onclick="xTap(${arg})" aria-label="${t(run?"xPause":"xGo")}">${run?"⏱":"⏸"} <span>${mmss(ms/1000)}</span> / ${mmss(plan)}</button>`}
+function xTick(now){const c=cur();if(!c||!c.xr||!c.xt)return;for(const el of document.querySelectorAll(`[data-xk="${c.xr}"]`)){const sp=el.querySelector("span");if(!sp)continue;
+  const ms=xMs(c.xr,now),tx=mmss(ms/1000);if(sp.textContent!==tx)sp.textContent=tx;const cl=xCls(ms,+el.dataset.xp||0);for(const z of["xok","xwarn","xover"])el.classList.toggle(z,z===cl)}}
+// ===== Coach: what the sets say about the load, right after each exercise and in the summary (on the phone, offline) =====
+function coach(id,sets,e,prev,tm){if(!e||!sets||!sets.length)return[];const out=[],lo=e[2],hi=e[3],bw=isBW(id),u=isT(id)?" s":" reps",reps=sets.map(s=>s.r),w=Math.max(...sets.map(s=>s.w||0)),first=reps[0],lastR=reps.at(-1);
+  if(first<lo)out.push({k:"warn",x:bw?t("c_hardBW")(first,lo,u):t("c_heavy")(first,lo,u,f1(rdn(id,w*.9)))});
+  else if(reps.every(r=>r>=hi+3))out.push({k:"warn",x:bw?t("c_easyBW")(hi,u):t("c_light")(hi,u,f1(rnd(id,w+Math.max(incOf(id),w*.05))))});
+  else if(sets.length>=e[1]&&reps.every(r=>r>=hi))out.push({k:"ok",x:bw?t("c_topBW")(hi,u):t("c_top")(f1(rnd(id,w+incOf(id))))});
+  else out.push({k:"ok",x:t("c_good")(Math.min(...reps),Math.max(...reps),lo,hi,u)});
+  if(sets.length>=2&&first>0&&(first-lastR)/first>=.3&&lastR<lo&&sets.every(s=>(s.w||0)===(sets[0].w||0)))out.push({k:"warn",x:t("c_drop")(first,lastR,e[4])});
+  if(prev&&prev.length){const sc=a=>Math.max(...a.map(s=>bw?s.r:(s.w||0)*(1+Math.min(s.r,15)/30))),a=sc(sets),b=sc(prev);
+    if(a>b*1.01)out.push({k:"ok",x:t("c_up")});else if(a<b*.95)out.push({k:"warn",x:t("c_down")})}
+  if(tm&&tm.plan>0&&tm.sec>tm.plan*1.1)out.push({k:"warn",x:t("c_slow")(mmss(tm.sec),mmss(tm.plan))});
+  return out.slice(0,3)}
+function coachBox(title,lines){return lines&&lines.length?`<div class=coach>${title?`<b>${t("coachT")} · ${title}</b>`:""}${lines.map(l=>`<div class="cl ${l.k}">${l.k==="ok"?"✅":"⚠️"} ${l.x}</div>`).join("")}</div>`:""}
+function lastCoach(){const c=cur();if(!c.lc||U.lcx)return"";const ii=xIdx(c.lc);if(!ii.length||!ii.every(i=>c.ex[i].every(s=>s.ok)))return"";
+  return`<div class="c lcb"><button class="hb bkx2" aria-label="${t("close")}" onclick="U.lcx=1;go()" style="float:right">✕</button>${ii.map(i=>{const id=sid(i);return coachBox(nm(id),coach(id,c.ex[i].map(s=>({w:num(s.w)||0,r:num(s.r)})),cx()[i],last(id,0,c.wk)?.ex[id],xFor(i)))}).join("")}</div>`}
+// ===== Ask an AI (Google AI Mode, or any AI by copying): nothing is sent until the button is tapped; works later from History =====
+function aiPrompt(log){const pf=D().pf,fr=S.lg==="fr",L2=[];const sx=pf.sex==="f"?(fr?"femme":"woman"):(fr?"homme":"man");
+  const goal={loss:fr?"perte de gras":"fat loss",recomp:fr?"recomposition":"recomposition",maint:fr?"maintien":"maintenance",gain:fr?"prise de muscle":"muscle gain"}[pf.goal]||"";
+  const lvl={beg:fr?"débutant":"beginner",int:fr?"intermédiaire":"intermediate",adv:fr?"avancé":"advanced"}[pf.lvl]||"";
+  L2.push(fr?"Analyse ma séance de musculation. Mes charges étaient-elles bien choisies, et que changer à la prochaine séance (charges, répétitions, repos) ? Réponds en 5 points courts.":"Analyse my strength workout. Were my loads well chosen, and what should I change next time (loads, reps, rest)? Answer in 5 short points.");
+  L2.push((fr?"Profil : ":"Profile: ")+[sx,pf.age?pf.age+(fr?" ans":" y"):"",pf.h?pf.h+" cm":"",curW()?f1(curW())+" kg":"",lvl,goal].filter(Boolean).join(", ")+"."+(pf.back?(fr?" Dos sensible (lombaires) : pas de charge sur la colonne.":" Sensitive lower back: no spinal loading."):""));
+  L2.push((fr?"Séance : ":"Workout: ")+prog()[log.wk].n[li()]+", "+fd(log.date)+", "+(fr?"durée réelle ":"actual time ")+Math.round(log.durSec/60)+" min"+(log.plan?` (${fr?"prévue":"planned"} ${log.plan} min)`:"")+".");
+  const before=D().logs.filter(l=>l.date<log.date);
+  for(const [id,sets] of Object.entries(log.ex)){const tg=log.tg&&log.tg[id],pv=[...before].reverse().find(l=>l.ex[id]);
+    L2.push("- "+E[id][li()]+(tg?` (${fr?"objectif":"target"} ${tg[0]}×${tg[1]}–${tg[2]}${isT(id)?" s":""}, ${tg[3]} ${fr?"reps en réserve":"reps in reserve"})`:"")+" : "+sets.map(s=>fs(id,s)).join(", ")+(pv?`. ${fr?"Dernière fois":"Last time"} : `+pv.ex[id].map(s=>fs(id,s)).join(", "):"")+".")}
+  if(log.note)L2.push((fr?"Note : ":"Note: ")+String(log.note).slice(0,200));
+  let txt=L2.join("\n");if(txt.length>1900)txt=txt.slice(0,1900)+"…";return txt}
+function aiBox(log,open){const q=aiPrompt(log),href="https://www.google.com/search?udm=50&q="+encodeURIComponent(q),i=D().logs.indexOf(log);
+  const body=`<a class="w lbtn aib" href="${href}" target=_blank rel=noopener onclick="return aiGo()">🤖 ${t("aiGo")}</a><button class=w onclick="aiCopy(${i})">📋 ${t("aiCopy")}</button><details class=bkm><summary>${t("aiSee")}</summary><p class=mu>${t("aiNote")}</p><pre class=aiq>${escapeHtml(q)}</pre></details>`;
+  return open?`<div class=aiw><b>🤖 ${t("aiT")}</b>${body}</div>`:`<details class="aiw bkm"><summary>🤖 ${t("aiT")}</summary>${body}</details>`}
+function aiGo(){if(navigator.onLine===false){notice(t("aiOff"));return false}return true}
+async function aiCopy(i){const log=D().logs[i];if(!log)return;const q=aiPrompt(log);try{await navigator.clipboard.writeText(q);notice(t("aiCopied"))}catch{notice(t("copymanual"))}}
+// ===== Add an exercise to the running workout =====
+function rxOf(id){const pr=x=>[...x.slice(1,7)];for(const p of [S.p,S.p==="M"?"F":"M"])for(const w of ["A","B","C"]){const sl=SL[p][w];
+    for(let o=0;o<sl.length;o++){const pt=sl[o][0],b=P[p][w].ex[o];if(b[0]===id||(PAT[pt]||[]).includes(id)||(PATF[pt]||[]).includes(id))return pr(b)}
+    for(const [pt,b] of BON[p][w])if(b[0]===id||(PAT[pt]||[]).includes(id))return pr(b)}return[3,10,15,75,2,2.5]}
+function addPanel(){if(!U.add)return`<button class="w addb" onclick="U.add=1;U.addg='';go()">➕ ${t("addB")}</button>`;
+  const c=cur(),k=li(),here=new Set(cx().map((_,i)=>sid(i))),ok=id=>!here.has(id)&&eligible(id,id);
+  const slots=Array.from({length:SL[S.p][c.wk].length+BON[S.p][c.wk].length},(_,o)=>slotOf(c.wk,o)).filter(Boolean);
+  const mine=[...new Set(slots.flatMap(([pt,,bid])=>allowed(pt,bid)))].filter(ok);
+  const row=id=>`<div class=swr><span>${nm(id)} <span class=mu>· ${EQ[E[id][4]][k]}</span></span><button class=hb onclick="addEx('${id}')">➕ ${t("addOne")}</button></div>`;
+  const grp=U.addg?Object.keys(E).filter(id=>GR[id]===U.addg&&ok(id)&&!mine.includes(id)):[];
+  return`<div class="c addp"><b>➕ ${t("addB")}</b><p class=lb>${t("addSug")}</p>${mine.length?mine.map(row).join(""):`<p class=mu>${t("addNone")}</p>`}
+  <p class=lb>${t("addAll")}</p><div class=sg>${Object.keys(GN).map(g=>`<button class="${U.addg===g?"on":""}" onclick="U.addg='${g}';go()">${GN[g][k]}</button>`).join("")}</div>${U.addg?(grp.length?grp.map(row).join(""):`<p class=mu>${t("addNone")}</p>`):""}
+  <button class=hb onclick="U.add=0;go()">${t("cancel")}</button></div>`}
+function addEx(id){const c=cur();if(!c||!known(E,id)||!eligible(id,id))return;ensurePl();const rx=rxOf(id),pf=D().pf;let q=200;while(c.pl.some(e=>e[7]===q))q++;
+  const e=[id,...rx,q];if(XR[id])[e[2],e[3]]=XR[id][pf.lvl==="beg"?1:0];if(pf.lvl==="beg")e[5]=Math.min(4,e[5]+1);if(c.back>=1)e[5]=Math.min(4,e[5]+1);
+  const g=sug(id,e,c.wk);let w=g.w;if(c.back>=1&&w!==""&&w>0&&!isBW(id))w=rdn(id,w*(c.back===2?.8:.9));
+  c.pl.push(e);c.ex[c.pl.length-1]=Array.from({length:e[1]},()=>({w,r:"",ok:0}));U.add=0;save();go();notice(t("added")(nm(id)))}
+function removeEx(i){const c=cur();if(!c)return;const e=cx()[i];if(!e||(e[7]??0)<200||c.ex[i].some(s=>s.ok||s.touchedR||s.touchedW))return;ensurePl();
+  const name=nm(sid(i)),sets=c.pl.map((_,k)=>c.ex[k]);c.pl.splice(i,1);sets.splice(i,1);c.ex=Object.fromEntries(sets.entries());fixPairs(c.pl);save();go();notice(t("removed")(name))}
 // ===== Backup copy: share sheet (Mail, WhatsApp, Notes, Files…) with a .json file, restore from that file, weekly reminder =====
 const BK_DAYS=7,DAYMS=864e5;
 function bkAge(){return S.bk&&S.bk.at?Math.max(0,Math.floor((Date.now()-S.bk.at)/DAYMS)):null}
@@ -1409,7 +1517,7 @@ function th(){const r=document.documentElement;S.th?r.setAttribute("data-theme",
 function go(){th();CH=[];const ids=["today","plan","lib","prg","hist","set"],f={today,plan,lib,prg,hist,set}[U.tab];
 document.getElementById("v").innerHTML=`<div class=pf><div><button class="${S.p=="M"?"on":""}" onclick="switchProfile('M')">${t("him")}</button><button class="${S.p=="F"?"on":""}" onclick="switchProfile('F')">${t("her")}</button></div><div><button class="${S.lg=="fr"?"on":""}" onclick="S.lg='fr';save();go()">FR</button><button class="${S.lg=="en"?"on":""}" onclick="S.lg='en';save();go()">EN</button></div></div>`+f();
 document.getElementById("nv").innerHTML=ids.map((x,i)=>`<button class="${U.tab==x?"on":""}" onclick="navigate('${x}')">${t("tab")[i]}</button>`).join("");renderRest();hook()}
-const VER="2026-11-14i";
+const VER="2026-11-14j";
 function upd(){if(!/^https?:/.test(location.protocol))return;fetch(location.pathname+"?nocache="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(h=>{const m=/const VER="([^"]+)"/.exec(h);if(!m||m[1]==VER)return;
 if(!S.d.M.cur&&!S.d.F.cur&&!$("action-dialog").open&&U.ed==null){location.replace(location.pathname+"?v="+m[1]);return}
 const b=document.getElementById("upb");b.style.display="block";b.textContent=t("upd");b.onclick=()=>location.replace(location.pathname+"?v="+m[1])}).catch(()=>{})}
