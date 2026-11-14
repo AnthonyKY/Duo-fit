@@ -91,7 +91,7 @@ await ctx.setOffline(false);
 // ===== 3. same conditions → real comparison =====
 await tap(addBtn());await tap(chip('Avant séance'));await type('#b_weight','71,9');await type('#b_fatPct','15,2');await tap(saveBtn());
 det=await txt('#bdc');
-ok('3. Third reading (today, before workout) compared with 17 nov. only',det.includes('Depuis le 17 nov., mêmes conditions : poids −0,5 kg · % gras −0,3 pt'),det.slice(det.indexOf('Depuis'),det.indexOf('Depuis')+90).replace(/\s+/g,' '));
+ok('3. Third reading (today, before workout) compared with 17 nov. only (fat kg computed from weight × %)',det.includes('Depuis le 17 nov., mêmes conditions : poids −0,5 kg · gras ≈ −0,3 kg · % gras −0,3 pt'),det.slice(det.indexOf('Depuis'),det.indexOf('Depuis')+90).replace(/\s+/g,' '));
 
 // ===== 4. edit =====
 await tap(row('14 nov.').locator('summary'));await tap(row('14 nov.').locator('button',{hasText:'Modifier'}));
