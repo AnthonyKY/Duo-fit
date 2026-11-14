@@ -1,0 +1,57 @@
+# CollabFit (apps/, packages/, supabase/). DUOFIT at the repository root keeps its own workflow (tests.yml).
+name: CollabFit
+on:
+  push:
+    branches: ['feat/**', 'claude/**', 'astra/**']
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  code:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install
+        run: npm install --no-audit --no-fund
+      - name: Type check (strict TypeScript)
+        run: npm run typecheck
+      - name: Unit tests (rules, outbox, DUOFIT bridge)
+        run: npm run test:unit
+      - name: Build the web app
+        run: npm run build:web
+      - name: Browsers for the web tests
+        run: npx playwright install --with-deps chromium webkit
+      - name: Web app on iPhone SE and 16 Plus (Chromium)
+        run: |
+          set -o pipefail
+          npm run test:web | tee /tmp/web-chromium
+          ! grep -Eq '^FAIL|^CRASH' /tmp/web-chromium
+      - name: Web app on iPhone 16 Plus (WebKit, Safari's engine)
+        env:
+          BROWSER: webkit
+          DEVICE: iPhone 16 Plus
+        run: |
+          set -o pipefail
+          npm run test:web | tee /tmp/web-webkit
+          ! grep -Eq '^FAIL|^CRASH' /tmp/web-webkit
+      - name: Keep the exact dependency versions of this install
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: package-lock
+          path: package-lock.json
+          if-no-files-found: ignore
+  database:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: PostgreSQL server binaries
+        run: ls /usr/lib/postgresql/*/bin/initdb || (sudo apt-get update && sudo apt-get install -y postgresql)
+      - name: Schema, row level security and attack tests (5 users, simultaneous joins)
+        run: bash scripts/db-test.sh

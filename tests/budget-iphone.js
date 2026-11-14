@@ -8,7 +8,7 @@ const url=process.env.URL||"http://localhost:8766/index.html";
   try{
     const context=await browser.newContext({...BR.dev("iPhone SE"),locale:"fr-FR",timezoneId:"Europe/Paris"});
     await context.addInitScript(ios);
-    const p=await context.newPage(),errors=[];p.on("pageerror",e=>errors.push(e.message));
+    const p=await context.newPage(),errors=[];p.on("pageerror",e=>{if(!/\?nocache=\d+ due to access control checks/.test(e.message))errors.push(e.message)}); // WebKit driver: aborted update check on reload (covered by pages.js)
     const nav=n=>p.locator("nav button").nth(n).click();
     const workout=w=>p.getByRole("button",{name:w,exact:true}).click();
     const preview=()=>p.locator("[data-planned]").evaluateAll(elements=>elements.map(e=>e.dataset.planned));
@@ -47,7 +47,7 @@ const url=process.env.URL||"http://localhost:8766/index.html";
     check("Unavailable focus routes the user back to Profile",await p.getByRole("button",{name:"Modifier mon profil"}).isVisible()&&await p.getByRole("button",{name:"Commencer la séance"}).count()===0);
     await p.locator(".pf").getByRole("button",{name:"Elle",exact:true}).click();await p.locator(".pf").getByRole("button",{name:"EN",exact:true}).click();
     await nav(5);check("Separate equipment settings and translations for Her",await p.locator('[data-gear="C"]').isChecked()&&await p.locator(".gear").innerText().then(t=>t.includes("Available gym equipment"))&&await small());
-    check("No native dialogs and no page errors",errors.length===0&&await p.evaluate(()=>!window.__nd.length));
+    check("No native dialogs and no page errors"+(errors.length?" — "+errors.join(" | "):""),errors.length===0&&await p.evaluate(()=>!window.__nd.length));
     console.log(passed+"/"+passed+" passed");
   }finally{await browser.close()}
 })().catch(e=>{console.error("CRASH",e);process.exitCode=1});

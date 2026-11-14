@@ -1,0 +1,22 @@
+{
+  "name": "collabfit",
+  "private": true,
+  "description": "CollabFit monorepo. The DUOFIT app at the repository root (index.html, sw.js) stays as is and keeps its own tests.",
+  "workspaces": ["packages/*", "apps/*"],
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "typecheck": "tsc -p packages/domain && tsc -p apps/web",
+    "test:unit": "tsx --test packages/domain/test/*.test.ts",
+    "test:db": "bash scripts/db-test.sh",
+    "build:web": "npm run build -w apps/web",
+    "test:web": "npm run test -w apps/web",
+    "check": "npm run typecheck && npm run test:unit && npm run build:web && npm run test:web"
+  },
+  "devDependencies": {
+    "@types/node": "22.15.21",
+    "esbuild": "0.25.4",
+    "playwright": "1.56.1",
+    "tsx": "4.19.4",
+    "typescript": "5.8.3"
+  }
+}
