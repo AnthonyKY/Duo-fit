@@ -32,7 +32,7 @@ await E(()=>{S.d.M.pf.back=false;S.d.M.pf.var='fix';save()});
 
 // ===== path, nothing prefilled =====
 await nav(5);
-ok('Path: Profil → first card "Composition corporelle · Tanita" with "Ajouter un relevé"',await E(()=>document.querySelector('#v .c').id==='bdc')&&(await txt('#bdc')).includes('Composition corporelle · Tanita')&&(await addBtn().count())===1);
+ok('Path: Profil → first card "Composition corporelle" with "Ajouter un relevé"',await E(()=>document.querySelector('#v .c').id==='bdc')&&(await txt('#bdc')).includes('Composition corporelle')&&!(await txt('#bdc')).includes('Tanita')&&(await addBtn().count())===1);
 ok('Nothing prefilled: no reading in either profile',(await body('M')).length===0&&(await body('F')).length===0);
 await tap(addBtn());
 ok('Form: date = today, no condition chosen yet, every value empty, trunk/arms/legs folded',await E(()=>$('b_d').value==='2026-11-21'&&!document.querySelector('.bwc .on')&&[...document.querySelectorAll('#bdf .bu input')].every(i=>i.value==='')&&document.querySelectorAll('#bdf .bu input').length===16&&!document.querySelector('.bseg').open));
@@ -161,7 +161,7 @@ await tap(p.locator('#v >> text=Abandonner'));await accept();
 // ===== 10. English, layout =====
 await E(()=>{S.lg='en';U.tab='set';go()});
 const en=await txt('#bdc');
-ok('10. English: "Body composition · Tanita", "Add a reading", condition badge',en.includes('Body composition · Tanita')&&en.includes('Add a reading')&&en.includes('Other time'));
+ok('10. English: "Body composition", "Add a reading", condition badge',en.includes('Body composition')&&!en.includes('Tanita')&&en.includes('Add a reading')&&en.includes('Other time'));
 await E(()=>{S.lg='fr';go()});
 await tap(addBtn());await type('#b_fatKg','90');await type('#b_weight','72');await tap(chip('Autre moment'));await tap(saveBtn());
 ok('10. Fat mass heavier than the weight is refused',(await notice()).includes('plus que le poids')&&(await body('M')).length===1);

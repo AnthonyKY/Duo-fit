@@ -2,7 +2,7 @@
 // kg ↔ % with the weight, weight from a kg + % pair (with its rounding margin), same-day weigh-in, sum of segments,
 // fat-free mass, bone, BMI, FFMI, estimated BMR, left/right gaps; live while typing without redrawing the form;
 // computed values marked ≈ and never stored; comparisons use them; each profile uses its own height and sex.
-const {devices}=require('playwright');const BR=require('./browser.js');const IOS=require('./iosinit.js');
+const {devices}=require('playwright');const BR=require('./browser.js');const fs=require('fs'),os=require('os'),path=require('path');const IOS=require('./iosinit.js');
 const URL=process.env.URL||'http://localhost:8766/index.html';
 const R=[];let fails=0;const ok=(n,c,x='')=>{const l=(c?'PASS ':'FAIL ')+n+(x?' — '+String(x).replace(/\s+/g,' ').slice(0,300):'');R.push(l);console.log(l);if(!c)fails++};
 const SHARE=`window.__shared=[];navigator.canShare=d=>!!(d&&d.files&&d.files.length);
@@ -107,6 +107,12 @@ await E(()=>shareBackup());await p.waitForTimeout(50);
 const bk=JSON.parse(await E(()=>window.__shared.at(-1).body));
 const keys=new Set(bk.d.M.body.flatMap(r=>Object.keys(r)));
 ok('Backup file: no computed field (fat-free mass, bone, BMI, FFMI…) and 1 nov. without fat kg',!['ffm','bone','bmi','ffmi','bmrEst','effm'].some(k=>keys.has(k))&&bk.d.M.body.find(r=>r.d==='2026-11-01').fatKg===undefined);
+const bf=path.join(os.tmpdir(),'duofit-calc.json');fs.writeFileSync(bf,JSON.stringify(bk));
+await E(()=>{S.d.M.body=[];save();go()});
+await p.locator('#bkf').setInputFiles(bf);await p.waitForFunction(()=>$('action-dialog').open,null,{timeout:3000}).catch(()=>{});await tap(p.locator('#action-accept'));
+d1=await detail('1 nov.');
+ok('Restore: readings back, computed values recalculated on display (fat ≈ 11,3 kg), still only entries stored',d1.includes('≈ 11,3 kg · 15,5 %')&&(await stored('2026-11-01'))==='fatPct,muscleKg,weight',d1);
+ok('A backup that carries computed fields (another version) is cleaned on restore',await E(()=>{const st=JSON.parse(JSON.stringify(S));st.d.M.body=[{d:'2026-11-02',when:'fast',weight:72.4,fatPct:15.5,lean:61.2,bone:3.2,ffm:61.2,bmi:22.3}];const r=readState(JSON.stringify(st)).d.M.body[0];return Object.keys(r).sort().join()==='d,fatPct,id,weight,when'}));
 
 // ===== Him / Her: own height and sex =====
 await tap(p.locator('.pf button',{hasText:'Elle'}));
@@ -114,16 +120,53 @@ await add('2026-11-01','Matin à jeun',{weight:'72,4',fatPct:'15,5',muscleKg:'58
 const dF=await detail('1 nov.');
 ok('Her: same entries, her 165 cm → BMI 26,6, FFMI 22,5',dF.includes('IMC26,6')&&dF.includes('FFMI (indice de masse maigre)22,5'),dF);
 ok('Her: no "1,80 m" scaling and no men\'s FFMI reference',!dF.includes('ramené à 1,80 m')&&!dF.includes('Kouri'));
+await E(()=>{S.d.M.hd.push({d:'2026-11-14',w:72.4});save()});
+await add('2026-11-14','Avant séance',{fatPct:'25,0'});const dF2=await detail('14 nov.');
+ok('Her reading never borrows his weigh-in of the same day',!dF2.includes('pesée du jour')&&!dF2.includes('Masse maigre')&&!dF2.includes('kg gras'),dF2);
 await tap(p.locator('.pf button',{hasText:'Lui'}));
 ok('Him unchanged: BMI computed with his 180 cm',(await detail('4 nov.')).includes('IMC22,3'));
 await E(()=>{S.d.M.pf.h=188;go()});const d188=await detail('8 nov.');
 ok('Him at 188 cm: BMI and FFMI follow his height, FFMI also scaled to 1,80 m',d188.includes('IMC20,4')&&d188.includes('ramené à 1,80 m'),d188);
 await E(()=>{S.d.M.pf.h=180;go()});
 
+// ===== weight sources: which one wins =====
+const wsrc=(r,hd)=>E(([r,hd])=>{const x=bDerive({d:'2026-11-12',...r},D().pf,hd);return x.v.weight==null?null:{w:Math.round(x.v.weight*10)/10,c:x.c.weight}},[r,hd]);
+const HD=[{d:'2026-11-12',w:75}];let ws;
+ws=await wsrc({weight:72.4,muscleKg:58,musclePct:80.1,fatKg:11.2,fatPct:15.5},HD);
+ok('Weight source 1: the weight you typed wins over both pairs and the weigh-in',ws&&ws.w===72.4&&ws.c==='',JSON.stringify(ws));
+ws=await wsrc({muscleKg:58,musclePct:80.1,fatKg:11.4,fatPct:15.5},HD);
+ok('Weight source 2: the muscle pair (its rounding moves the weight least) before the fat pair',ws&&ws.w===72.4&&ws.c==='≈',JSON.stringify(ws));
+ws=await wsrc({fatKg:11.2,fatPct:15.5},HD);
+ok('Weight source 3: the fat pair (same measurement) before a weigh-in of that day',ws&&ws.w===72.3&&ws.c==='≈',JSON.stringify(ws));
+ws=await wsrc({fatPct:15.5},HD);
+ok('Weight source 4: the weigh-in only when the reading gives no weight at all',ws&&ws.w===75&&ws.c==='hd',JSON.stringify(ws));
+await add('2026-11-12','Autre moment',{muscleKg:'58,0',musclePct:'80,1',fatKg:'11,4',fatPct:'14,0'});
+const dlw=await E(()=>({open:$('action-dialog').open,detail:$('action-detail').textContent}));
+ok('Muscle pair and fat pair giving different weights → asks before saving',dlw.open&&dlw.detail.includes('l’un des quatre chiffres est faux'),clean(dlw.detail));
+await tap(p.locator('#action-cancel'));await tap(p.locator('#bdf button',{hasText:'Annuler'}));
+
+// ===== margins: equal to the exact worst case of the scale's rounding =====
+const prop=await E(()=>{let seed=11;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647,r1=x=>Math.round(x*10)/10,pf={h:180,sex:'m'};let n=0;const bad=[];
+  const outs=o=>{const f={};for(const k in o.v)if(o.c[k])f[k]=o.v[k];if(o.ffm!=null)f.ffm=o.ffm;if(o.bone!=null)f.bone=o.bone;return f};
+  for(let t=0;t<400;t++){const W=50+rnd()*60,fp=8+rnd()*27,F=W*fp/100,M=W-F-W*(.035+rnd()*.015);
+    const full={weight:r1(W),fatKg:r1(F),fatPct:r1(fp),muscleKg:r1(M),musclePct:r1(M/W*100)},r={d:'2026-11-10'};for(const k in full)if(rnd()<.5)r[k]=full[k];
+    if(rnd()<.2)['trunk','leftArm','rightArm','leftLeg','rightLeg'].forEach((g,i)=>r[g+'Muscle']=r1(M*[.55,.07,.07,.155,.155][i]));
+    const hd=rnd()<.3?[{d:'2026-11-10',w:r1(W)}]:[];
+    const x=bDerive(r,pf,hd),base=outs(x),ins=Object.keys(r).filter(k=>k!=='d'),useHd=x.c.weight==='hd',N=ins.length+(useHd?1:0),lo={...base},hi={...base};
+    for(let m=0;m<(1<<N);m++){const r2={...r};ins.forEach((k,i)=>{r2[k]=r[k]+((m>>i)&1?.05:-.05)});
+      const f=outs(bCore(r2,pf,hd,useHd?x.v.weight+((m>>ins.length)&1?.05:-.05):undefined));for(const q in base)if(f[q]!=null){lo[q]=Math.min(lo[q],f[q]);hi[q]=Math.max(hi[q],f[q])}}
+    const mine=q=>q==='ffm'?x.effm:q==='bone'?x.ebone:x.e[q];
+    for(const q in base){n++;const ex=Math.max(base[q]-lo[q],hi[q]-base[q]);if(Math.abs(mine(q)-ex)>1e-9)bad.push({q,mine:mine(q),ex,r})}}
+  return{n,nb:bad.length,bad:bad.slice(0,2)}});
+ok(`Margins = exact worst case of the scale's ±0,05 rounding (${prop.n} computed values, 400 random partial readings)`,prop.n>500&&prop.nb===0,JSON.stringify(prop));
+
 // ===== English =====
 await E(()=>{S.lg='en';go()});const en=await detail('Nov 1');
 ok('English: "Calculations", "Fat-free mass", "BMI"',en.includes('Calculations')&&en.includes('Fat-free mass')&&en.includes('BMI'),en);
 await E(()=>{S.lg='fr';go()});
+await tap(p.locator('#bdc button',{hasText:'Ajouter un relevé'}));await E(()=>{U.bd.seg=true;go()});
+const fr0=await txt();await E(()=>{S.lg='en';go()});const en0=await txt();await E(()=>{S.lg='fr';bCancel()});
+ok('No brand name anywhere on Profile, form open, FR and EN',!/tanita/i.test(fr0)&&!/tanita/i.test(en0)&&fr0.includes('Composition corporelle')&&en0.includes('Body composition'));
 ok('iPhone: Profile with all of this fits, no sideways scroll',await E(()=>document.documentElement.scrollWidth<=innerWidth));
 ok('No native dialogs or page errors',!errs.length&&await E(()=>window.__nd.length===0),errs.join(' | '));
 console.log(`\n${R.length-fails}/${R.length} passed`);await b.close();process.exit(fails?1:0)})().catch(e=>{console.log('CRASH',e.message);process.exit(2)});

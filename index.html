@@ -187,14 +187,14 @@ Object.assign(L.en,{
   totalLogs:"in total",copymanual:"The backup is selected. Copy it to keep it."
 });
 Object.assign(L.fr,{
-  bT:"Composition corporelle · Tanita",bX:"Note les valeurs de ta balance, même partielles. Ne compare que des relevés pris dans les mêmes conditions — le plus fiable : le matin à jeun, avant de boire et de t’entraîner.",
+  bT:"Composition corporelle",bX:"Note les valeurs de ta balance, même partielles. Ne compare que des relevés pris dans les mêmes conditions — le plus fiable : le matin à jeun, avant de boire et de t’entraîner.",
   bAdd:"Ajouter un relevé",bEditT:"Modifier le relevé",bWhenT:"Conditions de mesure",
   bw_fast:"Matin à jeun",bw_before:"Avant séance",bw_after:"Après séance",bw_other:"Autre moment",
   bwx_fast:"La référence : la mesure la plus fiable pour suivre ton évolution.",bwx_before:"Comparable aux autres relevés « avant séance », idéalement à la même heure.",
   bwx_after:"Moins fiable : sueur, chaleur du corps et eau bue faussent la mesure. Compare-le seulement à d’autres relevés « après séance ».",
   bwx_other:"Précise le contexte dans la note (ex. soir, après un repas).",bwx_none:"Choisis le moment de la mesure : il reste affiché dans l’historique.",
   bMainT:"Remplis seulement ce que tu as",bWeight:"Poids",bFat:"Masse grasse",bMus:"Masse musculaire",bBmr:"Métabolisme de base",bKcal:"kcal/jour",
-  bHelp:"Métabolisme de base : la Tanita l’affiche en kJ et en kcal, saisis les kcal. Sa « masse musculaire » compte tout ce qui n’est ni gras ni os (muscles, organes, eau) : suis son évolution plutôt que sa valeur.",
+  bHelp:"Métabolisme de base : si ta balance l’affiche en kJ et en kcal, saisis les kcal. La « masse musculaire » d’une balance à impédance compte tout ce qui n’est ni gras ni os (muscles, organes, eau) : suis son évolution plutôt que sa valeur.",
   bSegT:"Tronc, bras et jambes (facultatif)",bSegM:"Muscle",bSegF:"Graisse",
   seg_trunk:"Tronc",seg_leftArm:"Bras gauche",seg_rightArm:"Bras droit",seg_leftLeg:"Jambe gauche",seg_rightLeg:"Jambe droite",
   bNote:"Note (facultatif)",bNoteP:"ex. après 1 L d’eau",
@@ -202,7 +202,7 @@ Object.assign(L.fr,{
   bNaN:(l,v)=>`${l} : « ${v} » n’est pas un nombre.`,bRange:(l,a,b)=>`${l} : valeur hors plage (de ${a} à ${b}).`,
   bOver:(l,v,w)=>`${l} : ${v} kg, c’est plus que le poids (${w} kg).`,bKj:(v,k)=>`Métabolisme de base : ${v} ressemble à des kJ. Saisis la valeur en kcal (≈ ${k} kcal).`,
   bChkQ:"Ces valeurs ne collent pas",bChkKg:(l,p,w,e,s)=>`${l} : ${p} % de ${w} kg = ${e} kg, or tu as saisi ${s} kg.`,
-  bChk100:(a,b)=>`Masse grasse ${a} % + masse musculaire ${b} % dépassent 100 %.`,bChkSeg:(s,m)=>`Tronc + bras + jambes = ${s} kg de muscle, mais le total saisi est ${m} kg.`,
+  bChk100:(a,b)=>`Masse grasse ${a} % + masse musculaire ${b} % dépassent 100 %.`,bChkSeg:(s,m)=>`Tronc + bras + jambes = ${s} kg de muscle, mais le total saisi est ${m} kg.`,bChkW:(a,b)=>`Le muscle donne un poids de ≈ ${a} kg, le gras ≈ ${b} kg : l’un des quatre chiffres est faux.`,
   bChkX:"Une faute de frappe ? (ex. kg et % inversés)",bSaveAny:"Enregistrer quand même",bFix:"Corriger",
   bSaved:"Relevé enregistré.",bUpd:"Relevé modifié.",bDeleted:"Relevé supprimé.",bDelQ:"Supprimer ce relevé ?",
   bHist:n=>`Historique · ${n} relevé${n>1?"s":""}`,bAll:n=>`Tout afficher (${n})`,
@@ -216,14 +216,14 @@ Object.assign(L.fr,{
   bBmrEst:"Métabolisme estimé (Cunningham)",bAsym:"Écart gauche / droite (muscle)",bArms:"bras",bLegs:"jambes",bAsymOk:"dans la marge d’arrondi"
 });
 Object.assign(L.en,{
-  bT:"Body composition · Tanita",bX:"Log your scale's values, even partial ones. Only compare readings taken under the same conditions — most reliable: morning, fasted, before drinking and training.",
+  bT:"Body composition",bX:"Log your scale's values, even partial ones. Only compare readings taken under the same conditions — most reliable: morning, fasted, before drinking and training.",
   bAdd:"Add a reading",bEditT:"Edit reading",bWhenT:"Measurement conditions",
   bw_fast:"Morning, fasted",bw_before:"Before workout",bw_after:"After workout",bw_other:"Other time",
   bwx_fast:"The reference: the most reliable reading to follow your progress.",bwx_before:"Comparable with your other “before workout” readings, ideally at the same time of day.",
   bwx_after:"Less reliable: sweat, body heat and water drunk skew the reading. Only compare it with other “after workout” readings.",
   bwx_other:"Add the context in the note (e.g. evening, after a meal).",bwx_none:"Choose when you measured: it stays visible in the history.",
   bMainT:"Fill in only what you have",bWeight:"Weight",bFat:"Fat mass",bMus:"Muscle mass",bBmr:"Basal metabolic rate",bKcal:"kcal/day",
-  bHelp:"Basal metabolic rate: the Tanita shows kJ and kcal, enter the kcal. Its “muscle mass” counts everything that is neither fat nor bone (muscle, organs, water): follow its trend rather than its value.",
+  bHelp:"Basal metabolic rate: if your scale shows kJ and kcal, enter the kcal. An impedance scale’s “muscle mass” counts everything that is neither fat nor bone (muscle, organs, water): follow its trend rather than its value.",
   bSegT:"Trunk, arms and legs (optional)",bSegM:"Muscle",bSegF:"Fat",
   seg_trunk:"Trunk",seg_leftArm:"Left arm",seg_rightArm:"Right arm",seg_leftLeg:"Left leg",seg_rightLeg:"Right leg",
   bNote:"Note (optional)",bNoteP:"e.g. after 1 L of water",
@@ -231,7 +231,7 @@ Object.assign(L.en,{
   bNaN:(l,v)=>`${l}: “${v}” is not a number.`,bRange:(l,a,b)=>`${l}: value out of range (${a} to ${b}).`,
   bOver:(l,v,w)=>`${l}: ${v} kg is more than the weight (${w} kg).`,bKj:(v,k)=>`Basal metabolic rate: ${v} looks like kJ. Enter the kcal value (≈ ${k} kcal).`,
   bChkQ:"These values don't add up",bChkKg:(l,p,w,e,s)=>`${l}: ${p} % of ${w} kg = ${e} kg, but you entered ${s} kg.`,
-  bChk100:(a,b)=>`Fat ${a} % + muscle ${b} % add up to more than 100 %.`,bChkSeg:(s,m)=>`Trunk + arms + legs = ${s} kg of muscle, but the total entered is ${m} kg.`,
+  bChk100:(a,b)=>`Fat ${a} % + muscle ${b} % add up to more than 100 %.`,bChkSeg:(s,m)=>`Trunk + arms + legs = ${s} kg of muscle, but the total entered is ${m} kg.`,bChkW:(a,b)=>`Muscle gives a weight of ≈ ${a} kg, fat ≈ ${b} kg: one of the four numbers is wrong.`,
   bChkX:"A typo? (e.g. kg and % swapped)",bSaveAny:"Save anyway",bFix:"Fix it",
   bSaved:"Reading saved.",bUpd:"Reading updated.",bDeleted:"Reading deleted.",bDelQ:"Delete this reading?",
   bHist:n=>`History · ${n} reading${n>1?"s":""}`,bAll:n=>`Show all (${n})`,
@@ -1604,7 +1604,7 @@ function nutH(){const pf=D().pf,n=nut();if(!n)return`<b>${t("nutT")}</b><p class
  <p class=lb>${t("advT")}</p>${!ad.tr?`<p class=mu>${t("adv0")}</p>`:`<p class=ts>${t("advR")((ad.tr.rate>0?"+":"")+f1(ad.tr.rate),f1(ad.lo),f1(ad.hi))}</p><p>${ad.d==0?t("advOk"):t((ad.d>0?"advUp":"advDn")+(pf.goal=="loss"?"L":pf.goal=="gain"?"G":""))}</p>${ad.d&&!ad.wait?`<button class="p w" onclick="adjK(${ad.d})">${t("apply")(ad.d)}</button>`:""}${ad.d&&ad.wait?`<p class=mu>${t("wait")(ad.wait)}</p>`:""}`}
  ${pf.kadj?`<button class=w onclick="D().pf.kadj=0;D().pf.kat=0;save();go()">${t("adjRst")}</button>`:""}<p class=mu style=margin-top:10px>${t("ndisc")}</p>`}
 function pfLive(){const a=document.getElementById("pjx"),b=document.getElementById("nutc");if(a)a.innerHTML=pjH();if(b)b.innerHTML=nutH()}
-// ===== Body composition (Tanita) — partial readings, measurement conditions kept visible, per profile =====
+// ===== Body composition (smart scale) — partial readings, measurement conditions kept visible, per profile =====
 const BSEG=["trunk","leftArm","rightArm","leftLeg","rightLeg"],BWHEN=["fast","before","after","other"];
 const BF={weight:[20,350],fatKg:[.5,250],fatPct:[2,75],muscleKg:[5,200],musclePct:[15,98],bmr:[500,5000]};
 for(const g of BSEG){BF[g+"Muscle"]=[.2,80];BF[g+"Fat"]=[1,75]}
@@ -1654,6 +1654,8 @@ function bChecks(r){const w=[];
   if(r.weight!=null)for(const [kg,pc,l] of [["fatKg","fatPct",t("bFat")],["muscleKg","musclePct",t("bMus")]])
     if(r[kg]!=null&&r[pc]!=null){const e=r.weight*r[pc]/100;if(Math.abs(e-r[kg])>.6)w.push(t("bChkKg")(l,f1(r[pc]),f1(r.weight),f1(e),f1(r[kg])))}
   if(r.fatPct!=null&&r.musclePct!=null&&r.fatPct+r.musclePct>100.5)w.push(t("bChk100")(f1(r.fatPct),f1(r.musclePct)));
+  if(r.weight==null&&[r.fatKg,r.fatPct,r.muscleKg,r.musclePct].every(v=>v!=null)){const a=r.muscleKg/r.musclePct*100,b=r.fatKg/r.fatPct*100,m=a*(B_E/r.muscleKg+B_E/r.musclePct)+b*(B_E/r.fatKg+B_E/r.fatPct);
+    if(Math.abs(a-b)>m+.05)w.push(t("bChkW")(f1(a),f1(b)))}
   const sm=BSEG.map(g=>r[g+"Muscle"]);if(r.muscleKg!=null&&sm.every(v=>v!=null)){const s=sm.reduce((a,b)=>a+b,0);if(Math.abs(s-r.muscleKg)>1.5)w.push(t("bChkSeg")(f1(s),f1(r.muscleKg)))}
   return w}
 function bSave(force){
@@ -1719,17 +1721,21 @@ function bCore(r,pf,hd,hdw){
   return o;
 }
 const bFlat=o=>{const f={};for(const k in o.v)f["v."+k]=o.v[k];for(const k of ["ffm","bone","bmi","ffmi","ffmiN","bmrEst"])if(o[k]!=null)f[k]=o[k];return f};
-// margins: each entered value (and a borrowed weigh-in) can be off by half the scale's 0.1 step; push each one both ways and
-// add up how far every result moves (first-order worst case — a value used twice, like fat in weight and in fat-free mass, counts once)
+// margins: every entered value (and a borrowed weigh-in) can be off by half the scale's 0.1 step. Exact worst case: evaluate
+// every corner of that rounding box over the entries that move a computed result (a value used twice — fat in the weight
+// and in the fat-free mass — is moved once, consistently). More than 10 such entries: first-order sum, +2 % safety.
 function bDerive(r,pf,hd){
-  const o=bCore(r,pf,hd),base=bFlat(o),err={};for(const q in base)err[q]=0;
+  const o=bCore(r,pf,hd),base=bFlat(o),comp=Object.keys(base).filter(q=>!q.startsWith("v.")||o.c[q.slice(2)]);
   const ins=BKEYS.filter(k=>r[k]!=null).map(k=>[k,k==="bmr"?.5:B_E]);if(o.c.weight==="hd")ins.push(["@hd",B_E]);
-  for(const [k,st] of ins){const mx={};
-    for(const sg of [1,-1]){const f=bFlat(k==="@hd"?bCore(r,pf,hd,o.v.weight+sg*st):bCore({...r,[k]:r[k]+sg*st},pf,hd));
-      for(const q in base)if(f[q]!=null)mx[q]=Math.max(mx[q]||0,Math.abs(f[q]-base[q]))}
-    for(const q in mx)err[q]+=mx[q]}
-  o.e={};for(const k in o.v)o.e[k]=o.c[k]===""?(k==="bmr"?.5:B_E):err["v."+k];
-  o.effm=err.ffm;o.ebone=err.bone;
+  const ev=mods=>{const r2={...r};let h;for(const [k,d] of mods){if(k==="@hd")h=o.v.weight+d;else r2[k]=r[k]+d}return bFlat(bCore(r2,pf,hd,h))};
+  const lo={},hi={},add=f=>{for(const q of comp)if(f[q]!=null){lo[q]=Math.min(lo[q],f[q]);hi[q]=Math.max(hi[q],f[q])}};
+  for(const q of comp){lo[q]=hi[q]=base[q]}
+  const one={},rel=ins.filter(([k,st])=>{let moved=false;for(const d of [st,-st]){const f=ev([[k,d]]);one[k+d]=f;add(f);if(comp.some(q=>f[q]!=null&&Math.abs(f[q]-base[q])>1e-12))moved=true}return moved});
+  const err={};
+  if(rel.length>1&&rel.length<=10){for(let m=0;m<(1<<rel.length);m++)add(ev(rel.map(([k,st],i)=>[k,(m>>i)&1?st:-st])));for(const q of comp)err[q]=Math.max(base[q]-lo[q],hi[q]-base[q])}
+  else for(const q of comp){let e=0;for(const [k,st] of rel){const a=one[k+st][q],b=one[k+(-st)][q];e+=Math.max(a!=null?Math.abs(a-base[q]):0,b!=null?Math.abs(b-base[q]):0)}err[q]=rel.length>10?e*1.02:Math.max(e,base[q]-lo[q],hi[q]-base[q])}
+  o.e={};for(const k in o.v)o.e[k]=o.c[k]===""?(k==="bmr"?.5:B_E):err["v."+k]||0;
+  o.effm=err.ffm||0;o.ebone=err.bone||0;
   return o;
 }
 const bPmV=err=>Math.ceil(err*10-1e-9)/10,bPm=err=>err>.3?` (±${f1(bPmV(err))})`:"";
@@ -1831,7 +1837,7 @@ function th(){const r=document.documentElement;S.th?r.setAttribute("data-theme",
 function go(){th();CH=[];const ids=["today","plan","lib","prg","hist","set"],f={today,plan,lib,prg,hist,set}[U.tab];
 document.getElementById("v").innerHTML=`<div class=pf><div><button class="${S.p=="M"?"on":""}" onclick="switchProfile('M')">${t("him")}</button><button class="${S.p=="F"?"on":""}" onclick="switchProfile('F')">${t("her")}</button></div><div><button class="${S.lg=="fr"?"on":""}" onclick="S.lg='fr';save();go()">FR</button><button class="${S.lg=="en"?"on":""}" onclick="S.lg='en';save();go()">EN</button></div></div>`+f();
 document.getElementById("nv").innerHTML=ids.map((x,i)=>`<button class="${U.tab==x?"on":""}" onclick="navigate('${x}')">${t("tab")[i]}</button>`).join("");renderRest();hook()}
-const VER="2026-11-14m";
+const VER="2026-11-14n";
 function upd(){if(!/^https?:/.test(location.protocol))return;fetch(location.pathname+"?nocache="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(h=>{const m=/const VER="([^"]+)"/.exec(h);if(!m||m[1]==VER)return;
 if(!S.d.M.cur&&!S.d.F.cur&&!$("action-dialog").open&&U.ed==null){location.replace(location.pathname+"?v="+m[1]);return}
 const b=document.getElementById("upb");b.style.display="block";b.textContent=t("upd");b.onclick=()=>location.replace(location.pathname+"?v="+m[1])}).catch(()=>{})}
