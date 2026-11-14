@@ -92,6 +92,6 @@ ok('No undefined/NaN in any tab (2 langs × 2 profiles)',!bad.length,bad.join(' 
 await p.click('.pf >> text=FR');let ov=[];for(const pf of ['M','F']){await E(pf=>{S.p=pf;go()},pf);for(let i=0;i<6;i++){await p.locator('nav button').nth(i).click();if(await E(()=>document.documentElement.scrollWidth>innerWidth))ov.push(pf+i)}}
 ok('No horizontal overflow',!ov.length,ov.join(','));
 ok('No JS errors',!errs.length,errs.join('|'));ok('No native alert/confirm used',(await E(()=>window.__nd.length))==0,JSON.stringify(await E(()=>window.__nd)));
-await E(()=>{S.p='F';U.tab='set';go()});await p.screenshot({path:'N_her.png',fullPage:true});
-await E(()=>{S.p='M';U.tab='set';go()});await p.screenshot({path:'N_him.png',fullPage:true});
+await E(()=>{S.p='F';U.tab='set';go()});await p.screenshot({path:require('os').tmpdir()+'/N_her.png',fullPage:true});
+await E(()=>{S.p='M';U.tab='set';go()});await p.screenshot({path:require('os').tmpdir()+'/N_him.png',fullPage:true});
 console.log(`\n${R.length-fails}/${R.length} passed`);await b.close();process.exit(0)})().catch(e=>{console.log('CRASH',e.message.split('\n')[0]);process.exit(2)});

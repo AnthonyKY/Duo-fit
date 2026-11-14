@@ -120,7 +120,7 @@ const freshState=()=>({p:"M",th:"",lg:defaultLanguage,d:{M:mk(),F:mk()}});
 let S=freshState(), lastStored=null, unreadable=false;
 const D=()=>S.d[S.p],t=k=>L[S.lg][k],li=()=>S.lg==="fr"?1:0,nm=id=>E[id][li()];
 const DN={en:["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],fr:["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"]};
-const U={bk:false,gi:null,sw:null,note:null,tl:false,chk:null,wuo:0,fm:"",fe:"",fl:"",fb:false,mm:"wa",ed:null,per:12,tab:"today",open:-1,pick:null,q:"",sum:null,ex:""};
+const U={bk:false,gi:null,sw:null,note:null,tl:false,chk:null,wuo:0,rf:null,rfy:false,fm:"",fe:"",fl:"",fb:false,mm:"wa",ed:null,per:12,tab:"today",open:-1,pick:null,q:"",sum:null,ex:""};
 Object.assign(L.fr,{
   timer:"Chrono de séance",pause:"Pause",resume:"Reprendre",paused:"En pause",
   startRest:"Démarrer le repos",pauseRest:"Mettre le repos en pause",resumeRest:"Reprendre le repos",resetRest:"Réinitialiser le repos",stopRest:"Fermer le repos",
@@ -171,7 +171,11 @@ Object.assign(L.en,{
   noGymN:(a,b)=>b?`${a} won't be drawn again: replaced by ${b} today.`:`${a} won't be drawn again.`,
   pinT:"Pinned (always the same)",pinNone:"None. 📌 in ⇄ keeps an exercise in its place.",pinB:"Keep it every time",unpinB:"Back to rotation",
   pinN:n=>`${n} pinned: it stays in this place.`,unpinN:"Unpinned: this place rotates again.",
-  timX:"The workout adapts to this time: warm-up length, sets, bonus exercises."
+  timX:"The workout adapts to this time: warm-up length, sets, bonus exercises.",
+  nothingLeft:"Every set of this exercise is already entered: nothing left to replace.",
+  rfQ:"Does the pain go down your leg, or come with pins and needles, numbness or weakness?",rfNo:"No: adapted workout (loads −20%)",rfYes:"Yes",
+  rfStopT:"No weight training today.",rfStop:"Pain that travels down the leg, or comes with pins and needles, numbness or weakness, should be checked by a doctor before you load your back again. An easy walk is fine if it does not bring the pain on.",
+  rfUrg:"Emergency (15 in France, 112 in Europe) if you lose bladder or bowel control, or feel numb between the legs.",rfEnd:"Finish the workout now (keeps what you did)"
 });
 Object.assign(L.fr,{
   rampT:"Séries d'approche",wuShow:"afficher",wuThen:"Ensuite : les séries d'approche indiquées sur le 1er exercice.",wuClose:"Échauffement terminé",
@@ -187,7 +191,11 @@ Object.assign(L.fr,{
   noGymN:(a,b)=>b?`${a} ne sera plus tiré : remplacé par ${b} aujourd'hui.`:`${a} ne sera plus tiré.`,
   pinT:"Épinglés (toujours le même)",pinNone:"Aucun. 📌 dans ⇄ garde un exercice à sa place.",pinB:"Garder à chaque fois",unpinB:"Reprendre la rotation",
   pinN:n=>`${n} épinglé : il reste à cette place.`,unpinN:"Désépinglé : cette place tourne à nouveau.",
-  timX:"La séance s'adapte à ce temps : durée d'échauffement, nombre de séries, exercices bonus."
+  timX:"La séance s'adapte à ce temps : durée d'échauffement, nombre de séries, exercices bonus.",
+  nothingLeft:"Toutes les séries de cet exercice sont déjà saisies : rien à remplacer.",
+  rfQ:"La douleur descend-elle dans la jambe, ou s'accompagne-t-elle de fourmillements, d'engourdissement ou de faiblesse ?",rfNo:"Non : séance adaptée (charges −20 %)",rfYes:"Oui",
+  rfStopT:"Pas de musculation aujourd'hui.",rfStop:"Une douleur qui descend dans la jambe, ou avec fourmillements, engourdissement ou faiblesse, doit être vue par un médecin avant de recharger le dos. Une marche tranquille reste possible si elle ne réveille pas la douleur.",
+  rfUrg:"Urgence (15, ou 112) en cas de perte de contrôle de la vessie ou des intestins, ou d'engourdissement entre les jambes.",rfEnd:"Terminer la séance maintenant (garde ce que tu as fait)"
 });
 const $=id=>document.getElementById(id);
 const escapeHtml=value=>String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
@@ -257,7 +265,7 @@ function askAction(title,detail,accept,callback,cancel=t("cancel")){
   pendingAction=callback;dialog.showModal();$("action-cancel").focus();
 }
 function clearView(){
-  closeAction();Object.assign(U,{ed:null,sum:null,open:-1,pick:null,ex:"",gi:null,sw:null,note:null,tl:false,chk:null,bk:false,wuo:0});
+  closeAction();Object.assign(U,{ed:null,sum:null,open:-1,pick:null,ex:"",gi:null,sw:null,note:null,tl:false,chk:null,bk:false,wuo:0,rf:null,rfy:false});
 }
 function applyStorage(raw){
   const next=raw===null?freshState():readState(raw);
@@ -381,7 +389,7 @@ function start(wk,back){
   if(back>=1)plan.ex.forEach(e=>{e[5]=Math.min(4,e[5]+1)});
   if(back===2)plan.ex.forEach((e,i)=>{const o=e[7]??i,id=D().sub[wk+o]||e[0];if(SAFE[id])swp[o]=SAFE[id]});
   plan.ex.forEach((entry,i)=>{
-    const o=entry[7]??i,id=swp[o]||D().sub[wk+o]||entry[0],suggestion=sug(id,entry,wk);let w=suggestion.w;
+    const o=entry[7]??i;if(swp[o])fitRange(entry,wk,swp[o]);const id=swp[o]||D().sub[wk+o]||entry[0],suggestion=sug(id,entry,wk);let w=suggestion.w;
     if(f<1&&w!==""&&w>0&&!isBW(id))w=rdn(id,w*f);
     ex[i]=Array.from({length:entry[1]},()=>({w,r:"",ok:0}));
   });
@@ -464,17 +472,22 @@ function wuHtml(i){const c=cur();if(i>1)return"";const id=sid(i),W=num(c.ex[i][0
 function wuT(k){const c=cur();if(!c)return;c.wu=c.wu||[];c.wu[k]=!c.wu[k];save();go()}
 // back check-in
 function backBanner(){const c=cur();if(!c)return"";if(!c.back)return backAsk();return`<div class="c bkb ${c.back===2?"bad":""}">${c.back===2?t("back2b"):t("back1b")}</div>`}
-function checkIn(wk){return`<h1>${t("bkT")}</h1><div class=c><p>${t("bkQ")}</p>
-  <button class="w bkx" onclick="start('${wk}',0)">😀 ${t("bk0")}</button><button class="w bkx" onclick="start('${wk}',1)">😐 ${t("bk1")}</button><button class="w bkx" onclick="start('${wk}',2)">😣 ${t("bk2")}</button>
+function checkIn(wk){if(U.rf===wk)return rfPanel(wk);return`<h1>${t("bkT")}</h1><div class=c><p>${t("bkQ")}</p>
+  <button class="w bkx" onclick="start('${wk}',0)">😀 ${t("bk0")}</button><button class="w bkx" onclick="start('${wk}',1)">😐 ${t("bk1")}</button><button class="w bkx" onclick="U.rf='${wk}';go()">😣 ${t("bk2")}</button>
   <p class=mu>${t("bkx")}</p><button class=w onclick="U.chk=null;go()">${t("cancel")}</button></div>`}
 const BKI=["😀","😐","😣"];
-function backAsk(){const c=cur();if(!c||c.back!=null)return"";
-  return U.bk?`<div class="c bkp"><b>${t("bkQ2")}</b><div class=r><button onclick="applyBack(1)">😐 ${t("bk1")}</button><button onclick="applyBack(2)">😣 ${t("bk2")}</button></div><button class=hb onclick="U.bk=false;go()">${t("cancel")}</button></div>`
+// red flag before training through back pain: pain going down the leg, pins and needles, numbness or weakness
+function rfPanel(wk){const yes=U.rfy;if(yes)return`${wk?`<h1>${t("bkT")}</h1>`:""}<div class="c bkb bad"><p><b>${t("rfStopT")}</b></p><p>${t("rfStop")}</p><p class=mu>${t("rfUrg")}</p>
+  ${wk?`<button class=w onclick="U.rf=null;U.rfy=false;U.chk=null;go()">${t("close")}</button>`:`<button class="p w" onclick="U.rf=null;U.rfy=false;fin()">${t("rfEnd")}</button><button class=w onclick="U.rf=null;U.rfy=false;go()">${t("cancel")}</button>`}</div>`;
+  return`${wk?`<h1>${t("bkT")}</h1>`:""}<div class="c bkp"><p><b>${t("rfQ")}</b></p><button class="w bkx" onclick="U.rf=null;${wk?`start('${wk}',2)`:"applyBack(2)"}">${t("rfNo")}</button><button class="w bkx" onclick="U.rfy=true;go()">${t("rfYes")}</button>
+  <button class=w onclick="U.rf=null;U.rfy=false;${wk?"":"U.bk=false;"}go()">${t("cancel")}</button></div>`}
+function backAsk(){const c=cur();if(!c||c.back!=null)return"";if(U.rf==="cur")return rfPanel(null);
+  return U.bk?`<div class="c bkp"><b>${t("bkQ2")}</b><div class=r><button onclick="applyBack(1)">😐 ${t("bk1")}</button><button onclick="U.rf='cur';go()">😣 ${t("bk2")}</button></div><button class=hb onclick="U.bk=false;go()">${t("cancel")}</button></div>`
   :`<button class="hb bkbtn" onclick="U.bk=true;go()">🩹 ${t("bkAsk")}</button>`}
 function applyBack(lv){const c=cur();if(!c||c.back)return;ensurePl();const f=lv===2?.8:.9;c.back=lv;
   c.pl=c.pl.map(e=>{const n=[...e];n[5]=Math.min(4,n[5]+1);return n});
   c.pl.forEach((e,i)=>{const a=c.ex[i];
-    if(lv===2&&!a.some(s=>s.ok||s.touchedR||s.touchedW)){const id=sid(i);if(SAFE[id]){c.swp=c.swp||{};c.swp[oix(i)]=SAFE[id];const g=sug(SAFE[id],e,c.wk);a.forEach(s=>{s.w=g.w;s.r=""})}}
+    if(lv===2&&!a.some(s=>s.ok||s.touchedR||s.touchedW)){const id=sid(i);if(SAFE[id]){c.swp=c.swp||{};c.swp[oix(i)]=SAFE[id];fitRange(e,c.wk,SAFE[id]);const g=sug(SAFE[id],e,c.wk);a.forEach(s=>{s.w=g.w;s.r=""})}}
     const id=sid(i);if(isBW(id))return;a.forEach(s=>{if(!s.ok&&!s.touchedW){const w=num(s.w);if(w>0)s.w=rdn(id,w*f)}})});
   if(lv===2&&!c.cmok)c.cm=0;U.bk=false;save();go();scrollTo(0,0)}
 // steppers (guided mode)
@@ -487,12 +500,22 @@ function curPos(){const c=cur(),pl=cx();if(U.gi!=null&&U.gi<pl.length){const j=c
 function swapPanel(i){const c=cur(),e=cx()[i],o=oix(i),base=e[0],id=sid(i),s=slotOf(c.wk,o),no=D().pf.no||[],pin=D().sub[c.wk+o]===id,
   opts=[...new Set([base,...(s?allowed(s[0],s[2]):[]),...E[base][10],...E[id][10]])].filter(x=>x!==id&&known(E,x)&&!no.includes(x));
   return`<div class=swp>${opts.length?`<b>${t("swapBy")}</b>${opts.map(x=>`<div class=swr><span>${nm(x)}</span><button class=hb onclick="swapTo(${i},'${x}',0)">${t("today1")}</button><button class=hb onclick="swapTo(${i},'${x}',1)">${t("always")}</button></div>`).join("")}`:`<span class=mu>${t("noalt")}</span>`}
-  <div class="r tools"><button class=hb onclick="pinCur(${i})">${pin?"↺ "+t("unpinB"):"📌 "+t("pinB")}</button><button class=hb onclick="noGym(${i})">🚫 ${t("noGymB")}</button></div><button class="hb" onclick="U.sw=null;go()">${t("cancel")}</button></div>`}
-function swapTo(i,nid,always){const c=cur();if(!c||!known(E,nid))return;const oi=oix(i),base=cx()[i][0];
-  const apply=()=>{if(always){if(c.swp)delete c.swp[oi];if(nid===base)delete D().sub[c.wk+oi];else D().sub[c.wk+oi]=nid}
-    else{c.swp=c.swp||{};if(nid===(D().sub[c.wk+oi]||base))delete c.swp[oi];else c.swp[oi]=nid}
-    const g=sug(nid,cx()[i],c.wk);c.ex[i]=c.ex[i].map(()=>({w:g.w,r:"",ok:0}));U.sw=null;U.open=-1;save();go();notice(t(always?"swAlways":"swToday")(nm(nid)))};
-  if(c.ex[i].some(s=>s.ok||s.touchedR||String(s.r??"").trim()!==""))askAction(t("swap"),t("swq"),t("swap"),apply);else apply()}
+  <div class="r tools">${o<100?`<button class=hb onclick="pinCur(${i})">${pin?"↺ "+t("unpinB"):"📌 "+t("pinB")}</button>`:""}<button class=hb onclick="noGym(${i})">🚫 ${t("noGymB")}</button></div><button class="hb" onclick="U.sw=null;go()">${t("cancel")}</button></div>`}
+// replace an exercise in the running workout; sets already entered stay with the old exercise (nothing is lost),
+// the remaining sets move to the new one with its own rep range (seconds for holds, reps per side…)
+function swapTo(i,nid,always){const c=cur();if(!c||!known(E,nid))return;ensurePl();const oi=oix(i),base=cx()[i][0],old=sid(i),a=c.ex[i],
+    entered=s=>!!(s.ok||s.touchedR||s.touchedW||String(s.r??"").trim()!==""),kept=a.filter(entered),rest=a.length-kept.length;
+  if(kept.length&&!rest){U.sw=null;go();notice(t("nothingLeft"));return}
+  if(always){if(c.swp)delete c.swp[oi];if(nid===base)delete D().sub[c.wk+oi];else D().sub[c.wk+oi]=nid}
+  else{c.swp=c.swp||{};if(nid===(D().sub[c.wk+oi]||base))delete c.swp[oi];else c.swp[oi]=nid}
+  const ne=[...c.pl[i]];fitRange(ne,c.wk,nid);const g=sug(nid,ne,c.wk),fresh=n=>Array.from({length:n},()=>({w:g.w,r:"",ok:0}));
+  if(kept.length){let q=100+oi;while(c.pl.some(e=>e[7]===q))q+=100;const dn=[...c.pl[i]];dn[0]=old;dn[1]=kept.length;dn[7]=q;ne[1]=rest;
+    c.pl.splice(i,0,dn);const ex={};Object.keys(c.ex).map(Number).sort((x,y)=>x-y).forEach(k=>{if(k<i)ex[k]=c.ex[k];else if(k>i)ex[k+1]=c.ex[k]});ex[i]=kept;ex[i+1]=fresh(rest);c.ex=ex}
+  else{c.pl[i]=ne;c.ex[i]=fresh(a.length)}
+  U.sw=null;U.open=-1;U.gi=null;save();go();notice(t(always?"swAlways":"swToday")(nm(nid)))}
+// rep range of an exercise placed in a slot: its own range for holds and per-side work, otherwise the slot's range
+function rangeFor(w,o,id){const beg=D().pf.lvl=="beg";if(XR[id])return XR[id][beg?1:0];const sl=SL[S.p][w]||[],b=o<sl.length?prog()[w].ex[o]:(BON[S.p][w][o-sl.length]||[])[1];return b?[b[2],b[3]]:null}
+function fitRange(e,w,id){const r=rangeFor(w,e[7]??0,id);if(r){e[2]=r[0];e[3]=r[1]}return e}
 function ensurePl(){const c=cur();c.pl=cx().map((e,k)=>e[7]!=null?e:[...e.slice(0,7),k]);return c.pl}
 function busy(i){const c=cur();if(!c)return;const pl=ensurePl();if(i>=pl.length-1){notice(t("busyLast"));return}
   const name=nm(sid(i)),order=pl.map((_,k)=>k);order.splice(i,1);order.push(i);
@@ -1104,7 +1127,7 @@ function th(){const r=document.documentElement;S.th?r.setAttribute("data-theme",
 function go(){th();CH=[];const ids=["today","plan","lib","prg","hist","set"],f={today,plan,lib,prg,hist,set}[U.tab];
 document.getElementById("v").innerHTML=`<div class=pf><div><button class="${S.p=="M"?"on":""}" onclick="switchProfile('M')">${t("him")}</button><button class="${S.p=="F"?"on":""}" onclick="switchProfile('F')">${t("her")}</button></div><div><button class="${S.lg=="fr"?"on":""}" onclick="S.lg='fr';save();go()">FR</button><button class="${S.lg=="en"?"on":""}" onclick="S.lg='en';save();go()">EN</button></div></div>`+f();
 document.getElementById("nv").innerHTML=ids.map((x,i)=>`<button class="${U.tab==x?"on":""}" onclick="navigate('${x}')">${t("tab")[i]}</button>`).join("");renderRest();hook()}
-const VER="2026-11-14d";
+const VER="2026-11-14e";
 function upd(){if(!/^https?:/.test(location.protocol))return;fetch(location.pathname+"?nocache="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(h=>{const m=/const VER="([^"]+)"/.exec(h);if(!m||m[1]==VER)return;
 if(!S.d.M.cur&&!S.d.F.cur&&!$("action-dialog").open&&U.ed==null){location.replace(location.pathname+"?v="+m[1]);return}
 const b=document.getElementById("upb");b.style.display="block";b.textContent=t("upd");b.onclick=()=>location.replace(location.pathname+"?v="+m[1])}).catch(()=>{})}

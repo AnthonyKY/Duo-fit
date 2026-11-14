@@ -1,0 +1,38 @@
+# Every push runs the whole test suite on GitHub (idea from astra's V2 branch).
+# A red ✗ next to a commit on GitHub means something broke; Pages still publishes main.
+name: DUOFIT tests
+on:
+  push:
+    branches: [main, 'claude/**', 'astra/**']
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [session-history.test.cjs, full.js, nut2.js, ios.js, all.js, v2.js, variety.js, pages.js]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - if: matrix.suite != 'session-history.test.cjs'
+        run: |
+          npm install --no-save --package-lock=false playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Run ${{ matrix.suite }}
+        shell: bash
+        env:
+          SUITE: ${{ matrix.suite }}
+        run: |
+          set -euo pipefail
+          if [[ "$SUITE" == "session-history.test.cjs" ]]; then node --test "tests/$SUITE"; exit 0; fi
+          python3 -m http.server 8766 > /tmp/http.log 2>&1 &
+          for attempt in {1..50}; do curl -fsS http://localhost:8766/index.html -o /dev/null && break; sleep .2; done
+          node "tests/$SUITE" | tee /tmp/results
+          if grep -Eq '^FAIL |^CRASH' /tmp/results; then exit 1; fi

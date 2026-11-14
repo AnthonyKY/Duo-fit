@@ -20,5 +20,8 @@ node tests/v2.js                           # V2: offline, back check-in, warm-up
                                            # guided mode, machine busy / replace today / time left, next-time targets
 node tests/variety.js                      # variety: drawn exercises per slot (safe pools), 4-week main-lift blocks, 🎲 reroll,
                                            # not-in-my-gym exclusions, pins, warm-up checklist, time budget 30-90 min
+node tests/pages.js                        # as GitHub Pages serves it: /Duo-fit/ sub-path, icons, offline cold start, auto-update keeps the workout
 node --test tests/session-history.test.cjs # unit tests (no browser): durations, pause, rest per profile, storage full, stale tabs, validation
 ```
+
+GitHub Actions (`.github/workflows/tests.yml`) runs every suite on each push to main, claude/** and astra/**.

@@ -97,7 +97,7 @@ ok('F. Guided choice remembered for the next session',await p.isVisible('.gd'));
 ok('B. No back adjustment unless asked → no banner, normal RIR 2',!(await txt()).includes('gêne légère')&&(await txt()).includes('RIR 2'));
 await tap(p.locator('#v >> text=Abandonner'));await accept();
 // pain → −20 %, safest variants, no cardio
-await E(()=>{S.d.M.pf.goal='loss';save()});await tap(p.locator('button:text-is("A")'));await tap(p.locator('text=Commencer la séance'));await tap(p.locator('.bkbtn'));await tap(p.locator('.bkp button',{hasText:'Douleur'}));
+await E(()=>{S.d.M.pf.goal='loss';save()});await tap(p.locator('button:text-is("A")'));await tap(p.locator('text=Commencer la séance'));await tap(p.locator('.bkbtn'));await tap(p.locator('.bkp button',{hasText:'Douleur'}));ok('B. Pain asks the leg red-flag question first',(await txt()).includes('descend-elle dans la jambe'));await tap(p.locator('.bkx',{hasText:'Non'}));
 tx=await txt();const ids=await E(()=>cx().map((e,i)=>sid(i)));
 ok('B. Pain: banner tells when to stop',tx.includes('descend dans la jambe'));
 ok('B. Pain: no loaded spinal flexion or axial exercise (Pallof press instead of cable crunch), no cardio',ids.includes('pal')&&!ids.some(x=>['cc','dsp','ssq','hsq','rdl'].includes(x))&&await E(()=>!cur().cm),ids.join(','));
@@ -128,10 +128,10 @@ ok('EN: check-in, guided view, swap panel, time-left, settings, gym card fully t
 await tap(p.locator('.pf >> text=FR'));await nav(0);await tap(p.locator('#v >> text=Abandonner'));await accept();
 for(const dev of ['iPhone SE','iPhone 15 Pro Max']){const c3=await b.newContext({...devices[dev],locale:'fr-FR'});await c3.addInitScript(IOS);const z=await c3.newPage();await z.goto(URL);
  const ov=async()=>z.evaluate(()=>document.documentElement.scrollWidth>innerWidth);let bad=[];
- await z.evaluate(()=>{U.pick='B';go()});await z.locator('text=Commencer la séance').click();if(await ov())bad.push('check-in');await z.locator('button',{hasText:'Douleur'}).click();if(await ov())bad.push('list');await z.locator('.modeb button',{hasText:'Mode guidé'}).click();if(await ov())bad.push('guided');
+ await z.evaluate(()=>{U.pick='B';go()});await z.locator('text=Commencer la séance').click();if(await ov())bad.push('check-in');await z.locator('button',{hasText:'Douleur'}).click();if(await ov())bad.push('red-flag');await z.locator('.bkx',{hasText:'Non'}).click();if(await ov())bad.push('list');await z.locator('.modeb button',{hasText:'Mode guidé'}).click();if(await ov())bad.push('guided');
  await z.locator('.tools button',{hasText:'Remplacer'}).click();if(await ov())bad.push('swap');await z.locator('button',{hasText:'Il me reste'}).click();if(await ov())bad.push('timeleft');
  await z.locator('.nlink').first().click();if(await ov())bad.push('note');await z.locator('nav button').nth(5).click();if(await ov())bad.push('profile');
- await z.screenshot({path:'/tmp/claude-0/-home-claude/7e1fe2dc-1877-52f6-b2c7-f7496aa5b426/scratchpad/v2_'+dev.replace(/ /g,'')+'.png',fullPage:false});
+ await z.screenshot({path:require('os').tmpdir()+'/v2_'+dev.replace(/ /g,'')+'.png',fullPage:false});
  ok('No horizontal overflow on '+dev+' (check-in, list, guided, swap, time-left, settings, profile)',!bad.length,bad.join(','));await c3.close()}
 ok('No native alert/confirm',(await E(()=>window.__nd.length))===0,JSON.stringify(await E(()=>window.__nd)));
 ok('No JavaScript errors',!errs.length,errs.join(' | '));

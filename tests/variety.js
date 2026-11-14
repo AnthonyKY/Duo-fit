@@ -174,5 +174,38 @@ for(const dev of ['iPhone SE','iPhone 13']){const c=await b.newContext({...devic
     await q.evaluate(()=>{writeSessionEnd(null);U.tab='set';go()});const y=await q.evaluate(()=>document.getElementById('varc').getBoundingClientRect().top+scrollY-80);await q.evaluate(y=>scrollTo(0,y),y);await q.screenshot({path:process.env.SHOT_DIR?process.env.SHOT_DIR+'/var_profile_se.png':'/dev/null'})}
   ok(`14. ${dev}: no horizontal overflow (home, session, ⇄ panel, profile at 90 min)`,!ov.length,ov.join(','));await c.close()}
 
+// ===== 15. Ported from astra's V2: red flag, nothing lost on replace, right units =====
+await E(()=>{S.p='M';S.lg='fr';S.d.M.pf.back=true;U.tab='today';U.pick='B';go();begin('B')});
+await tap(p.locator('.bkx',{hasText:'Douleur'}));tx=await txt();
+ok('15. Pain at check-in → asks about pain going down the leg',tx.includes('descend-elle dans la jambe')&&await E(()=>!cur()));
+await tap(p.locator('.bkx',{hasText:'Oui'}));tx=await txt();
+ok('15. "Oui" → no weight training today, see a doctor, emergency signs; nothing started',tx.includes('Pas de musculation aujourd')&&tx.includes('médecin')&&tx.includes('15')&&await E(()=>!cur()));
+await tap(p.locator('#v button',{hasText:'Fermer'}));ok('15. Close → back to Today',(await txt()).includes('Commencer la séance')&&await E(()=>!U.chk&&!U.rf));
+await E(()=>{begin('B')});await tap(p.locator('.bkx',{hasText:'Douleur'}));await tap(p.locator('.bkx',{hasText:'Non'}));
+ok('15. "Non" → adapted workout (pain level, −20 %)',await E(()=>!!cur()&&cur().back===2));
+await tap(p.locator('#v >> text=Abandonner'));await accept();
+await E(()=>{U.pick='A';go();begin('A')});await tap(p.locator('.bkbtn'));await tap(p.locator('.bkp button',{hasText:'Douleur'}));await tap(p.locator('.bkx',{hasText:'Oui'}));
+ok('15. Same red-flag question during a workout, with "finish now (keeps what you did)"',(await txt()).includes('Terminer la séance maintenant'));
+await tap(p.locator('#v button',{hasText:'Annuler'}));
+// replace after logging: nothing lost
+const before15=await E(()=>{const n=cur().ex[2].length;setv(2,0,'w','6');setv(2,0,'r','14');done(2,0);setv(2,1,'w','6');setv(2,1,'r','13');done(2,1);return{n,id:sid(2),len:cx().length}});
+const alt15=await E(()=>{const s=slotOf(cur().wk,oix(2));return allowed(s[0],s[2]).find(x=>x!==sid(2))});
+await E(alt=>swapTo(2,alt,0),alt15);
+const after15=await E(()=>({len:cx().length,a:sid(2),b:sid(3),ka:cur().ex[2].map(s=>s.ok),kb:cur().ex[3].length}));
+ok('15. Replace after 2 logged sets: they stay on the old exercise, the remaining sets go to the new one',after15.len===before15.len+1&&after15.a===before15.id&&after15.b===alt15&&after15.ka.every(Boolean)&&after15.ka.length===2&&after15.kb===before15.n-2,JSON.stringify({before15,after15}));
+ok('15. No confirmation needed (nothing is discarded)',!(await E(()=>$('action-dialog').open)));
+await E(()=>{const n=cx().length;for(let i=0;i<n;i++){const id=sid(i);if(!cur().ex[i][0].ok){setv(i,0,'w',isBW(id)?'':'10');setv(i,0,'r',String(cx()[i][2]));done(i,0)}}});
+await E(()=>fin());await accept();const lg15=await E(()=>D().logs.at(-1).ex);
+ok('15. Saved workout has both exercises with their own sets',lg15[before15.id]?.length===2&&lg15[alt15]?.length>=1,JSON.stringify(Object.keys(lg15)));
+await E(()=>{U.sum=null;go()});
+await E(()=>{U.pick='A';go();begin('A');for(let j=0;j<cur().ex[0].length;j++){setv(0,j,'w','40');setv(0,j,'r','10');done(0,j)}});
+await E(()=>swapTo(0,'dsp',0));ok('15. All sets already entered → nothing replaced, explained',await E(()=>sid(0)==='ms')&&(await p.textContent('#notice')).includes('rien à remplacer'));
+// units follow the exercise
+await E(()=>{const i=cx().findIndex((e,k)=>GR[sid(k)]==='co');swapTo(i,'pl',0)});
+ok('15. Core exercise → plank today: range switches to seconds (30–60 s)',await E(()=>{const i=cx().findIndex((e,k)=>sid(k)==='pl');return i>=0&&cx()[i][2]===30&&cx()[i][3]===60}));
+await tap(p.locator('#v >> text=Abandonner'));await accept();
+const herPain=await E(()=>{S.p='F';const pf=S.d.F.pf,old=[pf.back,pf.var];pf.back=true;pf.var='fix';start('B',2);const i=cx().findIndex((e,k)=>sid(k)==='pl'),r=i>=0?[cx()[i][2],cx()[i][3]]:null;writeSessionEnd(null);[pf.back,pf.var]=old;S.p='M';save();go();return r});
+ok('15. Pain day swaps cable crunch → plank with a range in seconds (20–40 s), not 12–15',JSON.stringify(herPain)==='[20,40]',JSON.stringify(herPain));
+
 ok('No page errors',!errs.length,errs.join(' | '));
 console.log(`\n${R.length-fails}/${R.length} passed`);await b.close();process.exit(fails?1:0)})().catch(e=>{console.log('CRASH',e.message);process.exit(2)});

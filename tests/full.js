@@ -249,7 +249,7 @@ await ctx2.close();
 for(const dev of ['iPhone SE','iPhone 13']){const c3=await b.newContext({...devices[dev],locale:'fr-FR',storageState:st});await c3.addInitScript(IOS);const p3=await c3.newPage();await p3.goto(URL);let o=[];
  for(let i=0;i<6;i++){await p3.locator('nav button').nth(i).click();if(await p3.evaluate(()=>document.documentElement.scrollWidth>innerWidth))o.push(i)}
  await p3.click('nav >> text=Séance');await p3.click('text=Commencer la séance');if(await p3.evaluate(()=>document.documentElement.scrollWidth>innerWidth))o.push('session');
- await p3.screenshot({path:`L_${dev.replace(' ','')}.png`});
+ await p3.screenshot({path:require('os').tmpdir()+`/L_${dev.replace(' ','')}.png`});
  ok('No horizontal overflow on '+dev,!o.length,o.join(','));await c3.close()}
 
 ok('No JavaScript errors during whole run',!errs.length,errs.join(' | '));
