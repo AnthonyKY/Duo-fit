@@ -296,6 +296,11 @@ const supportedVariant={dsp:"ms",idp:"lip",ssq:"lp",scr:"csr",cc:"pl",hp:"gb",ck
 const formatLoad=n=>Number(n).toLocaleString(S.lg,{maximumFractionDigits:3});
 const stepGroup=id=>["C","M","BW"].includes(E[id][4])?"M":E[id][4];
 const increment=id=>D().increments[stepGroup(id)]||2.5;
+function movePrescription(entry,id){
+  // Planks use seconds, while the other movements count repetitions.
+  if(id==="pl"&&entry[0]!=="pl"){entry[2]=20;entry[3]=40}
+  if(entry[0]==="pl"&&id!=="pl"){entry[2]=8;entry[3]=12}
+}
 const validStep=n=>Number.isFinite(n)&&n>=.001&&n<=100&&Math.abs(n*1000-Math.round(n*1000))<1e-6;
 function grid(weight,step,down=false){
   const ticks=Math.round(step*1000),ratio=weight*1000/ticks;
@@ -339,7 +344,7 @@ function progressSuggestion(id,entry,sets,previous){
 }
 function sug(id,entry,wk,back="ok"){
   const history=last(id,0,wk),body=isBW(id);
-  if(!history)return {w:body?0:"",target:Array(entry[1]).fill(entry[2]),reason:"first",t:body?t("s1b"):t("s1")(entry[5])};
+  if(!history)return {w:body?0:"",target:Array(entry[1]).fill(entry[2]),reason:"first",t:body?t("s1b"):back==="pain"||back==="discomfort"?t("backNoWeight"):t("s1")(entry[5])};
   const candidate=progressSuggestion(id,entry,history.ex[id],last(id,1,wk)?.ex[id]);
   if(back==="pain"||back==="discomfort"){
     const factor=back==="pain"?.8:.9;
@@ -355,7 +360,7 @@ function start(wk){
   const c={wk,start:Date.now(),ex:{},note:"",pl:plan.ex,cm:plan.cm,cmv:"",cmok:0,ids:[],order:[],back,guided:!!D().guided,warmIndex:0,warmups:[]};
   c.pl.forEach((entry,i)=>{
     let id=D().sub[wk+i]||entry[0];if(back==="pain")id=supportedVariant[id]||id;
-    c.ids.push(id);c.order.push(i);
+    c.ids.push(id);c.order.push(i);movePrescription(entry,id);
     if(back==="discomfort")entry[5]+=1;
     const suggestion=sug(id,entry,wk,back);
     c.ex[i]=Array.from({length:entry[1]},()=>({w:suggestion.w,r:"",ok:0}));
@@ -421,10 +426,11 @@ function localAlternatives(i){
 function replaceToday(i,id){
   const c=cur();if(!c||!localAlternatives(i).includes(id))return;
   const entry=c.pl[i],sets=c.ex[i],kept=sets.filter(enteredSet),upcoming=sets.filter(s=>!enteredSet(s));
-  if(!upcoming.length){notice(t("nothingLeft"));return}
-  const nextEntry=entry.slice(),suggestion=sug(id,nextEntry,c.wk,c.back);
+  if(!upcoming.some(set=>!set.omit)){notice(t("nothingLeft"));return}
+  const nextEntry=entry.slice();movePrescription(nextEntry,id);
+  const suggestion=sug(id,nextEntry,c.wk,c.back);
   const rows=upcoming.map(s=>({w:suggestion.w,r:"",ok:0,...(s.omit?{omit:true}:{})}));
-  if(!kept.length){c.ids[i]=id;c.ex[i]=rows}
+  if(!kept.length){c.ids[i]=id;c.pl[i]=nextEntry;c.ex[i]=rows}
   else{
     const index=c.pl.length;entry[1]=kept.length;c.ex[i]=kept;nextEntry[1]=rows.length;
     c.pl.push(nextEntry);c.ids.push(id);c.ex[index]=rows;c.order.splice(c.order.indexOf(i)+1,0,index);
@@ -438,13 +444,17 @@ function limitSession(raw){
   for(const i of c.order){
     let first=true;
     for(const s of c.ex[i]){
-      if(enteredSet(s)){delete s.omit;continue}
+      if(enteredSet(s)){
+        delete s.omit;
+        if(!s.ok){available-=(first?20:0)+40+c.pl[i][4];first=false}
+        continue;
+      }
       const seconds=(first?20:0)+40+c.pl[i][4];
       s.omit=seconds>available;
       if(!s.omit){available-=seconds;kept++;first=false}
     }
   }
-  if(!c.cmok&&!c.cmTouched){
+  if(!c.cmok&&!c.cmTouched&&!num(c.cmv)){
     c.originalCardio??=c.cm;c.cm=Math.min(c.originalCardio,Math.max(0,Math.floor(available/60)));c.cmv="";
   }
   c.budget={minutes,kept};chooseWarmupExercise(c);save();go();
@@ -466,7 +476,7 @@ const labelsV2={
   guided:["Guided session","Séance guidée"],fullPlan:["Full plan","Plan complet"],validate:["Log this set","Valider la série"],
   complete:["All planned sets are done.","Toutes les séries prévues sont terminées."],
   busy:["Machine busy · move to end","Machine occupée · passer à la fin"],replaceToday:["Replace for today","Remplacer pour aujourd’hui"],
-  adapt:["Adjust this exercise","Adapter cet exercice"],nothingLeft:["No untouched sets left to replace.","Aucune série vierge à remplacer."],
+  permanentSwap:["Change default exercise","Changer l’exercice par défaut"],adapt:["Adjust this exercise","Adapter cet exercice"],nothingLeft:["No untouched sets left to replace.","Aucune série vierge à remplacer."],
   timeLeft:["Time remaining (min)","Il me reste (min)"],replan:["Adjust remaining sets","Recalculer la fin"],minutesError:["Enter 1 to 240 minutes.","Entre 1 et 240 minutes."],
   budget:["Remaining time budget","Temps restant prévu"],nextGoal:["Next target","Objectif suivant"],baseline:["First recorded session","Première séance enregistrée"],
   progressByEx:["Exercise by exercise","Bilan par exercice"],lastTop:["Previous best set","Meilleure série précédente"],thisTop:["Today’s best set","Meilleure série du jour"],
@@ -521,7 +531,8 @@ function sessionTools(c){
 function exerciseResults(log,c){
   const previous=D().logs.filter(l=>l!==log&&l.date<=log.date);
   return Object.entries(log.ex).map(([id,sets])=>{
-    const entry=c.pl[c.ids.indexOf(id)]||prog()[log.wk].ex.find(e=>e[0]===id);
+    const matching=c.pl.filter((_,i)=>c.ids[i]===id);
+    const entry=matching[0].slice();entry[1]=matching.reduce((count,row)=>count+row[1],0);
     const history=previous.filter(l=>l.ex[id]),same=history.filter(l=>l.wk===log.wk);
     const old=(same.at(-1)||history.at(-1))?.ex[id];
     const tip=progressSuggestion(id,entry,sets,old);
@@ -679,7 +690,7 @@ function exerciseCard(entry,i){
       <button class="${set.ok?"ok":""}" aria-label="${t(set.ok?"undoSet":"loggedSet")} ${j+1} · ${nm(id)}" aria-pressed="${!!set.ok}" onclick="done(${i},${j})">✓</button>
     </div>`;
   }).join("");
-  return `<div class=c><div class=r><h2 style="flex:3">${nm(id)}</h2><button class=hb onclick="U.open=U.open===${i}?-1:${i};go()">${t("guide")}</button>${canSwap?`<button class=hb aria-label="${t("swap")} · ${nm(id)}" onclick="swap(${i})">⇄</button>`:""}</div>
+  return `<div class=c><div class=r><h2 style="flex:3">${nm(id)}</h2><button class=hb onclick="U.open=U.open===${i}?-1:${i};go()">${t("guide")}</button>${canSwap?`<button class=hb title="${t("permanentSwap")}" aria-label="${t("permanentSwap")} · ${nm(id)}" onclick="swap(${i})">⇄</button>`:""}</div>
     <div class=mu>${entry[1]}×${entry[2]}–${entry[3]}${id==="pl"?" s":""} · <button class=rest-link aria-label="${t("startRest")} · ${entry[4]} s" onclick="manualRest(${i})">${t("rest")} ${entry[4]} s</button> · RIR ${entry[5]}</div>
     <div class=mu>${t("last")}: ${previous?fd(previous.date)+" — "+previous.ex[id].map(s=>fs(id,s)).join(", "):"—"}</div>
     <div class=tip-text>${sug(id,entry,c.wk,c.back).t}</div>${U.open===i?card(id):""}${rows}${notePanel(id)}${exerciseActions(i)}</div>`;
