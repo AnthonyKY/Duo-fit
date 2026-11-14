@@ -110,7 +110,7 @@ await logSets('Développé épaules machine',[[null,7],[null,7],[null,6]]);
 await finish(day(14,19));
 await p.clock.setFixedTime(day(21));await p.reload();await startW('A');
 ok('A wk4: two misses in a row -> deload 10% to 37.5 (2.5 kg machine steps)',await prefill('Développé épaules machine')=='37.5',await prefill('Développé épaules machine'));
-ok('Deload message shown',(await sugText('Développé épaules machine')).includes('décharge'));
+ok('Lighter-load message shown',(await sugText('Développé épaules machine')).includes('allégée'));
 await p.click('text=Abandonner');await p.click('#action-accept');
 logs=await E(()=>S.d.M.logs);ok('Discard does not create a log',logs.length==5);
 

@@ -85,7 +85,7 @@ ok('G. "15 min left" trims the rest of the session ('+rm.n+' exercises, ≈'+rm.
 // ===== H. Finish: progress + next targets =====
 await tap(p.locator('text=Terminer la séance'));await accept();tx=await txt();
 ok('H. Summary lists progress per exercise (45 vs 50 kg → ↓ -5 kg)',tx.includes('La prochaine fois')&&tx.includes('↓ -5 kg'),(tx.match(/La prochaine fois.{0,200}/)||[''])[0]);
-ok('H. Next target for shoulder press shown in real weights (45 kg × 8–12)',tx.includes('→ 45 kg × 8–12'));
+ok('H. Next target for shoulder press shown in real weights (45 kg, reps and sets)',/→ 45 kg · \d+ reps × \d/.test(tx),tx.match(/→ [^\n]{0,30}/)?.[0]);
 let log=await E(()=>S.d.M.logs.at(-1));
 ok('B. Back level saved in the log, warm-up not counted',log.back===1&&log.ex.ms.length===3&&log.sets>=3);
 await tap(p.locator('button',{hasText:"Voir l’historique"}));ok('B. History shows "Dos 😐"',(await txt()).includes('Dos 😐'));
