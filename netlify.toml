@@ -1,0 +1,17 @@
+# Test version of CollabFit on Netlify (apps/web). DUOFIT itself stays on GitHub Pages from main.
+# The two public settings (COLLABFIT_SUPABASE_URL, COLLABFIT_SUPABASE_ANON_KEY = publishable key) are set in Netlify's
+# environment variables, never a secret key.
+[build]
+  command = "npm run build:web"
+  publish = "apps/web/dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "no-referrer"
+    X-Frame-Options = "DENY"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"

@@ -1,0 +1,55 @@
+# Applies supabase/migrations to the STAGING Supabase project and sets its sign-in options. Production is a separate project,
+# never touched by this workflow. Settings live in the GitHub environment "staging" (only some branches may use it):
+#   secrets   SUPABASE_ACCESS_TOKEN (personal access token), STAGING_DB_PASSWORD
+#   variables STAGING_PROJECT_ID, COLLABFIT_STAGING_APP_URL (address of the test app, optional)
+name: Supabase staging
+on:
+  workflow_dispatch:
+  push:
+    branches: ['claude/collabfit-*', 'feat/collabfit-*']
+    paths: ['supabase/migrations/**', '.github/workflows/supabase-staging.yml']
+permissions:
+  contents: read
+concurrency: supabase-staging
+jobs:
+  migrate:
+    runs-on: ubuntu-24.04
+    environment: staging
+    timeout-minutes: 10
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.STAGING_DB_PASSWORD }}
+      PROJECT_ID: ${{ vars.STAGING_PROJECT_ID }}
+      APP_URL: ${{ vars.COLLABFIT_STAGING_APP_URL }}
+    steps:
+      - name: Staging configured?
+        id: cfg
+        run: |
+          if [ -n "$SUPABASE_ACCESS_TOKEN" ] && [ -n "$SUPABASE_DB_PASSWORD" ] && [[ "$PROJECT_ID" =~ ^[a-z0-9]{20}$ ]]; then echo "ready=1" >> "$GITHUB_OUTPUT";
+          else echo "::warning::Staging Supabase is not configured yet (see docs/GUIDE-SUPABASE.md) — nothing done."; fi
+      - if: steps.cfg.outputs.ready
+        uses: actions/checkout@v4
+      - if: steps.cfg.outputs.ready
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Apply the migrations
+        if: steps.cfg.outputs.ready
+        run: |
+          supabase link --project-ref "$PROJECT_ID"
+          supabase db push --yes
+      - name: Sign-in options for staging (email + password, no confirmation e-mail; test app address)
+        if: steps.cfg.outputs.ready
+        run: |
+          body='{"external_email_enabled":true,"mailer_autoconfirm":true,"password_min_length":10}'
+          if [ -n "$APP_URL" ]; then body=$(jq -c --arg u "$APP_URL" '. + {site_url:$u, uri_allow_list:$u}' <<<"$body"); fi
+          code=$(curl -sS -o /tmp/auth.json -w '%{http_code}' -X PATCH "https://api.supabase.com/v1/projects/$PROJECT_ID/config/auth" \
+            -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" -H 'Content-Type: application/json' -d "$body")
+          echo "auth settings: HTTP $code"; [ "$code" -lt 300 ] || { head -c 300 /tmp/auth.json; exit 1; }
+      - name: Check from outside that the database answers and refuses anonymous reads
+        if: steps.cfg.outputs.ready
+        run: |
+          key=$(curl -sS "https://api.supabase.com/v1/projects/$PROJECT_ID/api-keys" -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" | jq -r '[.[] | select(.type=="publishable" or .name=="anon")][0].api_key')
+          code=$(curl -s -o /tmp/r.json -w '%{http_code}' "https://$PROJECT_ID.supabase.co/rest/v1/workspaces?select=id" -H "apikey: $key")
+          echo "anonymous read of workspaces: HTTP $code $(head -c 160 /tmp/r.json)"
+          [ "$code" = 401 ] || [ "$code" = 403 ] || { echo "::error::anonymous read was not refused"; exit 1; }
