@@ -1,0 +1,41 @@
+name: Duo-fit V2 tests
+on:
+  push:
+    branches: [astra/v2]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [session-history.test.cjs, full.js, nut2.js, ios.js, all.js, v2.js]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - if: matrix.suite != 'session-history.test.cjs'
+        run: |
+          npm install --no-save --package-lock=false playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Run verification
+        shell: bash
+        env:
+          SUITE: ${{ matrix.suite }}
+        run: |
+          set -euo pipefail
+          if [[ "$SUITE" == "session-history.test.cjs" ]]; then
+            node --test "tests/$SUITE"
+          else
+            python3 -m http.server 8766 > /tmp/duofit-http.log 2>&1 &
+            trap 'kill $! 2>/dev/null || true' EXIT
+            for attempt in {1..50}; do
+              if curl -fsS http://localhost:8766/index.html -o /dev/null; then break; fi
+              sleep .2
+            done
+            node "tests/$SUITE" | tee /tmp/duofit-results
+            if grep -Eq '^FAIL |^CRASH|[1-9][0-9]* failed' /tmp/duofit-results; then exit 1; fi
+          fi

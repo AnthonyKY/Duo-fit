@@ -88,7 +88,7 @@ ok('Plank logged 0 kg × 30 s',JSON.stringify(logs[2].ex.pl)=='[{"w":0,"r":30}]'
 // ===== Week 2 =====
 await p.clock.setFixedTime(day(7));await p.reload();await startW('A');
 ok('A wk2: shoulder press prefilled 42.5 (+2.5 after 3×12)',await prefill('Développé épaules machine')=='42.5');
-ok('A wk2: clr prefilled 8.75 (from A, not B)',await prefill('Élévation latérale poulie')=='8.75',await prefill('Élévation latérale poulie'));
+ok('A wk2: keep 7.5 and add a rep when the next pulley increment exceeds 10%',await prefill('Élévation latérale poulie')=='7.5',await prefill('Élévation latérale poulie'));
 ok('A wk2: incline DB keeps 22.5 (reps 10,10,9 < 12)',await prefill('Développé incliné haltères (30°)')=='22.5');
 // reps placeholder = last reps
 const ph=await p.locator('.c').filter({has:p.locator('h2',{hasText:'Développé incliné haltères'})}).first().locator('.s').nth(2).locator('input').nth(1).getAttribute('placeholder');
@@ -107,7 +107,7 @@ ok('A wk3: one miss -> keep 42.5',await prefill('Développé épaules machine')=
 await logSets('Développé épaules machine',[[null,7],[null,7],[null,6]]);
 await finish(day(14,19));
 await p.clock.setFixedTime(day(21));await p.reload();await startW('A');
-ok('A wk4: two misses in a row -> deload to 38.5',await prefill('Développé épaules machine')=='38.5',await prefill('Développé épaules machine'));
+ok('A wk4: two misses in a row -> deload to the available 37.5',await prefill('Développé épaules machine')=='37.5',await prefill('Développé épaules machine'));
 ok('Deload message shown',(await sugText('Développé épaules machine')).includes('décharge'));
 await p.click('text=Abandonner');await p.click('#action-accept');
 logs=await E(()=>S.d.M.logs);ok('Discard does not create a log',logs.length==5);
