@@ -39,7 +39,7 @@ const url=process.env.URL||"http://localhost:8766/index.html";
     check("Logging starts rest and the guided screen fits",await p.locator("#rest-clock").isVisible()&&await small());
     await p.evaluate(()=>navigator.serviceWorker.ready.then(()=>true));
     await p.reload();await p.waitForFunction(()=>!!navigator.serviceWorker.controller);
-    await context.setOffline(true);await p.reload();
+    await BR.offline(context,true);await p.reload();
     check("Offline relaunch keeps the exact working set, warm-up check and original budget",await p.evaluate(()=>cur().budget===20&&cur().wd.ok[0]&&cur().wu[0]&&cur().ex[0][0].ok&&Number(cur().ex[0][0].w)===40));
     await p.getByRole("button",{name:/Terminer la séance/}).click();await p.locator("#action-accept").click();await nav(4);
     check("History counts 40 kg × 8 once, excluding preparation",await p.evaluate(()=>D().logs.at(-1).vol===320&&D().logs.at(-1).sets===1)&&await p.locator("#v").innerText().then(t=>t.includes("320")));

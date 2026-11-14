@@ -56,7 +56,7 @@ await accept();ok('Restored: the workout is back',await E(()=>S.d.M.logs.length=
 ok('"Restaurer depuis un fichier" is a label tied to the file input (opens the iPhone file picker)',await E(()=>{const l=document.querySelector('label[for=bkf]'),i=document.getElementById('bkf');return!!l&&!!i&&i.type==='file'}));
 // copy as text still works and counts
 await p.locator('#bkc summary').click();await tap(p.locator('#bkc button',{hasText:'Exporter'}));
-await ctx.grantPermissions(['clipboard-read','clipboard-write']).catch(()=>{});await E(()=>{S.bk={at:null,snz:null};save()});await tap(p.locator('#bkc button',{hasText:'Exporter'}));await p.waitForTimeout(100);
+if(BR.engine==='chromium')await ctx.grantPermissions(['clipboard-read','clipboard-write']).catch(()=>{});await E(()=>{S.bk={at:null,snz:null};save()});await p.locator('#bkc button',{hasText:'Exporter'}).click();await p.waitForTimeout(100);
 ok('Old "Copier en texte" path still fills the field (text stays visible after copying)',(await p.locator('#jx').inputValue()).startsWith('{"p":'));
 ok('Copying the text also counts as a backup copy',await E(()=>!!S.bk.at));
 // bad file
