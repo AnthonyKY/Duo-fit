@@ -8,7 +8,10 @@ const R=[];let fails=0;const ok=(n,c,x='')=>{const l=(c?'PASS ':'FAIL ')+n+(x?' 
 (async()=>{const b=await BR.launch();
 const ctx=await b.newContext({...BR.dev('iPhone SE'),locale:'fr-FR',timezoneId:'Europe/Paris'});await ctx.addInitScript(IOS);
 const T0=Date.UTC(2026,10,16,9);
-const open=async()=>{const p=await ctx.newPage();p.setDefaultTimeout(8000);p.errs=[];p.on('pageerror',e=>p.errs.push(e.message));await p.clock.install({time:T0});await p.clock.pauseAt(T0+1000);await p.goto(URL);return p};
+// WebKit's test driver reports the background update check to this simple local server as "access control checks" when the
+// simulated clock fires it; update checks are covered in WebKit by pages.js (served like GitHub Pages), so only that message is set aside
+const upd=m=>/\?nocache=\d+ due to access control checks/.test(m);
+const open=async()=>{const p=await ctx.newPage();p.setDefaultTimeout(8000);p.errs=[];p.on('pageerror',e=>{if(!upd(e.message))p.errs.push(e.message)});await p.clock.install({time:T0});await p.clock.pauseAt(T0+1000);await p.goto(URL);return p};
 const a=await open();
 const E=(p,f,x)=>p.evaluate(f,x),stored=p=>E(p,()=>JSON.parse(localStorage.getItem('duofit')));
 const clean=s=>String(s||'').replace(/[  ]/g,' ');
