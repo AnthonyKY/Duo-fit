@@ -16,7 +16,7 @@ p.on('dialog',d=>d.accept());
 const day=(n,h=18,mi=0)=>new Date(2026,10,2+n,h,mi).getTime();
 await p.clock.setFixedTime(day(0));
 await p.goto(URL);await p.waitForTimeout(200);
-await p.evaluate(()=>{S.gm=false;for(const k of ['M','F']){S.d[k].pf.back=false;S.d[k].pf.inc={DB:2,M:2.5,C:1.25,SM:2.5};S.d[k].pf.var='fix'}save();go()}); // legacy list mode for this suite (V2 has its own tests)
+await p.evaluate(()=>{S.gm=false;for(const k of ['M','F']){S.d[k].pf.back=false;S.d[k].pf.inc={DB:2,M:2.5,C:1.25,SM:2.5};S.d[k].pf.var='fix';S.d[k].pf.noOverhead=false}save();go()}); // legacy list mode for this suite (V2 has its own tests)
 
 ok('Home shows Monday workout A',(await p.textContent('#v')).includes("Aujourd'hui : A"));
 

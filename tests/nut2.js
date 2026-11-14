@@ -4,7 +4,7 @@ const R=[];let fails=0;const ok=(n,c,x='')=>{const l=(c?'PASS ':'FAIL ')+n+(x?' 
 const errs=[];p.on('pageerror',e=>errs.push(e.message));p.on('dialog',d=>d.accept());
 await p.clock.setFixedTime(new Date(2026,10,16,9).getTime()); // Mon 16 Nov
 await p.goto('http://localhost:8766/index.html');
-await p.evaluate(()=>{S.gm=false;for(const k of ['M','F']){S.d[k].pf.back=false;S.d[k].pf.inc={DB:2,M:2.5,C:1.25,SM:2.5};S.d[k].pf.var='fix'}save();go()}); // legacy list mode for this suite (V2 has its own tests)
+await p.evaluate(()=>{S.gm=false;for(const k of ['M','F']){S.d[k].pf.back=false;S.d[k].pf.inc={DB:2,M:2.5,C:1.25,SM:2.5};S.d[k].pf.var='fix';S.d[k].pf.noOverhead=false}save();go()}); // legacy list mode for this suite (V2 has its own tests)
 
 const E=(f,a)=>p.evaluate(f,a);const txt=async()=>(await p.textContent('#v')).replace(/[\u202f\u00a0]/g,' ');
 // --- Him defaults
@@ -52,7 +52,7 @@ ok('Target 58 kg projection shown',tx.includes('58 kg vers'),tx.match(/À ton ry
 ok('Weight comes from last weigh-in (61 kg)',tx.includes('Poids : 61 kg (dernière pesée'));
 // --- adaptive sessions (her: beginner + fat loss)
 await p.click('nav >> text=Séance');await p.click('button:text-is("A")');tx=await txt();
-ok('Her home A: cardio 15 min listed + beginner note + ≈60 min',tx.includes('Cardio (optionnel) 15 min')&&tx.includes('Débutant')&&/≈ 60 min/.test(tx),tx.match(/≈ \d+ min/)?.[0]);
+ok('Her home A: cardio 15 min listed + beginner note and whole warm-up within 60 min',tx.includes('Cardio (optionnel) 15 min')&&tx.includes('Débutant')&&tx.includes(await E(()=>{const e=eff('A');return t('durE')(e.dur,e.wm)}))&&await E(()=>eff('A').wm===11&&eff('A').dur<=60),tx.match(/≈ \d+ min/)?.[0]);
 await p.click('text=Commencer la séance');tx=await txt();
 ok('Beginner RIR +1 on leg press (2→3)',tx.includes('3×10–12 · Repos 120s · RIR 4')||tx.includes('RIR 4'),tx.match(/RIR \d/g)?.join(','));
 const cd=p.locator('.c',{hasText:'Cardio (optionnel)'});await cd.locator('input').fill('12');await cd.locator('input').dispatchEvent('change');await cd.locator('button').click();
@@ -61,11 +61,11 @@ ok('Cardio-only session saved with 12 min',tx.includes('🚶 12 min'),tx.slice(0
 await p.click('nav >> text=Historique');ok('History shows cardio',/Cardio . 12 min/.test(await txt()));
 // time 45 for her: cardio dropped first, no exercise removed
 await p.click('nav >> text=Profil');await p.locator('.sg button',{hasText:'45 min'}).click();await p.click('nav >> text=Séance');await p.click('button:text-is("A")');tx=await txt();
-ok('Her 45 min: cardio dropped, all 5 exercises kept',!tx.includes('Cardio (optionnel)')&&!tx.includes('retiré'),'');
+ok('Her 45 min: cardio reduced to 5 minutes first, all 5 exercises kept',tx.includes('Cardio (optionnel) 5 min')&&await E(()=>eff('A').ex.length===5&&eff('A').dur<=45),'');
 // --- Him: 45 min trims accessories, 75 min adds sets
 await p.click('.pf >> text=Lui');await p.click('nav >> text=Profil');await p.locator('.sg button',{hasText:'45 min'}).click();
 await p.click('nav >> text=Séance');await p.click('button:text-is("A")');tx=await txt();
-const ef45=await E(()=>eff('A'));ok('Him 45 min: '+ef45.ex.length+' exercises, ≈'+ef45.dur+' min, accessories cut to 2 sets before dropping any',ef45.ex.length>=5&&ef45.dur<=47&&ef45.ex.slice(2).some(e=>e[1]==2)&&tx.includes('passent à 2 séries'),JSON.stringify(ef45.ex.map(e=>e[0]+'×'+e[1]))+' dur '+ef45.dur);
+const ef45=await E(()=>eff('A'));ok('Him 45 min: '+ef45.ex.length+' exercises, ≈'+ef45.dur+' min, accessories cut to 2 sets before dropping any',ef45.ex.length>=5&&ef45.dur<=45&&ef45.ex.slice(2).some(e=>e[1]==2)&&tx.includes('passent à 2 séries'),JSON.stringify(ef45.ex.map(e=>e[0]+'×'+e[1]))+' dur '+ef45.dur);
 await p.click('nav >> text=Profil');await p.locator('.sg button',{hasText:'75 min'}).click();
 const ef75=await E(()=>eff('A'));ok('Him 75 min: shoulder press 4 sets, incline 4 sets',ef75.ex[0][1]==4&&ef75.ex[1][1]==4&&ef75.ex[2][1]==4,JSON.stringify(ef75.ex.map(e=>e[1])));
 await p.click('nav >> text=Séance');await p.click('button:text-is("A")');await p.click('text=Commencer la séance');

@@ -38,6 +38,7 @@ dialog::backdrop{background:rgb(0 0 0 / .58)}dialog .r{margin-top:18px}dialog bu
 .wtx{min-width:0;overflow-wrap:break-word}.wds{color:var(--ac);font-weight:700;font-size:13px}
 .wub{margin:6px 0;text-align:left}
 .swr{grid-template-columns:1fr 1fr;padding:6px 0;border-bottom:1px solid var(--bd)}.swr span{grid-column:1/-1;font-weight:600}
+.budget{margin:10px 0;border:1px solid var(--bd);border-radius:10px;padding:9px 12px}.budget summary{cursor:pointer;font-weight:600}.budget dl{margin:8px 0}.budget dl>div{display:flex;justify-content:space-between;gap:8px}.budget dd,.budget dt{margin:3px 0}.budget dd{white-space:nowrap;font-variant-numeric:tabular-nums}.gear{min-width:0;margin:12px 0;padding:8px 10px;border:1px solid var(--bd);border-radius:10px}.gear label{display:inline-flex;align-items:center;margin:4px 10px 4px 0}.gear input{width:auto}#varc{scroll-margin-top:70px}
 </style></head><body><div id="upb" style="display:none;position:fixed;top:calc(8px + env(safe-area-inset-top,0px));left:12px;right:12px;z-index:9;background:var(--ac);color:var(--on);font-weight:700;text-align:center;padding:12px;border-radius:12px;cursor:pointer"></div><div id="storage-warning" role="alert" hidden></div><main id="v"></main><div id="notice" role="status" hidden></div><div id="tm" hidden></div><nav id="nv"></nav>
 <dialog id="action-dialog" aria-labelledby="action-title" aria-describedby="action-detail">
   <h2 id="action-title"></h2><p id="action-detail"></p><div class="r">
@@ -105,6 +106,21 @@ lpc:["Leg-press calf raise","Mollets à la presse","Calves","Mollets","M",0,"Bal
 sp:["Side plank (seconds)","Gainage latéral (secondes)","Obliques, core","Obliques, sangle abdominale","BW",0,"Elbow under the shoulder, hips high, body straight; time per side.","Coude sous l'épaule, bassin haut, corps aligné ; temps par côté.","Hips sagging.","Bassin qui s'affaisse.",["pl"]],
 dbg:["Dead bug","Dead bug","Deep core","Abdos profonds","BW",0,"Lower back pressed into the floor, slowly extend the opposite arm and leg; reps per side.","Bas du dos plaqué au sol, tendre lentement bras et jambe opposés ; reps par côté.","Lower back lifting off the floor.","Bas du dos qui décolle.",["pl"]],
 pal:["Pallof press","Pallof press (anti-rotation)","Core, obliques","Sangle abdominale, obliques","C",0,"Side-on to the cable, press the handle straight out and hold 2 s without rotating; reps per side.","De profil à la poulie, tendre la poignée devant toi et tenir 2 s sans tourner ; reps par côté.","Twisting; leaning.","Tourner ; se pencher.",["pl"]]};
+Object.assign(E,{
+  barpd:["Straight-bar triceps pushdown","Extension triceps à la barre","Triceps","Triceps","C",0,
+    "Use a high pulley and a straight bar. Keep the elbows beside you and straighten your arms.",
+    "Fixe une barre droite à la poulie haute. Garde les coudes près du corps et tends les bras.",
+    "Leaning onto the bar.","Pousser la barre avec le poids du corps.",["rpd"]],
+  ibpu:["Incline push-up on a bench","Pompes inclinées sur banc","Chest, triceps","Pectoraux, triceps","BW",0,
+    "Use a stable bench or a wall. Keep the body in one line and bring the chest towards your hands.",
+    "Appuie les mains sur un banc stable ou un mur. Garde le corps aligné en rapprochant la poitrine des mains.",
+    "Letting the hips drop.","Laisser le bassin s’affaisser.",["cp","lip"]],
+  qhe:["Quadruped bent-knee hip extension","Extension de hanche à quatre pattes","Glutes","Fessiers","BW",0,
+    "On hands and knees, keep one knee bent and lift the thigh a short distance. Work both sides.",
+    "À quatre pattes, garde un genou fléchi et soulève légèrement la cuisse. Fais les deux côtés.",
+    "Rotating the pelvis or arching the back.","Tourner le bassin ou creuser le dos.",["ckb"]],
+  step:["Low step-up with support","Montée sur marche basse avec appui","Quads, glutes","Quadriceps, fessiers","BW",0,"Use a low stable step and a rail for balance. Push through the top foot, then lower slowly on each side.","Sur une marche basse et stable, tiens une rampe. Pousse sur le pied posé puis redescends lentement de chaque côté.","Pushing off the trailing leg or letting the knee cave in.","Prendre de l’élan avec la jambe arrière ou laisser le genou rentrer.",["ulp","lp"]]
+});
 const EQ={M:["Machine","Machine"],DB:["Dumbbells","Haltères"],C:["Cable","Poulie"],BW:["Bodyweight","Poids du corps"],SM:["Smith machine","Smith machine"]},LV=[["Beginner","Débutant"],["Intermediate","Intermédiaire"]];
 const P={M:{A:{n:["Shoulders & Chest","Épaules & Pecs"],y:["Priority muscles first while fresh. All supported: no spinal loading.","Muscles prioritaires en premier, frais. Tout est guidé ou avec dossier : pas de charge sur la colonne."],ex:[["ms",3,8,12,120,2,2.5],["idp",3,8,12,120,2,2],["clr",4,12,15,60,1,1.25],["pd",3,12,15,75,1,2.5],["rpd",3,10,15,60,1,2.5],["pal",3,10,15,60,2,2.5]]},
 B:{n:["Back & Arms","Dos & Bras"],y:["Chest-supported pulling builds the V-taper without lumbar load.","Tirages avec appui poitrine pour le V sans charger les lombaires."],ex:[["lpd",3,8,12,120,2,2.5],["csr",3,8,12,120,2,2.5],["rdf",3,12,20,60,1,2.5],["idc",3,10,12,75,1,1],["oce",3,10,15,60,1,2.5],["clr",3,15,20,45,1,1.25]]},
@@ -166,7 +182,7 @@ Object.assign(L.en,{
   varT:"Exercise variety",var_fix:"Fixed",var_bal:"Balanced",var_max:"Maximum",
   varX_fix:()=>"Always the same exercises: the easiest progression to read.",
   varX_bal:n=>`Recommended. The 2 main lifts of each workout stay ${n} weeks so you can see your progress, then change. Accessories change every session, among good variants that suit your profile (back, level, gym).`,
-  varX_max:()=>"Everything changes every session. More novelty, but strength progress on the main lifts is harder to follow.",
+  varX_max:()=>"Main and accessory movements rotate when alternatives are available. You can keep a favourite exercise as a reference.",
   exclT:"Not in my gym / excluded",exclNone:"None. Exclude an exercise with ⇄ during a workout, or from the Library.",exclTag:"excluded",reallow:"Allow again",noGymB:"Not in my gym",
   noGymN:(a,b)=>b?`${a} won't be drawn again: replaced by ${b} today.`:`${a} won't be drawn again.`,
   pinT:"Pinned (always the same)",pinNone:"None. 📌 in ⇄ keeps an exercise in its place.",pinB:"Keep it every time",unpinB:"Back to rotation",
@@ -186,7 +202,7 @@ Object.assign(L.fr,{
   varT:"Variété des exercices",var_fix:"Fixe",var_bal:"Équilibrée",var_max:"Maximale",
   varX_fix:()=>"Toujours les mêmes exercices : la progression la plus lisible.",
   varX_bal:n=>`Recommandé. Les 2 exercices principaux de chaque séance restent ${n} semaines pour voir ta progression, puis changent. Les exercices d'appoint changent à chaque séance, parmi de bonnes variantes adaptées à ton profil (dos, niveau, salle).`,
-  varX_max:()=>"Tout change à chaque séance. Plus de nouveauté, mais la progression de force sur les gros exercices est plus difficile à suivre.",
+  varX_max:()=>"Les exercices principaux et les exercices d’appoint changent quand il existe une variante adaptée. Tu peux épingler un exercice pour suivre ta progression.",
   exclT:"Pas dans ma salle / exclus",exclNone:"Aucun. Exclus un exercice avec ⇄ pendant la séance, ou depuis la Bibliothèque.",exclTag:"exclu",reallow:"Réautoriser",noGymB:"Pas dans ma salle",
   noGymN:(a,b)=>b?`${a} ne sera plus tiré : remplacé par ${b} aujourd'hui.`:`${a} ne sera plus tiré.`,
   pinT:"Épinglés (toujours le même)",pinNone:"Aucun. 📌 dans ⇄ garde un exercice à sa place.",pinB:"Garder à chaque fois",unpinB:"Reprendre la rotation",
@@ -216,8 +232,12 @@ function readState(raw){
     requireData(["loss","recomp","maint","gain"].includes(pf.goal)&&["auto","sed","light","acti","very"].includes(pf.act));
     for(const f of ["age","h","w","tw","time","kadj","kat"]){requireData(pf[f]==null||Number.isFinite(+pf[f]));if(pf[f]!=null)pf[f]=+pf[f]}
     pf.back=typeof pf.back==="boolean"?pf.back:PFD[key].back;pf.inc=Object.fromEntries(Object.keys(INC0).map(q=>[q,isRecord(pf.inc)&&+pf.inc[q]>0?+pf.inc[q]:INC0[q]]));
-    pf.var=VARS.includes(pf.var)?pf.var:"bal";pf.no=Array.isArray(pf.no)?[...new Set(pf.no.filter(x=>typeof x==="string"&&known(E,x)))]:[];pf.r0=pf.r0!=null&&Number.isFinite(+pf.r0)?+pf.r0:null;
-    if(!isRecord(profile.draw))profile.draw={};for(const [w,v] of Object.entries(profile.draw)){if(!known(P[key],w)||!isRecord(v)||!Array.isArray(v.ids)||!v.ids.every(x=>known(E,x))||!Array.isArray(v.bon)||!v.bon.every(x=>known(E,x))||!Array.isArray(v.wu)||!v.wu.every(x=>known(WU,x))||!known(WU,v.g))delete profile.draw[w]}
+    pf.var=VARS.includes(pf.var)?pf.var:PFD[key].var;
+    pf.noOverhead=typeof pf.noOverhead==="boolean"?pf.noOverhead:PFD[key].noOverhead;
+    pf.gear=Array.isArray(pf.gear)?Object.keys(EQ).filter(id=>id!=="BW"&&pf.gear.includes(id)):[...PFD[key].gear];
+    if(!Number.isInteger(pf.time)||pf.time<15||pf.time>240)pf.time=PFD[key].time;
+    pf.no=Array.isArray(pf.no)?[...new Set(pf.no.filter(x=>typeof x==="string"&&known(E,x)))]:[];pf.r0=pf.r0!=null&&Number.isFinite(+pf.r0)?+pf.r0:null;
+    if(!isRecord(profile.draw))profile.draw={};for(const [w,v] of Object.entries(profile.draw)){if(!known(P[key],w)||!isRecord(v)||!Array.isArray(v.ids)||!v.ids.every(x=>x===null||known(E,x))||!Array.isArray(v.bon)||!v.bon.every(x=>x===null||known(E,x))||!Array.isArray(v.wu)||!v.wu.every(x=>known(WU,x))||!known(WU,v.g))delete profile.draw[w]}
     if(!isRecord(profile.notes))profile.notes={};for(const [k,v] of Object.entries(profile.notes)){if(!known(E,k)||typeof v!=="string")delete profile.notes[k]}
     if(Array.isArray(profile.bw)){profile.bw.forEach((w,i)=>profile.hd.push({d:"old-"+i,w}));delete profile.bw}
     for(const [rows,fields] of [[profile.hd,["w","st","hr","sl"]],[profile.ms,MK]]){
@@ -372,7 +392,7 @@ function tick(){
   }
 }
 
-const prog=()=>P[S.p],wkd=()=>D().sched[new Date().getDay()],cur=()=>D().cur,sid=i=>{const c=cur(),o=oix(i);return(c.swp&&c.swp[o])||D().sub[c.wk+o]||cx()[i][0]};
+const prog=()=>P[S.p],wkd=()=>D().sched[new Date().getDay()],cur=()=>D().cur,sid=i=>{const c=cur(),o=oix(i);return(c.swp&&c.swp[o])||(!c.snapshot&&D().sub[c.wk+o])||cx()[i][0]};
 function last(id,n=0,wk){let l=D().logs.filter(x=>x.ex[id]);if(wk){const m=l.filter(x=>x.wk==wk);if(m.length>n)l=m}return l[l.length-1-n]}
 const isBW=id=>E[id][4]=="BW",tday=(ms=Date.now())=>{const d=new Date(ms);return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")},
 fs=(id,x)=>isBW(id)?(x.w?f1(x.w)+" kg × ":"")+x.r+(isT(id)?" s":" reps"):f1(x.w)+" × "+x.r;
@@ -381,19 +401,20 @@ function sug(id,c,wk){const l=last(id,0,wk),bw=isBW(id);if(!l)return{w:bw?0:"",t
 if(s.some(x=>x.r<c[2])&&p&&p.ex[id].some(x=>x.r<c[2])){const d=rnd(id,w*.9);return{w:d<w?d:Math.max(0,r2(w-incOf(id))),t:t("s4")}}
 if(s.length>=c[1]&&s.every(x=>x.r>=c[3])){const st=incOf(id),up=rnd(id,w+st),nx=up>w?up:r2(w+st);if((nx-w)/w>.1&&!s.every(x=>x.r>=c[3]+3))return{w,t:t("s5")(f1(nx),c[3]+3),rep:1};return{w:nx,t:t("s2")(f1(r2(nx-w)))}}
 return{w,t:t("s3")(f1(w),c[3])}}
-function begin(wk){if(cur()||!known(prog(),wk))return;if(D().pf.back&&needsBack(wk)){U.chk=wk;go();scrollTo(0,0);return}start(wk)}
+function begin(wk){if(cur()||!known(prog(),wk))return;if(eff(wk).unavailable)return;if(D().pf.back&&needsBack(wk)){U.chk=wk;go();scrollTo(0,0);return}start(wk)}
 function start(wk,back){
   if(cur()||!known(prog(),wk))return;
   U.chk=null;back=back==null?null:+back;
   const plan=eff(wk),ex={},swp={},f=back===2?.8:back===1?.9:1;
+  if(plan.unavailable)return;
   if(back>=1)plan.ex.forEach(e=>{e[5]=Math.min(4,e[5]+1)});
-  if(back===2)plan.ex.forEach((e,i)=>{const o=e[7]??i,id=D().sub[wk+o]||e[0];if(SAFE[id])swp[o]=SAFE[id]});
+  if(back===2)plan.ex.forEach((e,i)=>{const o=e[7]??i,next=painReplacement(e[0],wk,o,plan.ex.map(x=>swp[x[7]]||x[0]));if(next)swp[o]=next});
   plan.ex.forEach((entry,i)=>{
-    const o=entry[7]??i;if(swp[o])fitRange(entry,wk,swp[o]);const id=swp[o]||D().sub[wk+o]||entry[0],suggestion=sug(id,entry,wk);let w=suggestion.w;
+    const o=entry[7]??i;if(swp[o])fitRange(entry,wk,swp[o]);const id=swp[o]||entry[0],suggestion=sug(id,entry,wk);let w=suggestion.w;
     if(f<1&&w!==""&&w>0&&!isBW(id))w=rdn(id,w*f);
     ex[i]=Array.from({length:entry[1]},()=>({w,r:"",ok:0}));
   });
-  D().cur={wk,start:Date.now(),ex,note:"",pl:plan.ex,cm:back===2?0:plan.cm,cmv:"",cmok:0,back,swp,wu:[],wd:{g:plan.g,gm:plan.gm,m:plan.wm,d:plan.wu,ok:[],x:0}};
+  D().cur={wk,start:Date.now(),ex,note:"",pl:plan.ex,cm:back===2?0:plan.cm,cmv:"",cmok:0,back,swp,snapshot:true,budget:plan.budget,mode:vmode(),wu:[],wd:{g:plan.g,gm:plan.gm,m:plan.wm,d:plan.wu,ramp:plan.ramp,ok:[],x:0}};
   U.pick=null;U.sum=null;U.open=-1;U.gi=null;U.sw=null;U.tl=false;U.wuo=0;save();go();scrollTo(0,0);
 }
 function num(value){
@@ -410,9 +431,11 @@ function readSet(set,id,fallbackReps){
 }
 function setv(i,j,key,value){
   const s=cur()?.ex[i]?.[j];if(!s)return;
+  const loadChanged=key==="w"&&j===0&&i<=1&&num(s.w)!==num(value);
   s[key]=value;
   if(key==="r")s.touchedR=String(value).trim()!=="";
   if(key==="w")s.touchedW=String(value).trim()!=="";
+  if(loadChanged)refreshRamp(i);
   save();
 }
 function setError(i,j,message=t("fieldError")){
@@ -435,6 +458,7 @@ function done(i,j){
 }
 function swap(i){
   const c=cur();if(!c)return;const entry=cx()[i],base=entry[0],id=sid(i),alt=E[id][10];
+  if(c.snapshot){const next=id!==base?base:swapOptions(i).find(x=>alt.includes(x))||swapOptions(i)[0];if(next)swapTo(i,next,true);return}
   if(id===base&&!alt.length)return;
   const apply=()=>{
     const next=id===base?alt[0]:base;
@@ -450,7 +474,12 @@ const INC0={DB:2,M:5,C:2.5,SM:2.5},INCO={DB:[1,2,2.5],M:[2.5,5],C:[1.25,2.5,5],S
 const SAFE={scr:"csr",dsp:"ms",cc:"pl",ssq:"le",hsq:"lp",rdl:"slc",ocr:"csr"};
 // the check-in is asked only for back workouts (at least 2 back exercises, e.g. Him: "Back & Arms");
 // on any other day the in-session "Back sensitive today?" button applies the same adjustments on demand
-function needsBack(wk){const d=D();return eff(wk).ex.filter((e,i)=>GR[d.sub[wk+(e[7]??i)]||e[0]]==="bk").length>=2}
+function painReplacement(id,w,o,occupied){
+  const next=SAFE[id];if(!next)return null;
+  const slot=slotOf(w,o),options=[next,...(slot?allowed(slot[0],slot[2]):[])];
+  return options.find(x=>x!==id&&!AX.includes(x)&&eligible(x,next)&&!occupied.includes(x))||null;
+}
+function needsBack(wk){return prog()[wk].ex.filter(e=>GR[e[0]]==="bk").length>=2}
 function incOf(id){const q=E[id][4];if(q==="BW")return 0;const v=+((D().pf.inc||{})[q]);return v>0?v:INC0[q]||2.5}
 function rnd(id,w){const s=incOf(id);if(!s||!(w>0))return w;return Math.max(s,Math.round(Math.round(w/s*1000)/1000)*s)}
 function rdn(id,w){const s=incOf(id);if(!s||!(w>0))return w;return Math.max(s,Math.floor(Math.round(w/s*1000)/1000)*s)}
@@ -469,6 +498,12 @@ function wuHtml(i){const c=cur();if(i>1)return"";const id=sid(i),W=num(c.ex[i][0
   if(W===""||!(W>0))return i?"":`<div class=wu><span class=mu>🔥 ${t("rampT")} · ${t("wuNeed")}</span></div>`;
   const ws=i?[[rnd(id,W*.6),6]].filter(x=>x[0]<W):wuSets(id,W);if(!ws.length)return"";c.wu=c.wu||[];const o=i?9:0;
   return`<div class=wu><span class=mu>🔥 ${t("rampT")}</span>${ws.map(([w,r],k)=>`<button class="chip ${c.wu[o+k]?"ok":""}" aria-pressed="${!!c.wu[o+k]}" onclick="wuT(${o+k})">${f1(w)} kg × ${r}</button>`).join("")}<span class=mu>${t("wuX")}</span></div>`}
+function refreshRamp(i){
+  if(i>1)return;
+  const c=cur();c.wu=c.wu||[];const offset=i?9:0;
+  for(let j=0;j<(i?1:3);j++)c.wu[offset+j]=false;
+  const el=$("ramp-"+i);if(el)el.innerHTML=wuHtml(i);
+}
 function wuT(k){const c=cur();if(!c)return;c.wu=c.wu||[];c.wu[k]=!c.wu[k];save();go()}
 // back check-in
 function backBanner(){const c=cur();if(!c)return"";if(!c.back)return backAsk();return`<div class="c bkb ${c.back===2?"bad":""}">${c.back===2?t("back2b"):t("back1b")}</div>`}
@@ -487,18 +522,23 @@ function backAsk(){const c=cur();if(!c||c.back!=null)return"";if(U.rf==="cur")re
 function applyBack(lv){const c=cur();if(!c||c.back)return;ensurePl();const f=lv===2?.8:.9;c.back=lv;
   c.pl=c.pl.map(e=>{const n=[...e];n[5]=Math.min(4,n[5]+1);return n});
   c.pl.forEach((e,i)=>{const a=c.ex[i];
-    if(lv===2&&!a.some(s=>s.ok||s.touchedR||s.touchedW)){const id=sid(i);if(SAFE[id]){c.swp=c.swp||{};c.swp[oix(i)]=SAFE[id];fitRange(e,c.wk,SAFE[id]);const g=sug(SAFE[id],e,c.wk);a.forEach(s=>{s.w=g.w;s.r=""})}}
+    if(lv===2&&!a.some(s=>s.ok||s.touchedR||s.touchedW)){const next=painReplacement(sid(i),c.wk,oix(i),cx().map((_,k)=>sid(k)));if(next){c.swp=c.swp||{};c.swp[oix(i)]=next;fitRange(e,c.wk,next);const g=sug(next,e,c.wk);a.forEach(s=>{s.w=g.w;s.r=""})}}
     const id=sid(i);if(isBW(id))return;a.forEach(s=>{if(!s.ok&&!s.touchedW){const w=num(s.w);if(w>0)s.w=rdn(id,w*f)}})});
-  if(lv===2&&!c.cmok)c.cm=0;U.bk=false;save();go();scrollTo(0,0)}
+  if(lv===2&&!c.cmok&&!num(c.cmv))c.cm=0;U.bk=false;save();go();scrollTo(0,0)}
 // steppers (guided mode)
 function stp(i,j,k,d){const c=cur(),s=c?.ex[i]?.[j];if(!s||s.ok)return;const id=sid(i),e=cx()[i];
   if(k==="w"){const st=incOf(id)||1.25;let v=num(s.w);if(v==="")v=isBW(id)?0:(num(sug(id,e,c.wk).w)||0);v=Math.max(0,r2(v+d*st));s.w=v;s.touchedW=true}
   else{let v=num(s.r);v=(v===""?(+rph(id,e,j,c.wk)||e[2]):v)+d;v=Math.max(1,Math.round(v));s.r=v;s.touchedR=true}
-  save();const el=$((k==="w"?"w":"r")+i+"_"+j);if(el)el.value=k==="w"?s.w:s.r;if(k==="w"&&i===0&&j===0)go()}
+  save();const el=$((k==="w"?"w":"r")+i+"_"+j);if(el)el.value=k==="w"?s.w:s.r;if(k==="w"&&i<=1&&j===0){refreshRamp(i);save()}}
 function curPos(){const c=cur(),pl=cx();if(U.gi!=null&&U.gi<pl.length){const j=c.ex[U.gi].findIndex(s=>!s.ok);if(j>=0)return[U.gi,j]}
   for(let i=0;i<pl.length;i++){const j=c.ex[i].findIndex(s=>!s.ok);if(j>=0)return[i,j]}return null}
-function swapPanel(i){const c=cur(),e=cx()[i],o=oix(i),base=e[0],id=sid(i),s=slotOf(c.wk,o),no=D().pf.no||[],pin=D().sub[c.wk+o]===id,
-  opts=[...new Set([base,...(s?allowed(s[0],s[2]):[]),...E[base][10],...E[id][10]])].filter(x=>x!==id&&known(E,x)&&!no.includes(x));
+function swapOptions(i){
+  const c=cur(),o=oix(i),base=cx()[i][0],id=sid(i),s=slotOf(c.wk,o),pool=s?allowed(s[0],s[2]):[];
+  const fixed=(c.mode||vmode())==="fix";
+  const choices=fixed?[...new Set([base,...pool,...E[base][10],...E[id][10]])]:pool;
+  return choices.filter(x=>x!==id&&eligible(x,s?.[2]||base)&&(fixed||!cx().some((_,k)=>k!==i&&sid(k)===x)));
+}
+function swapPanel(i){const c=cur(),o=oix(i),id=sid(i),pin=D().sub[c.wk+o]===id,opts=swapOptions(i);
   return`<div class=swp>${opts.length?`<b>${t("swapBy")}</b>${opts.map(x=>`<div class=swr><span>${nm(x)}</span><button class=hb onclick="swapTo(${i},'${x}',0)">${t("today1")}</button><button class=hb onclick="swapTo(${i},'${x}',1)">${t("always")}</button></div>`).join("")}`:`<span class=mu>${t("noalt")}</span>`}
   <div class="r tools">${o<100?`<button class=hb onclick="pinCur(${i})">${pin?"↺ "+t("unpinB"):"📌 "+t("pinB")}</button>`:""}<button class=hb onclick="noGym(${i})">🚫 ${t("noGymB")}</button></div><button class="hb" onclick="U.sw=null;go()">${t("cancel")}</button></div>`}
 // replace an exercise in the running workout; sets already entered stay with the old exercise (nothing is lost),
@@ -506,28 +546,36 @@ function swapPanel(i){const c=cur(),e=cx()[i],o=oix(i),base=e[0],id=sid(i),s=slo
 function swapTo(i,nid,always){const c=cur();if(!c||!known(E,nid))return;ensurePl();const oi=oix(i),base=cx()[i][0],old=sid(i),a=c.ex[i],
     entered=s=>!!(s.ok||s.touchedR||s.touchedW||String(s.r??"").trim()!==""),kept=a.filter(entered),rest=a.length-kept.length;
   if(kept.length&&!rest){U.sw=null;go();notice(t("nothingLeft"));return}
-  if(always){if(c.swp)delete c.swp[oi];if(nid===base)delete D().sub[c.wk+oi];else D().sub[c.wk+oi]=nid}
-  else{c.swp=c.swp||{};if(nid===(D().sub[c.wk+oi]||base))delete c.swp[oi];else c.swp[oi]=nid}
+  if(always){if(nid===base&&(c.mode||vmode())==="fix")delete D().sub[c.wk+oi];else D().sub[c.wk+oi]=nid}
+  c.swp=c.swp||{};
+  if(nid===(c.snapshot?base:(D().sub[c.wk+oi]||base)))delete c.swp[oi];else c.swp[oi]=nid;
   const ne=[...c.pl[i]];fitRange(ne,c.wk,nid);const g=sug(nid,ne,c.wk),fresh=n=>Array.from({length:n},()=>({w:g.w,r:"",ok:0}));
   if(kept.length){let q=100+oi;while(c.pl.some(e=>e[7]===q))q+=100;const dn=[...c.pl[i]];dn[0]=old;dn[1]=kept.length;dn[7]=q;ne[1]=rest;
     c.pl.splice(i,0,dn);const ex={};Object.keys(c.ex).map(Number).sort((x,y)=>x-y).forEach(k=>{if(k<i)ex[k]=c.ex[k];else if(k>i)ex[k+1]=c.ex[k]});ex[i]=kept;ex[i+1]=fresh(rest);c.ex=ex}
   else{c.pl[i]=ne;c.ex[i]=fresh(a.length)}
   U.sw=null;U.open=-1;U.gi=null;save();go();notice(t(always?"swAlways":"swToday")(nm(nid)))}
 // rep range of an exercise placed in a slot: its own range for holds and per-side work, otherwise the slot's range
-function rangeFor(w,o,id){const beg=D().pf.lvl=="beg";if(XR[id])return XR[id][beg?1:0];const sl=SL[S.p][w]||[],b=o<sl.length?prog()[w].ex[o]:(BON[S.p][w][o-sl.length]||[])[1];return b?[b[2],b[3]]:null}
+function rangeFor(w,o,id){const beg=D().pf.lvl=="beg";if(XR[id])return XR[id][beg?1:0];const sl=SL[S.p][w]||[],b=o<sl.length?prog()[w].ex[o]:(BON[S.p][w][o-sl.length]||[])[1];if(b?.[0]==="ms"&&PAT.rear.includes(id))return[12,18];return b?[b[2],b[3]]:null}
 function fitRange(e,w,id){const r=rangeFor(w,e[7]??0,id);if(r){e[2]=r[0];e[3]=r[1]}return e}
 function ensurePl(){const c=cur();c.pl=cx().map((e,k)=>e[7]!=null?e:[...e.slice(0,7),k]);return c.pl}
 function busy(i){const c=cur();if(!c)return;const pl=ensurePl();if(i>=pl.length-1){notice(t("busyLast"));return}
   const name=nm(sid(i)),order=pl.map((_,k)=>k);order.splice(i,1);order.push(i);
-  c.pl=order.map(k=>pl[k]);const ex={};order.forEach((k,n)=>{ex[n]=c.ex[k]});c.ex=ex;
+  if(i<2)c.wu=[];c.pl=order.map(k=>pl[k]);const ex={};order.forEach((k,n)=>{ex[n]=c.ex[k]});c.ex=ex;
   U.gi=null;U.open=-1;U.sw=null;U.note=null;save();go();notice(t("busyDone")(name))}
-function remMin(){const c=cur(),pl=cx();let s=0;pl.forEach((e,i)=>{const un=c.ex[i].filter(x=>!x.ok).length;if(un)s+=(un*(40+e[4])+(c.ex[i].some(x=>x.ok)?0:90))/60});if(c.cm&&!c.cmok)s+=c.cm;return s}
+function remMin(){const c=cur(),pl=cx();
+  if(c.snapshot){
+    const remaining=pl.flatMap((e,i)=>{const n=c.ex[i].filter(s=>!s.ok).length;return n?[[sid(i),n,...e.slice(2,7)]]:[]});
+    const w=c.wd,worked=Object.values(c.ex).some(a=>a.some(s=>s.ok));
+    const warm=w&&!worked?Math.max(0,(w.x?0:(w.ok?.[0]?0:w.gm)+w.d.filter((_,i)=>!w.ok?.[i+1]).length)+(w.ramp||0)):0;
+    return est(remaining,c.cmok?0:c.cm,warm)+(c.rest?restRemaining(c.rest)/60000:0);
+  }
+  let s=0;pl.forEach((e,i)=>{const un=c.ex[i].filter(x=>!x.ok).length;if(un)s+=(un*(40+e[4])+(c.ex[i].some(x=>x.ok)?0:90))/60});if(c.cm&&!c.cmok)s+=c.cm;return s}
 function timeLeft(N){const c=cur();if(!c)return;ensurePl();U.tl=false;
   if(remMin()<=N){go();notice(t("fits")(Math.ceil(remMin())));return}
-  let rm=0,rs=0,cd=false;if(c.cm&&!c.cmok){c.cm=0;cd=true}
+  let rm=0,rs=0,cd=false;if(c.cm&&!c.cmok&&!num(c.cmv)){c.cm=0;cd=true}
   while(remMin()>N){let k=-1;for(let i=c.pl.length-1;i>=2;i--){if(!c.ex[i].some(x=>x.ok||x.touchedR||x.touchedW)){k=i;break}}if(k<0)break;
     c.pl.splice(k,1);const ex={};let n=0;Object.keys(c.ex).map(Number).sort((a,b)=>a-b).forEach(o=>{if(o!==k)ex[n++]=c.ex[o]});c.ex=ex;rm++}
-  let changed=true;while(remMin()>N&&changed){changed=false;for(let i=c.pl.length-1;i>=0&&remMin()>N;i--){const a=c.ex[i],z=a[a.length-1];if(a.length>2&&!z.ok&&!z.touchedR&&!z.touchedW){a.pop();c.pl[i]=[...c.pl[i]];c.pl[i][1]=a.length;rs++;changed=true}}}
+  let changed=true;while(remMin()>N&&changed){changed=false;for(let i=c.pl.length-1;i>=0&&remMin()>N;i--){const a=c.ex[i],z=a[a.length-1];if(a.length>(c.snapshot?1:2)&&!z.ok&&!z.touchedR&&!z.touchedW){a.pop();c.pl[i]=[...c.pl[i]];c.pl[i][1]=a.length;rs++;changed=true}}}
   U.gi=null;save();go();notice(t("fitDone")(N,rm,rs,cd,Math.ceil(remMin())))}
 function tlPanel(){return U.tl?`<div class="c tlp"><b>${t("tlQ")}</b><div class=sg>${[15,20,30,45].map(n=>`<button onclick="timeLeft(${n})">${n} min</button>`).join("")}</div><button class=hb onclick="U.tl=false;go()">${t("cancel")}</button></div>`
   :`<button class="w tlb" onclick="U.tl=true;go()">⏱ ${t("tlB")}</button>`}
@@ -541,7 +589,7 @@ function guidedWorkout(){
     <h2 class=gx>${nm(id)}</h2>
     <div class=mu>${e[2]}–${e[3]}${isT(id)?" s":" reps"} · RIR ${e[5]} · <button class=rest-link onclick="manualRest(${i})">${t("rest")} ${e[4]} s</button></div>
     <div class=mu>${t("last")} : ${ps?fs(id,ps)+" ("+fd(prev.date)+")":"—"}</div><div class=tip-text>${g.t}</div>
-    ${noteLine(id)}${j===0?wuHtml(i):""}
+    ${noteLine(id)}${j===0?`<div id="ramp-${i}">${wuHtml(i)}</div>`:""}
     <div class=stp><span class=sl>${bw?t("opt"):t("load")}</span><button aria-label="− ${t("load")}" onclick="stp(${i},${j},'w',-1)">−</button><input id="w${i}_${j}" type=text inputmode=decimal autocomplete=off aria-label="${t("load")}" placeholder="${bw?"0":"kg"}" value="${escapeHtml(s.w===0&&bw?"":s.w)}" oninput="setv(${i},${j},'w',this.value)"><button aria-label="+ ${t("load")}" onclick="stp(${i},${j},'w',1)">+</button></div>
     <div class=stp><span class=sl>${isT(id)?t("seconds"):t("reps")}</span><button aria-label="− ${t("reps")}" onclick="stp(${i},${j},'r',-1)">−</button><input id="r${i}_${j}" type=text inputmode=numeric pattern="[0-9]*" autocomplete=off aria-label="${t("reps")}" placeholder="${rph(id,e,j,c.wk)}" value="${escapeHtml(s.r)}" oninput="setv(${i},${j},'r',this.value)"><button aria-label="+ ${t("reps")}" onclick="stp(${i},${j},'r',1)">+</button></div>
     <button class="p w big" onclick="done(${i},${j})">✓ ${t("valid")}</button>${exTools(i)}</div>`}
@@ -623,6 +671,7 @@ function fin(){
       if(past.length&&past.every(s=>s.w<top))prs.push(nm(id)+" "+f1(top)+" kg");
     }
     const log={pr:prs,date:end,wk:c.wk,dur:Math.round(seconds/60),durSec:seconds,ex,note:c.note,...totals};
+    if(c.snapshot){log.mode=c.mode;log.budget=c.budget}
     if(cardio)log.cardio=cardio;if(c.back!=null)log.back=c.back;
     if(!writeSessionEnd(log))return;
     U.open=-1;U.ed=null;U.sum={lg:log,prs,pv:prev?.vol??null,nx:Object.keys(ex).map(id=>({id,p:progLine(id,c.wk),n:nextLine(id,ents[id],c.wk)}))};
@@ -665,7 +714,7 @@ function exerciseCard(entry,i){
   return `<div class=c><div class=r><h2 style="flex:3">${nm(id)}</h2><button class=hb onclick="U.open=U.open===${i}?-1:${i};go()">${t("guide")}</button>${canSwap?`<button class=hb aria-label="${t("swap")} · ${nm(id)}" onclick="U.sw=U.sw===${i}?null:${i};go()">⇄</button>`:""}<button class=hb aria-label="${t("busyB")} · ${nm(id)}" onclick="busy(${i})">⏭</button></div>
     <div class=mu>${entry[1]}×${entry[2]}–${entry[3]}${isT(id)?" s":""} · <button class=rest-link aria-label="${t("startRest")} · ${entry[4]} s" onclick="manualRest(${i})">${t("rest")} ${entry[4]} s</button> · RIR ${entry[5]}</div>
     <div class=mu>${t("last")}: ${previous?fd(previous.date)+" — "+previous.ex[id].map(s=>fs(id,s)).join(", "):"—"}</div>
-    <div class=tip-text>${sug(id,entry,c.wk).t}</div>${U.sw===i?swapPanel(i):""}${U.open===i?card(id):""}${noteLine(id)}${wuHtml(i)}${rows}</div>`;
+    <div class=tip-text>${sug(id,entry,c.wk).t}</div>${U.sw===i?swapPanel(i):""}${U.open===i?card(id):""}${noteLine(id)}<div id="ramp-${i}">${wuHtml(i)}</div>${rows}</div>`;
 }
 function activeWorkout(){
   if(S.gm===true)return guidedWorkout();
@@ -691,7 +740,7 @@ function workoutSummary(){
 }
 
 function today(){const d=D(),k=li();if(U.sum)return workoutSummary();if(cur())return activeWorkout();if(U.chk)return checkIn(U.chk);
-const wd=wkd(),w=U.pick||wd||"A",c=prog()[w],ef=eff(w),nn=nut();return`<h1>${t("hi")}</h1><p class=mu>${wd?t("tod")+" : "+wd+" — "+prog()[wd].n[k]:t("recday")}</p><div class=r>${["A","B","C"].map(x=>`<button class="${x==w?"p":""}" onclick="U.pick='${x}';go()">${x}</button>`).join("")}</div><div class=c><h2>${c.n[k]}</h2><p class=mu>${c.y[k]}</p><div class=wul>🔥 <b>${t("wuT")}</b> <span class=mu>≈ ${ef.wm} min · ${nmW(ef.g)} ${ef.gm} min · ${ef.wu.map(nmW).join(" · ")}</span></div>${ef.ex.map((e,i)=>{const o=e[7]??i,id=d.sub[w+o]||e[0],g=sug(id,e,w),sl=slotOf(w,o),fresh=d.logs.length>0&&!d.logs.some(l=>l.ex[id]);return`<div class=exl>${nm(id)} <span class=mu>${e[1]}×${e[2]}–${e[3]}${isT(id)?' s':''}${g.w>0?" · "+f1(g.w)+" kg":""}</span>${d.sub[w+o]?` <span class=xtg title="${t("pinT")}">📌</span>`:""}${sl&&sl[1]==="m"&&vmode()!=="fix"?` <span class=xtg>${t("mainT")}</span>`:""}${fresh?` <span class="xtg nw">${t("newT")}</span>`:""}</div>`}).join("")}${ef.cm?`<div>🚶 ${t("cdT")} <span class=mu>${ef.cm} min</span></div>`:""}<p class=mu>${t("durE")(ef.dur,ef.wm)}${ef.red?" "+t("redS")(+d.pf.time||60):""}${ef.cut?" "+t("trim")(ef.cut,+d.pf.time||60):""}${ef.add?" "+t("addS"):""}${ef.bon?" "+t("bonS")(ef.bon):""}${d.pf.lvl=="beg"?" "+t("begx"):""}</p>${vmode()!=="fix"?`<button class="w rr" onclick="reroll('${w}')">🎲 ${t("reroll")}</button><p class=mu>${vmode()==="bal"?t("blkL")(fd(blkInfo().end))+" ":""}${t("rrX")}</p>`:""}<button class="p w" onclick="begin('${w}')">${t("start")}</button></div>${nn?`<div class=c><span class=ts>${t("todN")(nn.kc.toLocaleString(S.lg),nn.P)}</span> <a href=# onclick="U.tab='set';go();return false" class=mu>${t("more")}</a></div>`:`<div class=c><span class=mu>${t("nutNo2")}</span> <a href=# onclick="U.tab='set';go();return false" class=mu>${t("more")}</a></div>`}<div class=c><b>${d.logs.filter(l=>Date.now()-l.date<6048e5).length}/3</b> <span class=mu>${t("wk7")} · ${d.logs.length} ${t("totalLogs")} · 🔥 ${streak()} ${t("streak")}</span></div>`}
+const wd=wkd(),w=U.pick||wd||"A",c=prog()[w],ef=eff(w),nn=nut();return`<h1>${t("hi")}</h1><p class=mu>${wd?t("tod")+" : "+wd+" — "+prog()[wd].n[k]:t("recday")}</p><div class=r>${["A","B","C"].map(x=>`<button class="${x==w?"p":""}" onclick="U.pick='${x}';go()">${x}</button>`).join("")}</div>${ef.unavailable?`<div class=c><h2>${c.n[k]}</h2><p role=status>${t(ef.tooShort?"tooLittle":"noPlan")}</p><button class=w onclick="navigate('set')">${t("editProfile")}</button></div>`:`<div class=c><h2>${c.n[k]}</h2><p class=mu>${t("selectionMode")} <button class=hb onclick="navigate('set');document.getElementById('varc')?.scrollIntoView({block:'start'})">${t("var_"+vmode())}</button></p><div class=wul>🔥 <b>${t("wuT")}</b> <span class=mu>≈ ${ef.wm} min · ${nmW(ef.g)} ${ef.gm} min · ${ef.wu.map(nmW).join(" · ")} · ${t("rampT")} ${ef.ramp} min</span></div>${ef.ex.map((e,i)=>{const o=e[7]??i,id=e[0],g=sug(id,e,w),sl=slotOf(w,o),fresh=d.logs.length>0&&!d.logs.some(l=>l.ex[id]);return`<div class=exl data-planned="${id}">${nm(id)} <span class=mu>${e[1]}×${e[2]}–${e[3]}${isT(id)?' s':''}${g.w>0?" · "+f1(g.w)+" kg":""}</span>${d.sub[w+o]===id?` <span class=xtg title="${t("pinT")}">📌</span>`:""}${sl&&sl[1]==="m"&&vmode()!=="fix"?` <span class=xtg>${t("mainT")}</span>`:""}${fresh?` <span class="xtg nw">${t("newT")}</span>`:""}</div>`}).join("")}${ef.cm?`<div>🚶 ${t("cdT")} <span class=mu>${ef.cm} min</span></div>`:""}<p class=mu>${t("durE")(ef.dur,ef.wm)}${ef.red?" "+t("redS")(+d.pf.time||60):""}${ef.cut?" "+t("trim")(ef.cut,+d.pf.time||60):""}${ef.add?" "+t("addS"):""}${ef.bon?" "+t("bonS")(ef.bon):""}${d.pf.lvl=="beg"?" "+t("begx"):""}</p>${vmode()!=="fix"?`<button class="w rr" onclick="reroll('${w}')">🎲 ${t("reroll")}</button><p class=mu>${vmode()==="bal"?t("blkL")(fd(blkInfo().end))+" ":""}${t("rrX")}</p>`:""}${ef.missing.length?`<p class=mu>${t("missingSlots")}: ${ef.missing.map(o=>nm(slotOf(w,o)[2])).join(", ")}</p>`:""}${budgetPanel(ef)}<button class="p w" onclick="begin('${w}')">${t("start")}</button></div>`}${nn?`<div class=c><span class=ts>${t("todN")(nn.kc.toLocaleString(S.lg),nn.P)}</span> <a href=# onclick="U.tab='set';go();return false" class=mu>${t("more")}</a></div>`:`<div class=c><span class=mu>${t("nutNo2")}</span> <a href=# onclick="U.tab='set';go();return false" class=mu>${t("more")}</a></div>`}<div class=c><b>${d.logs.filter(l=>Date.now()-l.date<6048e5).length}/3</b> <span class=mu>${t("wk7")} · ${d.logs.length} ${t("totalLogs")} · 🔥 ${streak()} ${t("streak")}</span></div>`}
 function plan(){return`<h1>${t("plan")}</h1>`+[1,2,3,4,5,6,0].map(n=>`<div class="c r"><b style="flex:.4">${DN[S.lg][n]}</b><select onchange="this.value?D().sched[${n}]=this.value:delete D().sched[${n}];save();go()">${["","A","B","C"].map(x=>`<option value="${x}" ${(D().sched[n]||"")==x?"selected":""}>${x?x+" — "+prog()[x].n[li()]:t("recov")}</option>`).join("")}</select></div>`).join("")}
 // not drawn for a back-sensitive profile: axial loading, hinging, or repeated loaded flexion (cable crunch)
 const AX=["ssq","dsp","hsq","rdl","cc"];
@@ -743,15 +792,15 @@ function impH(){
   mergeH(rows);save();go();notice(t("ok")+" · "+rows.length);
 }
 
-const GR={ms:"sh",dsp:"sh",clr:"sh",dlr:"sh",rdf:"sh",idp:"ch",lip:"ch",cp:"ch",pd:"ch",lpd:"bk",csr:"bk",scr:"bk",rpd:"ar",oce:"ar",idc:"ar",lp:"lg",slc:"lg",le:"lg",ssq:"lg",hp:"gl",gb:"gl",ckb:"gl",cc:"co",pl:"co",fdp:"ch",sip:"ch",cfl:"ch",mlr:"sh",lrr:"sh",cyr:"sh",fpl:"sh",rcf:"sh",lpn:"bk",slp:"bk",tbr:"bk",sdr:"bk",mrw:"bk",ocr:"bk",sap:"bk",
+const GR={barpd:"ar",ibpu:"ch",qhe:"gl",step:"lg",ms:"sh",dsp:"sh",clr:"sh",dlr:"sh",rdf:"sh",idp:"ch",lip:"ch",cp:"ch",pd:"ch",lpd:"bk",csr:"bk",scr:"bk",rpd:"ar",oce:"ar",idc:"ar",lp:"lg",slc:"lg",le:"lg",ssq:"lg",hp:"gl",gb:"gl",ckb:"gl",cc:"co",pl:"co",fdp:"ch",sip:"ch",cfl:"ch",mlr:"sh",lrr:"sh",cyr:"sh",fpl:"sh",rcf:"sh",lpn:"bk",slp:"bk",tbr:"bk",sdr:"bk",mrw:"bk",ocr:"bk",sap:"bk",
 bcc:"ar",pcm:"ar",hmc:"ar",bcu:"ar",ske:"ar",tdm:"ar",bsq:"lg",ulp:"lg",hsq:"lg",llc:"lg",rdl:"lg",add:"lg",scm:"lg",lpc:"lg",sht:"gl",gkm:"gl",abd:"gl",sp:"co",dbg:"co",pal:"co"};
 const GN={sh:["Shoulders","Épaules"],ch:["Chest","Pectoraux"],bk:["Back","Dos"],ar:["Arms","Bras"],lg:["Legs","Jambes"],gl:["Glutes","Fessiers"],co:["Core","Abdos/gainage"]};
 
 // ===== Variety: each workout is a list of slots (movement pattern + role); the exercise in each slot is drawn =====
 // pools by movement pattern, best first; filtered per profile (back sensitivity, level, "not in my gym")
-const PAT={vpush:["ms","dsp"],ipress:["idp","lip","sip"],hpress:["cp","fdp","lip"],fly:["pd","cfl"],lat:["clr","dlr","mlr","lrr","cyr"],rear:["rdf","rcf","fpl"],
- tri:["rpd","oce","ske","tdm"],bi:["idc","bcc","pcm","hmc","bcu"],vpull:["lpd","lpn","slp"],rowS:["csr","tbr","sdr","mrw"],row:["scr","csr","mrw","ocr","sdr"],lats:["sap"],
- quad:["lp","bsq","ulp","hsq"],qiso:["le"],ham:["slc","llc","rdl"],glute:["hp","sht","gb"],gluiso:["ckb","gkm","abd"],uni:["ssq","ulp"],hip:["abd","add"],calf:["scm","lpc"],core:["pl","dbg","pal","sp","cc"]};
+const PAT={vpush:["ms","dsp"],ipress:["idp","lip","sip","ibpu"],hpress:["cp","fdp","lip","ibpu"],fly:["pd","cfl"],lat:["clr","dlr","mlr","lrr","cyr"],rear:["rdf","rcf","fpl"],
+ tri:["rpd","oce","ske","tdm","barpd"],bi:["idc","bcc","pcm","hmc","bcu"],vpull:["lpd","lpn","slp"],rowS:["csr","tbr","sdr","mrw"],row:["scr","csr","mrw","ocr","sdr"],lats:["sap"],
+ quad:["lp","bsq","ulp","hsq","step"],qiso:["le"],ham:["slc","llc","rdl"],glute:["hp","sht","gb"],gluiso:["ckb","gkm","qhe"],uni:["ssq","ulp","step"],hip:["abd","add"],calf:["scm","lpc"],core:["pl","dbg","pal","sp","cc"]};
 // slots aligned with P[profile][workout].ex: [pattern, role] — m = main lift (kept for a whole block), a = accessory (changes every session)
 const SL={M:{A:[["vpush","m"],["ipress","m"],["lat","a"],["fly","a"],["tri","a"],["core","a"]],
  B:[["vpull","m"],["rowS","m"],["rear","a"],["bi","a"],["tri","a"],["lat","a"]],
@@ -767,6 +816,7 @@ const XR={pl:[[30,60],[20,40]],sp:[[20,45],[15,30]],dbg:[[8,12],[6,10]],pal:[[10
 const TM=["pl","sp"],isT=id=>TM.includes(id);
 // warm-up drills: [name EN, name FR, dose EN, dose FR, how EN, how FR, regions: g general, u upper push, p upper pull, l lower, b spine-sparing (McGill)]
 const WU={
+ march:["March in place","Marche sur place","","","Start at an easy pace and gradually pick it up.","Commence doucement puis augmente progressivement le rythme.","g"],
  bike:["Easy bike","Vélo tranquille","","","Easy pace: you can still talk.","Allure facile : tu peux encore parler.","g"],
  ell:["Elliptical","Elliptique","","","Easy pace: you can still talk.","Allure facile : tu peux encore parler.","g"],
  walk:["Incline treadmill walk","Marche inclinée sur tapis","","","Incline 8-10 %, brisk walk.","Pente 8-10 %, marche rapide.","g"],
@@ -798,58 +848,118 @@ function blkLen(){return D().pf.lvl=="beg"?6:4}
 // main lifts stay the same for a block of 4 weeks (6 for beginners), counted from the first draw
 function blkInfo(){const pf=D().pf,n=wkNo(Date.now()),r0=pf.r0!=null?pf.r0:n,L=blkLen(),b=Math.max(0,Math.floor((n-r0)/L));
   return{b,end:wk(Date.now())+(r0+(b+1)*L-n)*6048e5-12*36e5}}
-function allowed(pt,base){const pf=D().pf,no=pf.no||[],a=[...new Set([base,...(PAT[pt]||[])])].filter(id=>known(E,id)&&!(pf.back&&AX.includes(id))&&!(pf.lvl=="beg"&&E[id][5]>0&&id!==base)&&!no.includes(id));return a.length?a:[base]}
-function slotOf(w,o){const s=SL[S.p][w];if(!s)return null;if(o<s.length)return[s[o][0],s[o][1],prog()[w].ex[o][0]];const b=BON[S.p][w][o-s.length];return b?[b[0],"a",b[1][0]]:null}
+function eligible(id,base){
+  const pf=D().pf;
+  return known(E,id)&&!(pf.no||[]).includes(id)&&(isBW(id)||pf.gear.includes(E[id][4]))&&
+    !(pf.back&&AX.includes(id))&&!(pf.noOverhead&&["ms","dsp","ssq","hsq","rdl","cc","oce","ocr"].includes(id))&&
+    (pf.lvl!=="beg"||E[id][5]===0||(vmode()==="fix"&&id===base));
+}
+function allowed(pt,base){
+  return [...new Set([base,...(PAT[pt]||[])])].filter(id=>eligible(id,base));
+}
+function slotOf(w,o){
+  const s=SL[S.p][w],b=BON[S.p][w];
+  if(!s||o<0||o>=s.length+b.length)return null;
+  if(o<s.length){
+    const [pattern,role]=s[o];
+    if(pattern==="vpush"&&D().pf.noOverhead)return ["rear",role,"rdf"];
+    return [pattern,role,prog()[w].ex[o][0]];
+  }
+  const bonus=b[o-s.length];return [bonus[0],"a",bonus[1][0]];
+}
 // shuffle first so that ties (never done) are broken at random by the stable sort
 const shuf=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 function useMap(){const m={};for(const l of D().logs)for(const id in l.ex)m[id]=l.date;return m}
-function vsig(){const pf=D().pf;return[vmode(),pf.lvl,pf.back?1:0,blkInfo().b].join("|")}
+function vsig(){const pf=D().pf;return[vmode(),pf.lvl,pf.back?1:0,blkInfo().b,pf.noOverhead,pf.gear.join(","),pf.no.join(",")].join("|")}
 // the draw is kept until the workout is saved, so the preview on Today is exactly what starts
 function draw(w,again){const d=D(),pf=d.pf;if(!isRecord(d.draw))d.draw={};let dirty=false;if(pf.r0==null){pf.r0=wkNo(Date.now());dirty=true}
-  const mode=vmode(),sg=vsig(),old=d.draw[w],keep=!again&&isRecord(old)&&old.sig===sg,bex=prog()[w].ex,nS=SL[S.p][w].length,um=useMap(),
+  const mode=vmode(),sg=vsig()+"|"+Object.entries(d.sub).filter(([key])=>key.startsWith(w)).map(([key,id])=>key+id).join(","),old=d.draw[w],keep=!again&&isRecord(old)&&old.sig===sg,nS=SL[S.p][w].length,um=useMap(),
     lw=d.logs.filter(l=>l.wk===w).at(-1),prev=new Set(lw?Object.keys(lw.ex):[]),was=new Set(again&&isRecord(old)?[...(old.ids||[]),...(old.bon||[])]:[]),bk=blkInfo().b,used=new Set(),
-    L=[...SL[S.p][w].map((s,i)=>[s[0],s[1],bex[i][0]]),...BON[S.p][w].map(b=>[b[0],"a",b[1][0]])],olds=keep?[...(old.ids||[]),...(old.bon||[])]:[];
-  L.forEach((s,o)=>{const p=d.sub[w+o];if(p&&known(E,p))used.add(p)});
-  const res=L.map(([pt,role,bid],o)=>{const pin=d.sub[w+o];if(pin&&known(E,pin))return pin;
-    const all=allowed(pt,bid);if(mode==="fix")return all.includes(bid)?bid:all[0];
-    const free=all.filter(x=>!used.has(x)),a=free.length?free:all;let id;
-    if(role==="m"&&mode==="bal")id=a[bk%a.length];
-    else if(olds[o]&&a.includes(olds[o]))id=olds[o];
-    else{let c=a.filter(x=>!prev.has(x)&&!was.has(x));if(!c.length)c=a.filter(x=>!was.has(x));if(!c.length)c=a;
-      c=shuf(c).sort((x,y)=>(um[x]||0)-(um[y]||0)).slice(0,Math.max(1,Math.ceil(c.length/2)));id=c[Math.floor(Math.random()*c.length)]}
-    used.add(id);return id});
+    olds=keep?[...(old.ids||[]),...(old.bon||[])]:[];
+  const slots=Array.from({length:nS+BON[S.p][w].length},(_,o)=>slotOf(w,o)),pools=slots.map(([pt,,bid])=>allowed(pt,bid));
+  const pins=slots.map(([, ,bid],o)=>{
+    const id=d.sub[w+o];return id&&(pools[o].includes(id)||(mode==="fix"&&eligible(id,bid)))?id:null;
+  });
+  const res=Array(slots.length).fill(null);
+  // Explicit selections win. Then allocate primary and more constrained slots first.
+  pins.forEach((id,o)=>{if(id&&(!used.has(id))){res[o]=id;used.add(id)}});
+  const priority=o=>slots[o][1]==="m"?0:o<nS?1:2;
+  const order=slots.map((_,i)=>i).sort((a,b)=>priority(a)-priority(b)||pools[a].length-pools[b].length||a-b);
+  for(const o of order){
+    if(res[o])continue;
+    const [,role,bid]=slots[o],a=pools[o].filter(id=>!used.has(id)||(mode==="fix"&&id===bid&&pins.includes(id)));
+    if(!a.length)continue;
+    let id;
+    if(keep&&a.includes(olds[o]))id=olds[o];
+    else if(mode==="fix")id=a.includes(bid)?bid:a[0];
+    else if(role==="m"&&mode==="bal")id=a[bk%a.length];
+    else{
+      let candidates=a.filter(x=>!prev.has(x)&&!was.has(x));
+      if(!candidates.length)candidates=a.filter(x=>!was.has(x));
+      if(!candidates.length)candidates=a;
+      id=shuf(candidates).sort((x,y)=>(um[x]||0)-(um[y]||0))[0];
+    }
+    res[o]=id;used.add(id);
+  }
+  const drillGear={cer:"C",fpw:"C",scp:"C",dh:"M",bpa:"band",mwk:"band"};
+  const warmAllowed=id=>!drillGear[id]||pf.gear.includes(drillGear[id]);
+  const cardioAllowed=id=>id==="march"||pf.gear.includes("M");
   const r=REG[S.p][w],must=pf.back?(r==="l"?["cup","spw","bdg"]:["bdg"]):[];let wu,g;
-  if(keep&&Array.isArray(old.wu)&&old.wu.every(x=>known(WU,x))&&known(WU,old.g)&&must.every(x=>old.wu.includes(x))){wu=old.wu;g=old.g}
-  else{const pool=Object.keys(WU).filter(x=>WU[x][6]!=="g"&&WU[x][6].includes(r)&&!must.includes(x)&&!(again&&isRecord(old)&&(old.wu||[]).includes(x)&&!must.includes(x)));
-    const pool2=pool.length>=3?pool:Object.keys(WU).filter(x=>WU[x][6]!=="g"&&WU[x][6].includes(r)&&!must.includes(x));wu=[...must];
+  if(keep&&Array.isArray(old.wu)&&old.wu.every(x=>known(WU,x)&&warmAllowed(x))&&known(WU,old.g)&&cardioAllowed(old.g)&&must.every(x=>old.wu.includes(x))){wu=old.wu;g=old.g}
+  else{const pool=Object.keys(WU).filter(x=>warmAllowed(x)&&WU[x][6]!=="g"&&WU[x][6].includes(r)&&!must.includes(x)&&!(again&&isRecord(old)&&(old.wu||[]).includes(x)&&!must.includes(x)));
+    const pool2=pool.length>=3?pool:Object.keys(WU).filter(x=>warmAllowed(x)&&WU[x][6]!=="g"&&WU[x][6].includes(r)&&!must.includes(x));wu=[...must];
     while(pool2.length&&wu.length<must.length+5)wu.push(pool2.splice(Math.floor(Math.random()*pool2.length),1)[0]);
-    const gs=Object.keys(WU).filter(x=>WU[x][6]==="g"&&!(pf.back&&x==="row"));g=gs[Math.floor(Math.random()*gs.length)]}
+    const gs=Object.keys(WU).filter(x=>WU[x][6]==="g"&&cardioAllowed(x)&&!(pf.back&&x==="row"));g=gs[Math.floor(Math.random()*gs.length)]}
   const nd={sig:sg,ids:res.slice(0,nS),bon:res.slice(nS),wu,g};
   if(JSON.stringify(nd)!==JSON.stringify(old)){d.draw[w]=nd;dirty=true}
   if(dirty&&!draw.pend){draw.pend=1;setTimeout(()=>{draw.pend=0;save()},0)}
   return d.draw[w]}
-function reroll(w){if(cur()||!known(prog(),w))return;draw(w,true);save();go();notice(t("rerolled"))}
+function reroll(w){
+  if(cur()||!known(prog(),w))return;
+  const visible=()=>eff(w).ex.map(e=>e[0]).join(",");
+  const before=visible();draw(w,true);const changed=visible()!==before;save();go();notice(t(changed?"rerolled":"sameDraw"));
+}
 function tgNo(id,where){if(!known(E,id))return;const pf=D().pf,no=pf.no||[];pf.no=no.includes(id)?no.filter(x=>x!==id):[...no,id];save();
   if(where==="lib"){const el=$("ll");if(el)el.innerHTML=ll()}else go()}
 function unpin(key){const d=D();if(!known(d.sub,key))return;delete d.sub[key];if(isRecord(d.draw))delete d.draw[key[0]];save();go()}
 function pinCur(i){const c=cur();if(!c)return;const o=oix(i),id=sid(i),d=D();
   if(d.sub[c.wk+o]===id){delete d.sub[c.wk+o];U.sw=null;save();go();notice(t("unpinN"))}
-  else{d.sub[c.wk+o]=id;if(c.swp)delete c.swp[o];U.sw=null;save();go();notice(t("pinN")(nm(id)))}}
+  else{d.sub[c.wk+o]=id;if(c.swp&&!c.snapshot)delete c.swp[o];U.sw=null;save();go();notice(t("pinN")(nm(id)))}}
 function noGym(i){const c=cur();if(!c)return;const o=oix(i),id=sid(i),s=slotOf(c.wk,o),pf=D().pf;
   pf.no=[...new Set([...(pf.no||[]),id])];if(D().sub[c.wk+o]===id)delete D().sub[c.wk+o];
-  const inUse=x=>Object.keys(c.ex).some(k=>+k!==i&&sid(+k)===x),nx=[...(s?allowed(s[0],s[2]):[]),...E[id][10]].find(x=>x!==id&&known(E,x)&&!pf.no.includes(x)&&!inUse(x));
+  const nx=swapOptions(i)[0];
   save();if(nx)swapTo(i,nx,0);else{U.sw=null;go()}notice(t("noGymN")(nm(id),nx?nm(nx):""))}
 // warm-up general part: minutes of easy cardio and number of drills, by time budget
-const wGen=tm=>tm<=45?3:tm<75?4:5;
-function wDrills(tm,w){const pf=D().pf,must=pf.back?(REG[S.p][w]==="l"?3:1):0;return Math.max(tm<=45?2:tm<75?3:4,must+(tm>45?1:0))}
+const wGen=tm=>tm<=30?2:tm<=45?3:tm<75?4:5;
+function wDrills(tm,w){const pf=D().pf,must=pf.back?(REG[S.p][w]==="l"?3:1):0;return Math.max(tm<=20?1:tm<=45?2:tm<75?3:4,must+(tm>45?1:0))}
 function wuCard(){const c=cur(),w=c.wd;if(!isRecord(w)||!Array.isArray(w.d)||!known(WU,w.g))return"";const k=li();w.ok=Array.isArray(w.ok)?w.ok:[];
   const its=[[w.g,w.gm+" min",WU[w.g][4+k]],...w.d.map(x=>[x,WU[x][2+k],WU[x][4+k]])],n=its.filter((_,j)=>w.ok[j]).length,started=Object.values(c.ex).flat().some(s=>s.ok);
   if(w.x||(started&&!U.wuo))return`<button class="w wub" onclick="U.wuo=1;cur().wd.x=0;save();go()">🔥 ${t("wuT")} · ${n}/${its.length} ✓ — ${t("wuShow")}</button>`;
   return`<div class="c wuc"><div class="r wuh"><h2>🔥 ${t("wuT")}</h2><span class=mu>≈ ${w.m||""} min</span></div>${its.map(([x,dose,how],j)=>`<button class="wur ${w.ok[j]?"ok":""}" aria-pressed="${!!w.ok[j]}" onclick="wdT(${j})"><span class=wck>${w.ok[j]?"✓":""}</span><span class=wtx><b>${nmW(x)}</b>${dose?` <span class=wds>${dose}</span>`:""}<br><span class=mu>${how}</span></span></button>`).join("")}<p class=mu>${t("wuThen")}</p><button class=w onclick="cur().wd.x=1;U.wuo=0;save();go()">${t("wuClose")}</button></div>`}
 function wdT(j){const c=cur();if(!c||!isRecord(c.wd))return;const w=c.wd;w.ok=Array.isArray(w.ok)?w.ok:[];w.ok[j]=!w.ok[j];if(w.ok.filter(Boolean).length>=w.d.length+1){w.x=1;U.wuo=0}save();go()}
+const planLabels={
+  gearTitle:["Available gym equipment","Matériel disponible dans ta salle"],gearHint:["Bodyweight movements remain available.","Les mouvements au poids du corps restent disponibles."],
+  overheadOpt:["Avoid overhead presses and axial loading","Éviter les développés au-dessus de la tête et les charges axiales"],
+  sameDraw:["These settings allow the same exercises in this time slot.","Ces réglages donnent les mêmes exercices sur ce créneau."],
+  workTime:["Working sets","Séries de travail"],breakTime:["Rest between sets","Repos entre séries"],moveTime:["Setup, station changes and recovery between exercises","Installation, changements de poste et récupération entre exercices"],
+  marginTime:["Time left over","Marge disponible"],timeSplit:["Time budget","Répartition du temps"],timeEstimate:["Estimate with the planned rests. Waiting for a station may take longer.","Estimation avec les repos prévus. L’attente d’une machine peut allonger la séance."],
+  selectionMode:["Exercise variety","Variété des exercices"],missingSlots:["Unavailable movements","Mouvements indisponibles"],
+  noPlan:["Your equipment and exercise settings cannot cover the focus of this workout. Pick a different workout or update your profile.","Ton matériel et tes réglages ne permettent pas de couvrir les groupes prévus. Choisis une autre séance ou ajuste ton profil."],
+  tooLittle:["Allow more time in your profile to fit the warm-up and the main movements.","Augmente le temps dans ton profil pour garder l’échauffement et les mouvements principaux."],
+  editProfile:["Edit profile","Modifier mon profil"]
+};
+for(const [key,[en,fr]] of Object.entries(planLabels)){L.en[key]=en;L.fr[key]=fr}
+function gearToggle(id,on){
+  if(!Object.hasOwn(EQ,id)||id==="BW")return;
+  const pf=D().pf;pf.gear=Object.keys(EQ).filter(k=>k!=="BW"&&(k===id?on:pf.gear.includes(k)));save();go();
+}
+function gearSettings(){
+  const pf=D().pf;
+  return `<fieldset class=gear><legend>${t("gearTitle")}</legend>${["M","C","DB","SM"].map(id=>`<label><input type="checkbox" data-gear="${id}" ${pf.gear.includes(id)?"checked":""} oninput="gearToggle('${id}',this.checked)"> ${EQ[id][li()]}</label>`).join("")}<p class=mu>${t("gearHint")}</p></fieldset><label class=tg2><input type=checkbox id=no-overhead ${pf.noOverhead?"checked":""} oninput="spf('noOverhead',this.checked)"> ${t("overheadOpt")}</label>`;
+}
 function varCard(){const pf=D().pf,m=vmode(),no=(pf.no||[]).filter(x=>known(E,x)),pins=Object.entries(D().sub).filter(([,v])=>known(E,v));
   return`<div class=c id=varc><b>🎲 ${t("varT")}</b>${seg("var",[["fix",t("var_fix")],["bal",t("var_bal")],["max",t("var_max")]])}<p class=mu>${t("varX_"+m)(blkLen())}</p>${m==="bal"?`<p class=ts>${t("blkL")(fd(blkInfo().end))}</p>`:""}
-  <p class=lb>${t("exclT")}</p>${no.length?`<div class=chips>${no.map(x=>`<button class=chip aria-label="${t("reallow")} · ${nm(x)}" onclick="tgNo('${x}')">${nm(x)} ✕</button>`).join("")}</div>`:`<p class=mu>${t("exclNone")}</p>`}
+  ${gearSettings()}<p class=lb>${t("exclT")}</p>${no.length?`<div class=chips>${no.map(x=>`<button class=chip aria-label="${t("reallow")} · ${nm(x)}" onclick="tgNo('${x}')">${nm(x)} ✕</button>`).join("")}</div>`:`<p class=mu>${t("exclNone")}</p>`}
   <p class=lb>${t("pinT")}</p>${pins.length?`<div class=chips>${pins.map(([key,v])=>`<button class=chip aria-label="${t("unpinB")} · ${nm(v)}" onclick="unpin('${key}')">${key[0]} · ${nm(v)} ✕</button>`).join("")}</div>`:`<p class=mu>${t("pinNone")}</p>`}</div>`}
 let CH=[];
 const fd=ms=>new Date(ms).toLocaleDateString(S.lg,{day:"numeric",month:"short"}),f1=v=>(Math.round(v*10)/10).toLocaleString(S.lg),
@@ -1019,7 +1129,7 @@ async function exp(){
 }
 
 // ===== Profile, body, nutrition, adaptive plan =====
-const PFD={M:{sex:"m",age:27,h:188,w:80,lvl:"int",act:"auto",time:60,goal:"gain",tw:null,kadj:0,kat:0,back:true,inc:{DB:2,M:5,C:2.5,SM:2.5},var:"bal",no:[],r0:null},F:{sex:"f",age:null,h:null,w:null,lvl:"beg",act:"auto",time:60,goal:"loss",tw:null,kadj:0,kat:0,back:false,inc:{DB:2,M:5,C:2.5,SM:2.5},var:"bal",no:[],r0:null}};
+const PFD={M:{sex:"m",age:27,h:188,w:80,lvl:"int",act:"auto",time:60,goal:"gain",tw:null,kadj:0,kat:0,back:true,inc:{DB:2,M:5,C:2.5,SM:2.5},var:"max",noOverhead:true,gear:["M","DB","C","SM"],no:[],r0:null},F:{sex:"f",age:null,h:null,w:null,lvl:"beg",act:"auto",time:60,goal:"loss",tw:null,kadj:0,kat:0,back:false,inc:{DB:2,M:5,C:2.5,SM:2.5},var:"max",noOverhead:false,gear:["M","DB","C","SM"],no:[],r0:null}};
 const MK=["wa","hi","ch","sh","ar","th","bf"];
 function lastWE(){const h=D().hd.filter(x=>x.w!=null&&dms(x.d));return h.length?h[h.length-1]:null}
 function curW(){const e=lastWE();return e?e.w:D().pf.w}
@@ -1058,21 +1168,81 @@ function spf(k,v,live){
 function seg(key,opts){const pf=D().pf;return`<div class=sg>${opts.map(([v,l])=>`<button class="${pf[key]==v?"on":""}" onclick="spf('${key}','${v}')">${l}</button>`).join("")}</div>`}
 function fld(key,label,ph){const v=D().pf[key];return`<label class=fl><span>${label}</span><input type=text inputmode=decimal value="${v==null?"":String(v).replace(".",S.lg=="fr"?",":".")}" placeholder="${ph||""}" oninput="spf('${key}',this.value,1)" onchange="spf('${key}',this.value)"></label>`}
 // effective workout for this profile: level, time, goal
-function est(ex,cm,wm){return(wm??5)+ex.reduce((s,e)=>s+(e[1]*(40+e[4])+90)/60,0)+(cm||0)}
-// workout for this profile and day: drawn exercises, level, goal and time budget
-// fitting order when time is short: less cardio → accessories down to 2 sets → drop accessories (from the end) → main lifts down to 2 sets
-function eff(w){const d=D(),pf=d.pf,tm=+pf.time||60,dr=draw(w),beg=pf.lvl=="beg",sl=SL[S.p][w],nS=sl.length,role=o=>o<nS?sl[o][1]:"a";
- const mk1=(e,o,id)=>{const x=[...e.slice(0,7),o];x[0]=id;const f=d.sub[w+o]||id;if(f!==e[0]&&XR[f])[x[2],x[3]]=XR[f][beg?1:0];if(beg)x[5]=Math.min(4,x[5]+1);return x};
- const b=prog()[w].ex.map((e,i)=>mk1(e,i,dr.ids[i]||e[0])),bonus=BON[S.p][w].map(([,e],k)=>mk1(e,nS+k,dr.bon[k]||e[0]));
- const nWu=wDrills(tm,w),wm=wGen(tm)+nWu;let add=0,bon=0,red=0,cut=0,cm={loss:15,recomp:10}[pf.goal]||0;const over=()=>est(b,cm,wm)>tm+2;
- if(pf.lvl=="adv"||tm>=75)b.forEach(x=>{if(role(x[7])==="m"){x[1]+=1;add=1}});
- if(tm>=75)for(const x of bonus){b.push(x);if(over()){b.pop();break}bon++}
- if(tm>=90)b.forEach(x=>{if(role(x[7])==="a"&&x[1]<3){x[1]++;if(over())x[1]--}});
- while(over()&&cm>0)cm=cm>10?10:0;
- for(let i=b.length-1;i>=0&&over();i--)if(role(b[i][7])==="a"&&b[i][1]>2){while(b[i][1]>2&&over())b[i][1]--;red++}
- while(b.length>3&&over()&&role(b[b.length-1][7])==="a"){b.pop();cut++}
- for(const x of b)if(over()&&x[1]>2){x[1]--;red++}
- return{ex:b,cm,cut,add,bon,red,wm,wu:dr.wu.slice(0,nWu),g:dr.g,gm:wGen(tm),dur:Math.round(est(b,cm,wm)/5)*5}}
+const KEY_SLOTS={M:{A:[0,1,2],B:[0,1,3,4],C:[0,1,4]},F:{A:[0,1,2],B:[0,1,4],C:[0,1,3]}};
+const BOTH_SIDES=new Set(["sp","dbg","pal","slp","ocr","ulp","ssq","ckb","gkm","qhe","step","bcu","lrr","clr","cyr"]);
+function setSeconds(e){
+  const seconds=isT(e[0])?e[3]:Math.max(35,3*e[3]);
+  return seconds*(BOTH_SIDES.has(e[0])?2:1);
+}
+function budgetParts(ex,cm,wm){
+  let work=0,rest=0,move=0;
+  for(const e of ex){
+    work+=e[1]*setSeconds(e);
+    rest+=(e[1]-1)*e[4];
+    // Changing stations and recovery after the last set overlap.
+    move+=Math.max(60,e[4]);
+  }
+  const warm=wm*60,cardio=cm*60;
+  return {warm,work,rest,move,cardio,total:warm+work+rest+move+cardio};
+}
+function est(ex,cm,wm){return budgetParts(ex,cm||0,wm??5).total/60}
+function budgetPanel(p){
+  const rows=[["wuT",p.timing.warm],["workTime",p.timing.work],["breakTime",p.timing.rest],["moveTime",p.timing.move],["cdl",p.timing.cardio],["marginTime",p.budget*60-p.timing.total]];
+  const duration=s=>Math.floor(s/60)+" min"+(s%60?" "+s%60+" s":"");
+  return `<details class=budget><summary>${t("timeSplit")} · ${p.budget} min</summary><dl>${rows.filter(([,s])=>s>0).map(([label,s])=>`<div><dt>${t(label)}</dt><dd>${duration(s)}</dd></div>`).join("")}</dl><p class=mu>${t("timeEstimate")}</p></details>`;
+}
+function eff(w){
+  const pf=D().pf,budget=Number(pf.time)||60,dr=draw(w),beg=pf.lvl==="beg",priority=KEY_SLOTS[S.p][w];
+  const make=(base,i,id)=>{
+    const e=[...base.slice(0,7),i];e[0]=id;
+    if(pf.noOverhead&&base[0]==="ms"){e[2]=12;e[3]=18;e[4]=75}
+    if(XR[id]&&(id!==base[0]||id==="sp"))[e[2],e[3]]=XR[id][beg?1:0];
+    if(beg)e[5]=Math.min(4,e[5]+1);
+    return e;
+  };
+  const templates=prog()[w].ex,n=templates.length,main=i=>SL[S.p][w][i]?.[1]==="m";
+  const order=templates.map((_,i)=>i);
+  if(pf.noOverhead&&S.p==="M"&&w==="A")order.splice(0,2,1,0);
+  const ex=order.filter(i=>dr.ids[i]).map(i=>make(templates[i],i,dr.ids[i]));
+  const missing=order.filter(i=>!dr.ids[i]);
+  const groups=ex.map(e=>GR[e[0]]);
+  const required={M:{A:[["ch"],["sh"]],B:[["bk"],["ar"]],C:[["lg"],["sh"]]},F:{A:[["lg"],["gl"]],B:[["ch","bk","sh"],["co"]],C:[["gl"],["lg"]]}}[S.p][w];
+  const unavailable=required.some(group=>!group.some(id=>groups.includes(id)));
+  const gm=wGen(budget),wu=dr.wu.slice(0,wDrills(budget,w));
+  const first=ex[0],second=ex[1];
+  const ramp=first?(isBW(first[0])?1:budget<=30?2:3):0;
+  const feeler=second&&main(second[7])&&!isBW(second[0])&&GR[second[0]]!==GR[first[0]]?1:0;
+  const wm=gm+wu.length+ramp+feeler;
+  let cm={loss:15,recomp:10}[pf.goal]||0,cut=0,red=0,bon=0;
+  const over=()=>est(ex,cm,wm)>budget;
+  const add=pf.lvl==="adv"||budget>=75;
+  if(add)ex.filter(e=>main(e[7])).forEach(e=>e[1]++);
+  if(budget>=75)for(const [i,[,base]] of BON[S.p][w].entries()){
+    if(!dr.bon[i])continue;
+    ex.push(make(base,n+i,dr.bon[i]));if(over())ex.pop();else bon++;
+  }
+  if(budget>=90)for(const e of ex){
+    if(!main(e[7])&&e[1]<3){e[1]++;if(over())e[1]--}
+  }
+  while(cm>0&&over())cm=Math.max(0,cm-5);
+  while(ex.length&&over()){
+    const endFirst=ex.slice().reverse();
+    const secondary=e=>!priority.includes(e[7])&&!main(e[7]);
+    const trim=endFirst.find(e=>secondary(e)&&e[1]>2)||endFirst.find(e=>!main(e[7])&&e[1]>2)||
+      (budget<=30&&endFirst.find(e=>e[1]>2));
+    if(trim){trim[1]--;red++;continue}
+    const remove=endFirst.find(e=>secondary(e)&&required.every(group=>ex.some(other=>other!==e&&group.includes(GR[other[0]]))));
+    if(remove){ex.splice(ex.indexOf(remove),1);if(remove[7]>=n)bon--;else cut++;continue}
+    const shorten=endFirst.find(e=>e[1]>1);
+    if(shorten){shorten[1]--;red++;continue}
+    const optional=endFirst.find(e=>required.every(group=>ex.some(other=>other!==e&&group.includes(GR[other[0]]))));
+    if(!optional)break;
+    ex.splice(ex.indexOf(optional),1);if(optional[7]>=n)bon--;else cut++;
+  }
+  const timing=budgetParts(ex,cm,wm);
+  return {ex,cm,cut,add,bon,red,wm,wu,g:dr.g,gm,ramp:ramp+feeler,budget,timing,missing,
+    unavailable:unavailable||timing.total>budget*60,tooShort:!unavailable&&timing.total>budget*60,dur:Math.ceil(timing.total/60)};
+}
 const cx=()=>cur().pl||prog()[cur().wk].ex;
 
 // measurements
@@ -1105,7 +1275,7 @@ function profileCards(){const pf=D().pf,k=li(),n=nut(),we=lastWE();let h="";
  // my info
  h+=`<div class=c><b>${t("me")} — ${t(S.p=="M"?"him":"her")}</b>${seg("sex",[["m",t("male")],["f",t("female")]])}${fld("age",t("age"),"ans")}${fld("h",t("hgt"),"cm")}${we?`<p class=mu style=margin:4px_0>${t("lastw")(f1(we.w),fd(dms(we.d)))}</p>`.replace("margin:4px_0","margin:4px 0"):fld("w",t("wgt"),"kg")}
  <p class=lb>${t("lvl")}</p>${seg("lvl",[["beg",t("beg")],["int",t("int")],["adv",t("adv")]])}
- <p class=lb>${t("tim")}</p>${seg("time",[[30,"30 min"],[45,"45 min"],[60,"60 min"],[75,"75 min"],[90,"90 min"]])}<p class=mu>${t("timX")}</p>
+ <p class=lb>${t("tim")}</p>${seg("time",[[20,"20 min"],[30,"30 min"],[45,"45 min"],[60,"60 min"],[75,"75 min"],[90,"90 min"]])}<p class=mu>${t("timX")}</p>
  <p class=lb>${t("act")}</p>${seg("act",[["auto",t("aauto")],["sed",t("sed")],["light",t("light")],["acti",t("acti")],["very",t("very")]])}${pf.act=="auto"?`<p class=mu>${(()=>{const A=actF();return A.sa==null?t("autoN"):t("autoS")((Math.round(A.sa/100)*100).toLocaleString(S.lg),t(A.a))})()}</p>`:""}</div>`;
  // goal
  h+=`<div class=c><b>${t("goalT")}</b>${seg("goal",[["loss",t("loss")],["recomp",t("recomp")],["maint",t("maint")],["gain",t("gain")]])}<p class=mu>${t("gx_"+pf.goal)}</p>${fld("tw",t("tw"),"kg")}<div id=pjx>${pjH()}</div></div>`;
@@ -1127,7 +1297,7 @@ function th(){const r=document.documentElement;S.th?r.setAttribute("data-theme",
 function go(){th();CH=[];const ids=["today","plan","lib","prg","hist","set"],f={today,plan,lib,prg,hist,set}[U.tab];
 document.getElementById("v").innerHTML=`<div class=pf><div><button class="${S.p=="M"?"on":""}" onclick="switchProfile('M')">${t("him")}</button><button class="${S.p=="F"?"on":""}" onclick="switchProfile('F')">${t("her")}</button></div><div><button class="${S.lg=="fr"?"on":""}" onclick="S.lg='fr';save();go()">FR</button><button class="${S.lg=="en"?"on":""}" onclick="S.lg='en';save();go()">EN</button></div></div>`+f();
 document.getElementById("nv").innerHTML=ids.map((x,i)=>`<button class="${U.tab==x?"on":""}" onclick="navigate('${x}')">${t("tab")[i]}</button>`).join("");renderRest();hook()}
-const VER="2026-11-14e";
+const VER="2026-11-14f";
 function upd(){if(!/^https?:/.test(location.protocol))return;fetch(location.pathname+"?nocache="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(h=>{const m=/const VER="([^"]+)"/.exec(h);if(!m||m[1]==VER)return;
 if(!S.d.M.cur&&!S.d.F.cur&&!$("action-dialog").open&&U.ed==null){location.replace(location.pathname+"?v="+m[1]);return}
 const b=document.getElementById("upb");b.style.display="block";b.textContent=t("upd");b.onclick=()=>location.replace(location.pathname+"?v="+m[1])}).catch(()=>{})}

@@ -7,7 +7,7 @@ const mkctx=async(dev='iPhone 13',extra={})=>{const c=await b.newContext({...dev
 const ctx=await mkctx();const p=await ctx.newPage();p.setDefaultTimeout(6000);const errs=[];p.on('pageerror',e=>errs.push(e.message));
 await p.clock.install({time:new Date(2026,10,16,18,0,0)}); // Monday
 await p.goto(URL);
-await p.evaluate(()=>{S.gm=false;for(const k of ['M','F']){S.d[k].pf.back=false;S.d[k].pf.inc={DB:2,M:2.5,C:1.25,SM:2.5};S.d[k].pf.var='fix'}save();go()}); // legacy list mode for this suite (V2 has its own tests)
+await p.evaluate(()=>{S.gm=false;for(const k of ['M','F']){S.d[k].pf.back=false;S.d[k].pf.inc={DB:2,M:2.5,C:1.25,SM:2.5};S.d[k].pf.var='fix';S.d[k].pf.noOverhead=false}save();go()}); // legacy list mode for this suite (V2 has its own tests)
 const E=(f,a)=>p.evaluate(f,a),txt=async()=>(await p.textContent('#v')).replace(/[  ]/g,' ');
 const typ=(loc,v)=>loc.evaluate((el,v)=>{el.focus();el.value='';for(const ch of String(v)){el.value+=ch;el.dispatchEvent(new Event('input',{bubbles:true}))}if(String(v)==='')el.dispatchEvent(new Event('input',{bubbles:true}))},v);
 const tap=loc=>loc.evaluate(el=>el.click());
@@ -73,7 +73,7 @@ for(const [q,min] of [['fessiers',3],['poulie',7],['machine',8],['haltères',3],
 ok('Empty search shows a message',(await p.textContent('#ll')).includes('Aucun'),(await p.textContent('#ll')).slice(0,40));
 await typ(p.locator('#lq'),'');
 const lsel=p.locator('.lf select');
-await lsel.nth(0).selectOption('gl');{const want=await E(()=>Object.keys(E).filter(k=>GR[k]=='gl').length);ok('Filter muscle = Fessiers → '+want,(await p.locator('#ll .c').count())==want&&want==6)}
+await lsel.nth(0).selectOption('gl');{const want=await E(()=>Object.keys(E).filter(k=>GR[k]=='gl').length);ok('Filter muscle = Fessiers → '+want,(await p.locator('#ll .c').count())==want&&want==7)}
 await lsel.nth(1).selectOption('C');ok('+ equipment = Poulie → 1 (kickback)',(await p.locator('#ll .c').count())==1&&(await p.textContent('#ll')).includes('Kickback'));
 await lsel.nth(0).selectOption('');await lsel.nth(1).selectOption('');await lsel.nth(2).selectOption('1');{const want=await E(()=>Object.values(E).filter(e=>e[5]==1).length);ok('Filter level = Intermédiaire → '+want,(await p.locator('#ll .c').count())==want,String(await p.locator('#ll .c').count()))}
 await lsel.nth(2).selectOption('');await tap(p.locator('.tg2 input'));{const want=await E(()=>Object.keys(E).length-AX.length);ok('Back-friendly toggle hides '+(await E(()=>AX.length))+' exercises ('+want+')',(await p.locator('#ll .c').count())==want)}await tap(p.locator('.tg2 input'));

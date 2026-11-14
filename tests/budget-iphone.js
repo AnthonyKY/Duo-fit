@@ -1,0 +1,53 @@
+// Exercise the actual settings and session controls with iOS-style input events on a narrow screen.
+const assert=require("node:assert/strict");
+const {chromium,devices}=require("playwright");
+const ios=require("./iosinit.js");
+const url=process.env.URL||"http://localhost:8766/index.html";
+(async()=>{
+  const browser=await chromium.launch();
+  try{
+    const context=await browser.newContext({...devices["iPhone SE"],locale:"fr-FR",timezoneId:"Europe/Paris"});
+    await context.addInitScript(ios);
+    const p=await context.newPage(),errors=[];p.on("pageerror",e=>errors.push(e.message));
+    const nav=n=>p.locator("nav button").nth(n).click();
+    const workout=w=>p.getByRole("button",{name:w,exact:true}).click();
+    const preview=()=>p.locator("[data-planned]").evaluateAll(elements=>elements.map(e=>e.dataset.planned));
+    const small=()=>p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth);
+    const type=(id,string)=>p.locator(id).evaluate((el,value)=>{el.focus();el.value=value;el.dispatchEvent(new Event("input",{bubbles:true}))},string);
+    let passed=0;
+    const check=(name,ok)=>{assert.ok(ok,name);console.log("PASS "+name);passed++};
+    await p.goto(url);
+    await nav(5);await p.getByRole("button",{name:"20 min",exact:true}).click();
+    check("Maximum rotation and no-overhead preference on a new Him profile",await p.locator("#varc button.on").textContent()==="Maximale"&&await p.locator("#no-overhead").isChecked());
+    for(const id of ["M","DB","SM"])await p.locator('[data-gear="'+id+'"]').uncheck();
+    await nav(0);await workout("B");const first=await preview();
+    check("Cable-only preview covers back and arms at 20 minutes",first.length>=2&&await p.evaluate(()=>eff("B").dur<=20&&eff("B").ex.every(e=>E[e[0]][4]==="BW"||E[e[0]][4]==="C")));
+    await p.locator(".budget summary").click();
+    check("Time split shows warm-up, working sets, prescribed rests and setup on SE",await p.locator(".budget").innerText().then(txt=>["Échauffement","Séries de travail","Installation"].every(word=>txt.includes(word)))&&await small());
+    await p.locator(".rr").click();const rerolled=await preview();
+    check("Reroll changes the proposal on screen",JSON.stringify(first)!==JSON.stringify(rerolled));
+    await p.reload();await workout("B");
+    check("Reload keeps the displayed exercise IDs",JSON.stringify(await preview())===JSON.stringify(rerolled));
+    await p.getByRole("button",{name:"Commencer la séance"}).click();await p.locator(".bkx").first().click();
+    const actual=await p.evaluate(()=>cx().map((e,i)=>sid(i)));
+    check("Starting after the back check uses that precise preview",JSON.stringify(actual)===JSON.stringify(rerolled));
+    await p.locator(".modeb").getByRole("button",{name:/Mode guidé/}).click();
+    await type("#w0_0","40");
+    check("Input without change immediately updates the first ramp-up steps",await p.locator("#ramp-0 .chip").count()===3&&await p.locator("#ramp-0").innerText().then(s=>s.includes("20 kg × 8")));
+    await p.locator("#ramp-0 .chip").first().click();await p.locator(".wur").first().click();
+    await type("#r0_0","8");await p.getByRole("button",{name:/Valider la série/}).click();
+    check("Logging starts rest and the guided screen fits",await p.locator("#rest-clock").isVisible()&&await small());
+    await p.evaluate(()=>navigator.serviceWorker.ready.then(()=>true));
+    await p.reload();await p.waitForFunction(()=>!!navigator.serviceWorker.controller);
+    await context.setOffline(true);await p.reload();
+    check("Offline relaunch keeps the exact working set, warm-up check and original budget",await p.evaluate(()=>cur().budget===20&&cur().wd.ok[0]&&cur().wu[0]&&cur().ex[0][0].ok&&Number(cur().ex[0][0].w)===40));
+    await p.getByRole("button",{name:/Terminer la séance/}).click();await p.locator("#action-accept").click();await nav(4);
+    check("History counts 40 kg × 8 once, excluding preparation",await p.evaluate(()=>D().logs.at(-1).vol===320&&D().logs.at(-1).sets===1)&&await p.locator("#v").innerText().then(t=>t.includes("320")));
+    await nav(5);await p.locator('[data-gear="C"]').uncheck();await nav(0);await workout("B");
+    check("Unavailable focus routes the user back to Profile",await p.getByRole("button",{name:"Modifier mon profil"}).isVisible()&&await p.getByRole("button",{name:"Commencer la séance"}).count()===0);
+    await p.locator(".pf").getByRole("button",{name:"Elle",exact:true}).click();await p.locator(".pf").getByRole("button",{name:"EN",exact:true}).click();
+    await nav(5);check("Separate equipment settings and translations for Her",await p.locator('[data-gear="C"]').isChecked()&&await p.locator(".gear").innerText().then(t=>t.includes("Available gym equipment"))&&await small());
+    check("No native dialogs and no page errors",errors.length===0&&await p.evaluate(()=>!window.__nd.length));
+    console.log(passed+"/"+passed+" passed");
+  }finally{await browser.close()}
+})().catch(e=>{console.error("CRASH",e);process.exitCode=1});

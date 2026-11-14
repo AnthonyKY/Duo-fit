@@ -11,7 +11,7 @@ const tap=loc=>loc.evaluate(el=>el.click());
 const nav=n=>tap(p.locator('nav button').nth(n));
 const accept=()=>tap(p.locator('#action-accept'));
 await p.goto(URL);
-await E(()=>{for(const k of ['M','F'])S.d[k].pf.var='fix';save();go()}); // exercise rotation is tested in variety.js
+await E(()=>{for(const k of ['M','F']){S.d[k].pf.var='fix';S.d[k].pf.noOverhead=false}save();go()}); // exercise rotation is tested in variety.js
 
 // ===== A. Offline =====
 await E(()=>navigator.serviceWorker.ready.then(()=>true));await p.reload();

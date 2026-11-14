@@ -12,7 +12,7 @@ const accept=()=>tap(p.locator('#action-accept'));
 const DAY=864e5;let now=Date.UTC(2026,10,16,9);await p.clock.setFixedTime(now); // Monday 16 Nov 2026
 await p.goto(URL);await p.waitForTimeout(100);
 // helpers running in the page
-const plan=w=>E(w=>{S.p=S.p;const e=eff(w);return e.ex.map(x=>D().sub[w+x[7]]||x[0])},w);
+const plan=w=>E(w=>{S.p=S.p;const e=eff(w);return e.ex.map(x=>x[0])},w);
 const doSession=async(w)=>{ // start, log the first set of each exercise, save
   await E(w=>{U.pick=w;go();begin(w);if(U.chk)start(w,0)},w);
   await E(()=>{cx().forEach((e,i)=>{const id=sid(i);setv(i,0,'w',isBW(id)?'':'20');setv(i,0,'r',String(e[2]));done(i,0)})});
@@ -21,7 +21,10 @@ const doSession=async(w)=>{ // start, log the first set of each exercise, save
 const advance=async days=>{now+=days*DAY;await p.clock.setFixedTime(now)};
 
 // ===== 1. Defaults =====
-ok('1. Default variety = Équilibrée for both profiles',await E(()=>S.d.M.pf.var==='bal'&&S.d.F.pf.var==='bal'));
+ok('1. New profiles rotate all exercises by default',await E(()=>S.d.M.pf.var==='max'&&S.d.F.pf.var==='max'));
+ok('1. The default Him profile avoids overhead pressing and axial loading',await E(()=>S.d.M.pf.noOverhead&&eff('A').ex.every(e=>!['ms','dsp','ssq','hsq','rdl'].includes(e[0]))));
+// The following block exercises explicitly selected balanced mode and its reference lifts.
+await E(()=>{for(const k of ['M','F'])S.d[k].pf.var='bal';S.d.M.pf.noOverhead=false;save();go()});
 await E(()=>{S.p='M';U.pick='A';go()});
 ok('1. Block anchor set on first view',await E(()=>Number.isFinite(S.d.M.pf.r0)));
 let tx=await txt();
@@ -99,14 +102,14 @@ await E(()=>{spf('var','bal')});
 
 // ===== 9. Time budget =====
 const tb=await E(()=>{const out={};for(const pf of ['M','F'])for(const tm of [30,45,60,75,90]){S.p=pf;D().pf.time=tm;for(const w of ['A','B','C']){const e=eff(w);out[pf+w+tm]={n:e.ex.length,dur:e.dur,est:est(e.ex,e.cm,e.wm),wm:e.wm,wu:e.wu.length,bon:e.bon,main:e.ex.slice(0,2).map(x=>x[1]),sets:e.ex.map(x=>x[1])}}D().pf.time=60}S.p='M';return out});
-const over=Object.entries(tb).filter(([k,v])=>v.est>(+k.slice(2))+2).map(([k,v])=>k+':'+v.est.toFixed(1));
+const over=Object.entries(tb).filter(([k,v])=>v.est>+k.slice(2)||v.dur!==Math.ceil(v.est)).map(([k,v])=>k+':'+v.est.toFixed(1));
 ok('9. Every workout fits its budget (30-90 min, both profiles)',!over.length,over.join(' '));
-ok('9. 30 min keeps ≥3 exercises with a 5-min warm-up',['MA30','MB30','MC30','FA30','FB30','FC30'].every(k=>tb[k].n>=3&&tb[k].wm<=6),JSON.stringify(tb.MA30));
+ok('9. 30 min keeps ≥3 exercises and reserves cardio, drills and ramp-up time',['MA30','MB30','MC30','FA30','FB30','FC30'].every(k=>tb[k].n>=3&&tb[k].wm>=5&&tb[k].wm<=9),JSON.stringify(tb.MA30));
 ok('9. 45 min: accessories at 2 sets rather than dropped',tb.MA45.n>=5&&tb.MA45.sets.slice(2).some(s=>s===2),JSON.stringify(tb.MA45));
 ok('9. 75 min: +1 set on main lifts and a bonus exercise',tb.MA75.main.every(s=>s===4)&&tb.MA75.bon>=1&&tb.MA75.n===7,JSON.stringify(tb.MA75));
 ok('9. Warm-up grows with time (30 < 60 < 90)',tb.MA30.wm<tb.MA60.wm&&tb.MA60.wm<tb.MA90.wm,[tb.MA30.wm,tb.MA60.wm,tb.MA90.wm].join('<'));
 await nav(5);await tap(p.locator('.sg button',{hasText:'30 min'}));await E(()=>{U.tab='today';U.pick='A';go()});tx=await txt();
-ok('9. Profile 30 min → Today shows the shorter workout',/≈ (25|30) min, dont 5 min d'échauffement/.test(tx),tx.match(/≈[^.]*\./)?.[0]);
+ok('9. Profile 30 min → Today shows the shorter workout',tx.includes(await E(()=>{const e=eff("A");return t("durE")(e.dur,e.wm)}))&&await E(()=>eff("A").dur<=30)&&tx.includes("Répartition du temps"),tx.match(/≈[^.]*\./)?.[0]);
 await nav(5);await tap(p.locator('.sg button',{hasText:'75 min'}));await E(()=>{U.tab='today';U.pick='A';go()});tx=await txt();
 ok('9. 75 min → bonus noted on Today',tx.includes('bonus')&&tx.includes('exercices principaux'),tx.match(/≈[^🎲]*/)?.[0]);
 await nav(5);await tap(p.locator('.sg button',{hasText:'60 min'}));
@@ -151,9 +154,9 @@ await E(()=>{spf('lvl','beg');switchProfile('M')});
 // ===== 13. Storage =====
 const imp=await E(()=>{const raw=JSON.parse(JSON.stringify(S));raw.d.M.draw.A={sig:'x',ids:['nope'],bon:[],wu:['zz'],g:'bike'};raw.d.M.pf.var='weird';raw.d.M.pf.no=['clr','ghost'];
   try{const st=readState(JSON.stringify(raw));return{draw:!st.d.M.draw.A,var:st.d.M.pf.var,no:st.d.M.pf.no}}catch(e){return{err:e.message}}});
-ok('13. Corrupted draw / variety settings are repaired on load',imp.draw&&imp.var==='bal'&&JSON.stringify(imp.no)==='["clr"]',JSON.stringify(imp));
+ok('13. Corrupted draw / variety settings are repaired on load',imp.draw&&imp.var==='max'&&JSON.stringify(imp.no)==='["clr"]',JSON.stringify(imp));
 const legacy=await E(()=>{const raw={p:'M',d:{M:{logs:[],sched:{1:'A'},hd:[],ms:[],sub:{},cur:null},F:{logs:[],sched:{},hd:[],ms:[],sub:{},cur:null}}};const st=readState(JSON.stringify(raw));return st.d.M.pf.var+'|'+JSON.stringify(st.d.M.draw)});
-ok('13. Old backups load with variety on and an empty draw',legacy==='bal|{}',legacy);
+ok('13. Old backups load with variety on and an empty draw',legacy==='max|{}',legacy);
 ok('13. A session started before this update (no warm-up data) still renders',await E(()=>{U.pick='A';go();begin('A');delete cur().wd;go();const okk=document.getElementById('v').textContent.includes('Développé');return okk}));
 await tap(p.locator('#v >> text=Abandonner'));await accept();
 

@@ -15,13 +15,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        suite: [session-history.test.cjs, full.js, nut2.js, ios.js, all.js, v2.js, variety.js, pages.js]
+        suite: [session-history.test.cjs, full.js, nut2.js, ios.js, all.js, v2.js, variety.js, pages.js, budget.test.cjs, budget-iphone.js]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - if: matrix.suite != 'session-history.test.cjs'
+      - if: "${{ !endsWith(matrix.suite, '.test.cjs') }}"
         run: |
           npm install --no-save --package-lock=false playwright@1.56.1
           npx playwright install --with-deps chromium
@@ -31,7 +31,7 @@ jobs:
           SUITE: ${{ matrix.suite }}
         run: |
           set -euo pipefail
-          if [[ "$SUITE" == "session-history.test.cjs" ]]; then node --test "tests/$SUITE"; exit 0; fi
+          if [[ "$SUITE" == *.test.cjs ]]; then node --test "tests/$SUITE"; exit 0; fi
           python3 -m http.server 8766 > /tmp/http.log 2>&1 &
           for attempt in {1..50}; do curl -fsS http://localhost:8766/index.html -o /dev/null && break; sleep .2; done
           node "tests/$SUITE" | tee /tmp/results

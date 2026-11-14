@@ -4,8 +4,7 @@ Browser suites (Playwright, iPhone emulation) simulate iPhone Safari strictly (s
 - typing only fires `input` events — `change` never reaches text fields (iOS does not blur a field when a button is tapped);
 - native `alert`/`confirm` are blocked and recorded (the app must not use them).
 
-Suites other than v2.js and variety.js switch to the classic list mode and fixed exercises (no back check-in, small increments) so they keep
-testing the core flows; v2.js uses the real defaults.
+The original session fixtures select fixed exercises for repeatable progression checks. The rotation suites exercise fresh profiles with maximum variety and the optional balanced and fixed modes. Browser suites use Playwright 1.56.1 and Chromium. The 20-minute tests count ramp-up sets in the budget and exclude them from completed working volume.
 
 Run from the repo root:
 
@@ -21,6 +20,8 @@ node tests/v2.js                           # V2: offline, back check-in, warm-up
 node tests/variety.js                      # variety: drawn exercises per slot (safe pools), 4-week main-lift blocks, 🎲 reroll,
                                            # not-in-my-gym exclusions, pins, warm-up checklist, time budget 30-90 min
 node tests/pages.js                        # as GitHub Pages serves it: /Duo-fit/ sub-path, icons, offline cold start, auto-update keeps the workout
+node tests/budget-iphone.js                # 20-minute cable-only plan on iPhone SE, input-only ramp up, offline resume, history and EN
+node --test tests/budget.test.cjs          # 324 plan combinations, equipment, exclusions, time allocation, migration and session snapshots
 node --test tests/session-history.test.cjs # unit tests (no browser): durations, pause, rest per profile, storage full, stale tabs, validation
 ```
 
