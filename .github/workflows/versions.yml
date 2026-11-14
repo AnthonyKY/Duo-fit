@@ -1,0 +1,38 @@
+# Every version that reaches main with all tests green is kept as a GitHub Release:
+#   duofit-<VER>-index.html                  the app exactly as it was (open it, or host it again)
+#   duofit-<VER>-code.zip                    the whole repository at that version
+#   duofit-<VER>-historique-complet.bundle   every version and branch so far ("git clone <file>.bundle" rebuilds the repo)
+# Releases survive anything that happens to the main branch; download the latest one to iCloud from time to time.
+name: Version copies
+on:
+  workflow_run:
+    workflows: [DUOFIT tests]
+    types: [completed]
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  keep:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+      - name: Save this version (app, code, full history)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          VER=$(grep -o 'const VER="[^"]*"' index.html | cut -d'"' -f2)
+          TAG="v$VER"
+          if gh release view "$TAG" >/dev/null 2>&1; then TAG="v$VER-${SHA:0:7}"; fi
+          if gh release view "$TAG" >/dev/null 2>&1; then echo "already saved"; exit 0; fi
+          cp index.html "duofit-$VER-index.html"
+          git archive --format=zip -o "duofit-$VER-code.zip" "$SHA"
+          git bundle create "duofit-$VER-historique-complet.bundle" --all
+          gh release create "$TAG" --target "$SHA" --title "Duo-fit $VER ($(date -u +%Y-%m-%d))" \
+            --notes "Copie automatique de la version $VER (commit ${SHA:0:7}), publiée après tous les tests verts. index.html = l'app telle quelle ; code.zip = le dépôt à cette version ; historique-complet.bundle = toutes les versions et branches (git clone fichier.bundle)." \
+            "duofit-$VER-index.html" "duofit-$VER-code.zip" "duofit-$VER-historique-complet.bundle"
