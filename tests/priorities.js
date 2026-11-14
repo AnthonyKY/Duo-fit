@@ -102,13 +102,13 @@ const sh=await E(()=>({rem:remMin(),ok:Object.values(cur().ex).flat().filter(s=>
 ok("3. 'Il me reste 15 min': both logged sets intact, chest and shoulders still there, remaining ≤ 15 min",sh.rem<=15&&sh.ok.includes("22x10")&&sh.ok.includes("40x9")&&sh.groups.includes("ch")&&sh.groups.includes("sh"),JSON.stringify(sh));
 // airplane mode: relaunch offline in the middle of the workout
 const snap=await E(()=>JSON.stringify(cur().ex));const sec=await E(()=>elapsedSeconds(cur()));
-await ctx.setOffline(true);await p.reload();await p.waitForTimeout(200);
+await BR.offline(ctx,true);await p.reload();await p.waitForTimeout(200);
 ok("3. Airplane mode: app relaunches with the workout, same sets, timer not reset",await E(([snap,sec])=>!!cur()&&JSON.stringify(cur().ex)===snap&&elapsedSeconds(cur())>=sec,[snap,sec])&&(await txt()).includes("Terminer la séance"));
 await E(()=>{const i=cx().findIndex((e,k)=>cur().ex[k].some(s=>!s.ok));const j=cur().ex[i].findIndex(s=>!s.ok);setv(i,j,"w",isBW(sid(i))?"":"10");setv(i,j,"r","12");done(i,j)});
 await tap(p.locator("#v button",{hasText:"Terminer la séance"}));await accept();
 const off=await E(()=>({n:S.d.M.logs.length,last:S.d.M.logs.at(-1)}));
 ok("3. Finished offline: saved in history with its 3 sets and real duration",off.n===5&&off.last.sets===3&&off.last.durSec>=150,JSON.stringify({n:off.n,sets:off.last.sets,dur:off.last.durSec}));
-await ctx.setOffline(false);await p.reload();await p.waitForTimeout(200);
+await BR.offline(ctx,false);await p.reload();await p.waitForTimeout(200);
 ok("3. Back online: history unchanged after reload",await E(()=>S.d.M.logs.length===5&&!cur()));
 // abandon a workout: nothing else touched
 const vols=await E(()=>JSON.stringify(S.d.M.logs.map(l=>[l.date,l.vol])));

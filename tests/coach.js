@@ -57,7 +57,7 @@ await p.clock.runFor(180e3);
 await tap(card(2).locator('.xt.x0'));await p.clock.runFor(120e3);
 await type('#w2_0','7,5');await type('#r2_0','14');await tap(p.locator('[data-row="2-0"] button'));
 // airplane mode + relaunch while exercise 3 is being timed
-await ctx.setOffline(true);await p.reload();await p.waitForTimeout(150);
+await BR.offline(ctx,true);await p.reload();await p.waitForTimeout(150);
 ok('1b. Offline relaunch: the running exercise timer is still running with its time',await E(()=>!!cur()&&cur().xr===xkey(2)&&Math.floor(xMs(xkey(2))/1000)>=120));
 await p.clock.runFor(120e3);await tap(card(2).locator('.xbt'));
 const sums=await E(()=>({a:Math.floor(xMs(xkey(0))/1000),b:Math.floor(xMs(xkey(2))/1000),wall:elapsedSeconds(cur())}));
@@ -71,7 +71,7 @@ await E(()=>{U.sum=null;U.tab='hist';go()});tx=await txt();
 ok('1b. History (offline): 06:00, with time per exercise',tx.includes('06:00')&&tx.includes("Temps d'exercice 06:00")&&(await p.locator('.history-entry details .xt').count())===2);
 await p.reload();await p.waitForTimeout(150);await E(()=>{U.tab='hist';go()});
 ok('1b. History after another offline relaunch: still 06:00',(await txt()).includes("Temps d'exercice 06:00"));
-await ctx.setOffline(false);await p.reload();await p.waitForTimeout(150);await E(()=>{U.tab='hist';go()});
+await BR.offline(ctx,false);await p.reload();await p.waitForTimeout(150);await E(()=>{U.tab='hist';go()});
 ok('1b. Back online: still 06:00',(await txt()).includes("Temps d'exercice 06:00"));
 
 // ===== 2. Advice and next target =====

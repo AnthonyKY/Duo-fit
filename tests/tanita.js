@@ -66,7 +66,7 @@ ok('2. Trunk, arms and legs open on demand (muscle kg + fat %)',await E(()=>docu
 for(const [k,v] of [['trunkMuscle','31,0'],['trunkFat','16,0'],['leftArmMuscle','3,6'],['leftArmFat','18,0'],['rightArmMuscle','3,7']])await type('#b_'+k,v);
 ok('2. iPhone SE: whole form open still fits',await fit());
 // iOS drops the page while you check the scale photo, with no network
-await ctx.setOffline(true);await p.reload();await p.waitForTimeout(150);
+await BR.offline(ctx,true);await p.reload();await p.waitForTimeout(150);
 ok('2. Offline relaunch: the app opens',await E(()=>typeof S==='object'&&!!document.querySelector('nav button')));
 await nav(5);
 ok('2. …and the unfinished reading is still there (values, conditions, open section)',await E(()=>!!$('bdf')&&$('b_fatKg').value==='15,5'&&$('b_bmr').value==='1720'&&$('b_rightArmMuscle').value==='3,7'&&$('b_d').value==='2026-11-17'&&document.querySelector('.bwc .on').textContent==='Avant séance'&&document.querySelector('.bseg').open));
@@ -86,7 +86,7 @@ await tap(row('17 nov.').locator('summary'));
 let det=await txt('#bdc');
 ok('2. Details: fat 11,2 kg · 15,5 %, muscle, 1 720 kcal/jour, segments',det.includes('11,2 kg · 15,5 %')&&det.includes('1 720 kcal/jour')&&det.includes('Jambe droite')&&det.includes('9,9 kg · 15,2 %'));
 ok('2. Not compared with the after-workout reading: says why',det.includes('Pas encore d’autre relevé « avant séance »')&&det.includes('« après séance » : pas directement comparable'));
-await ctx.setOffline(false);
+await BR.offline(ctx,false);
 
 // ===== 3. same conditions → real comparison =====
 await tap(addBtn());await tap(chip('Avant séance'));await type('#b_weight','71,9');await type('#b_fatPct','15,2');await tap(saveBtn());

@@ -16,10 +16,10 @@ await E(()=>{for(const k of ['M','F']){S.d[k].pf.var='fix';S.d[k].pf.noOverhead=
 // ===== A. Offline =====
 await E(()=>navigator.serviceWorker.ready.then(()=>true));await p.reload();
 ok('A. Service worker controls the page',await E(()=>!!navigator.serviceWorker.controller));
-await ctx.setOffline(true);await p.reload();
+await BR.offline(ctx,true);await p.reload();
 ok('A. App opens with no network (airplane mode)',(await p.textContent('nav')).includes('Séance')&&(await txt()).includes('Commencer la séance'));
 ok('A. Manifest + home-screen icon are cached',await E(async()=>{const c=await caches.open('duofit-v1');return !!(await c.match(new URL('manifest.webmanifest',location).href))&&!!(await c.match(new URL('icon-180.png',location).href))}));
-await ctx.setOffline(false);
+await BR.offline(ctx,false);
 
 // ===== past data for Him: shoulder press 3×12 @ 50 kg (top of range) =====
 await E(()=>{const d=S.d.M,now=Date.now();d.logs=[{date:now-3*864e5,wk:'A',dur:50,durSec:3000,ex:{ms:[{w:50,r:12},{w:50,r:12},{w:50,r:12}],idp:[{w:20,r:10},{w:20,r:9},{w:20,r:9}]},note:'',vol:2340,sets:6,pr:[]}];save();go()});
