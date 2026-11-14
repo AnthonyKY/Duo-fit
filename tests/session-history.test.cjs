@@ -114,3 +114,16 @@ test("suspended or locked for longer than the rest interval, session timer catch
   assert.equal(h.el("session-clock").textContent,"55:00");assert.equal(h.run("cur().rest.remainingMs"),0);
   const b=harness({shared:h.shared,now:Date.UTC(2026,10,13,12,56)});assert.equal(b.el("session-clock").textContent,"56:00");
 });
+
+test("Tanita partial readings, segmental data, profile isolation, edit, deletion and backup round trip",()=>{
+  const h=harness();h.run("navigate('set');U.bodyEdit=-1");const enter=(id,v)=>h.el("body-"+id).value=v;
+  enter("date","2026-11-12");enter("context","after");enter("weight","72,1");enter("fatPct","110");
+  h.run("saveBody()");assert.equal(h.run("D().body.length"),0);
+  enter("fatPct","18,2");enter("leftArmMuscle","3,1");h.run("saveBody()");
+  assert.equal(h.state().d.M.body[0].leftArmMuscle,3.1);assert.equal(h.state().d.F.body.length,0);
+  const b=harness({raw:h.state()});assert.equal(b.run("D().body[0].when"),"after");
+  b.run("navigate('set');U.bodyEdit=0");b.el("body-date").value="2026-11-12";b.el("body-context").value="before";b.el("body-weight").value="72";b.run("saveBody()");
+  assert.equal(b.state().d.M.body.length,1);assert.equal(b.state().d.M.body[0].when,"before");
+  b.run("removeBody(0);closeAction()");assert.equal(b.state().d.M.body.length,1);
+  b.run("removeBody(0)");b.el("action-accept").onclick();assert.equal(b.state().d.M.body.length,0);
+});
