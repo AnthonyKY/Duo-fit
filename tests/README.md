@@ -34,6 +34,9 @@ node tests/tanita.js                        # body composition (smart scale): pa
 node tests/tanita-calc.js                   # what the app computes from partial body-composition readings: kg ↔ %, weight from a pair (± rounding margin),
                                            # same-day weigh-in, sum of segments, fat-free mass, bone, BMI, FFMI, estimated BMR, left/right gaps,
                                            # live while typing (no redraw), never stored, comparisons, own height per profile
+node tests/stabilite.js                     # stability audit: profile switch with another tab / refused saves, two tabs, storage errors,
+                                           # next target after a lightened end of exercise, backup round trip and failed restores,
+                                           # body-composition masses heavier than the weight + margins, timers across lock / reload
 node tests/pages.js                        # as GitHub Pages serves it: /Duo-fit/ sub-path, icons, offline cold start, auto-update keeps the workout
 node tests/budget-iphone.js                # 20-minute cable-only plan on iPhone SE, input-only ramp up, offline resume, history and EN
 node --test tests/budget.test.cjs          # 324 plan combinations, equipment, exclusions, time allocation, migration and session snapshots

@@ -210,7 +210,7 @@ Object.assign(L.fr,{
   bCmp:(d,s)=>`Depuis le ${d}, mêmes conditions : ${s}`,bCmp0:d=>`Relevé précédent dans les mêmes conditions : ${d} (aucune valeur commune à comparer).`,
   bCmpX:(d,a,w)=>`Pas encore d’autre relevé « ${w} ». Celui du ${d} a été pris « ${a} » : pas directement comparable.`,
   bFirst:w=>`Premier relevé « ${w} ». Pour comparer, refais-le dans les mêmes conditions.`
-  ,bCalcT:"Calculs",bCalcP:"Calculs : ",bCalcX:"≈ = calculé à partir de tes saisies (jamais enregistré). ± = marge due aux arrondis de la balance.",
+  ,bCalcT:"Calculs",bCalcP:"Calculs : ",bClashT:"⚠️ Incompatible",bClash:(l,v,w,src)=>`${l} ${v} kg > poids ${w} kg${src?" ("+src+")":""} : l’une des deux valeurs est fausse, calculs suspendus.`,bCalcd:"calculé",bCalcX:"≈ = calculé à partir de tes saisies (jamais enregistré). ± = marge due aux arrondis de la balance.",
   bFromHd:"pesée du jour",bFromSeg:"somme des segments",bFfm:"Masse maigre",bBone:"Os (estimé)",bBoneBad:v=>`incohérent (poids − gras − muscle = ${v} kg), vérifie la saisie`,
   bBmi:"IMC",bFfmi:"FFMI (indice de masse maigre)",bFfmiN:v=>`${v} ramené à 1,80 m`,bFfmiRef:"FFMI, repère homme : ≈ 18–20 en moyenne ; ≈ 25 = plus haute valeur observée chez des sportifs sans stéroïdes (Kouri, 1995), pas une limite individuelle.",
   bBmrEst:"Métabolisme estimé (Cunningham)",bAsym:"Écart gauche / droite (muscle)",bArms:"bras",bLegs:"jambes",bAsymOk:"dans la marge d’arrondi"
@@ -239,7 +239,7 @@ Object.assign(L.en,{
   bCmp:(d,s)=>`Since ${d}, same conditions: ${s}`,bCmp0:d=>`Previous reading under the same conditions: ${d} (no value in common to compare).`,
   bCmpX:(d,a,w)=>`No other “${w}” reading yet. The one on ${d} was taken “${a}”: not directly comparable.`,
   bFirst:w=>`First “${w}” reading. To compare, repeat it under the same conditions.`
-  ,bCalcT:"Calculations",bCalcP:"Calculations: ",bCalcX:"≈ = computed from what you entered (never stored). ± = margin from the scale's rounding.",
+  ,bCalcT:"Calculations",bCalcP:"Calculations: ",bClashT:"⚠️ Inconsistent",bClash:(l,v,w,src)=>`${l} ${v} kg > weight ${w} kg${src?" ("+src+")":""}: one of them is wrong, calculations on hold.`,bCalcd:"computed",bCalcX:"≈ = computed from what you entered (never stored). ± = margin from the scale's rounding.",
   bFromHd:"today's weigh-in",bFromSeg:"sum of segments",bFfm:"Fat-free mass",bBone:"Bone (estimated)",bBoneBad:v=>`inconsistent (weight − fat − muscle = ${v} kg), check the values`,
   bBmi:"BMI",bFfmi:"FFMI (fat-free mass index)",bFfmiN:v=>`${v} scaled to 1.80 m`,bFfmiRef:"FFMI, reference for men: ≈ 18–20 on average; ≈ 25 = highest value seen in steroid-free athletes (Kouri, 1995), not a personal limit.",
   bBmrEst:"Estimated BMR (Cunningham)",bAsym:"Left / right gap (muscle)",bArms:"arms",bLegs:"legs",bAsymOk:"within rounding"
@@ -262,7 +262,7 @@ Object.assign(L.en,{
   nothingLeft:"Every set of this exercise is already entered: nothing left to replace.",
   xStart:"Start exercise",xStartW:"Start warm-up",xPause:"Pause",xGo:"Resume",xb_xok:"on time",xb_xwarn:"over by up to 10 %",xb_xover:"over by more than 10 %",
   wallT:"Session clock",xHint:"Tap ▶ Start exercise on each exercise: only that time counts in the exercise time.",exTime:"Exercise time",
-  nx_at:w=>` at ${w} kg`,nx_mup:(a,b)=>`You moved up from ${a} to ${b} kg during the exercise: do every set at ${b} kg next time. `,nx_mdown:(a,b,r)=>`You dropped from ${a} kg (${r}) to ${b} kg: do every set at ${b} kg next time. `,
+  nx_at:w=>` at ${w} kg`,nx_mback:(a,b)=>`Lighter sets at the end (${a} kg): your working load stays ${b} kg. `,nx_mup:(a,b)=>`You moved up from ${a} to ${b} kg during the exercise: do every set at ${b} kg next time. `,nx_mdown:(a,b,r)=>`You dropped from ${a} kg (${r}) to ${b} kg: do every set at ${b} kg next time. `,
   nx_back:o=>`Back-adapted workout: don't go up. Keep ${o.Wt} kg, aim for ${o.r}${o.u}.`,
   nx_heavy:o=>`${o.first}${o.u}${o.at} from the first set (target ${o.lo}–${o.hi}): too heavy. Next time ${o.wt} kg, aim for at least ${o.lo}${o.u}.`,
   nx_hardbw:o=>`${o.first}${o.u} from the first set (target ${o.lo}–${o.hi}): too hard. Use an easier version and aim for ${o.lo}${o.u}.`,
@@ -318,7 +318,7 @@ Object.assign(L.fr,{
   nothingLeft:"Toutes les séries de cet exercice sont déjà saisies : rien à remplacer.",
   xStart:"Lancer l'exercice",xStartW:"Lancer l'échauffement",xPause:"Pause",xGo:"Reprendre",xb_xok:"dans le temps prévu",xb_xwarn:"dépassement ≤ 10 %",xb_xover:"dépassement > 10 %",
   wallT:"Chrono global",xHint:"Touche ▶ Lancer l'exercice sur chaque exercice : seul ce temps compte dans le temps d'exercice.",exTime:"Temps d'exercice",
-  nx_at:w=>` à ${w} kg`,nx_mup:(a,b)=>`Tu es monté de ${a} à ${b} kg en cours d'exercice : la prochaine fois, fais toutes les séries à ${b} kg. `,nx_mdown:(a,b,r)=>`Tu es redescendu de ${a} kg (${r}) à ${b} kg : la prochaine fois, fais toutes les séries à ${b} kg. `,
+  nx_at:w=>` à ${w} kg`,nx_mback:(a,b)=>`Fin d'exercice allégée à ${a} kg : ta charge de travail reste ${b} kg. `,nx_mup:(a,b)=>`Tu es monté de ${a} à ${b} kg en cours d'exercice : la prochaine fois, fais toutes les séries à ${b} kg. `,nx_mdown:(a,b,r)=>`Tu es redescendu de ${a} kg (${r}) à ${b} kg : la prochaine fois, fais toutes les séries à ${b} kg. `,
   nx_back:o=>`Séance adaptée au dos : ne monte pas. Garde ${o.Wt} kg, vise ${o.r}${o.u}.`,
   nx_heavy:o=>`${o.first}${o.u}${o.at} dès la 1re série (objectif ${o.lo}–${o.hi}) : trop lourd. Prochaine fois ${o.wt} kg, vise au moins ${o.lo}${o.u}.`,
   nx_hardbw:o=>`${o.first}${o.u} dès la 1re série (objectif ${o.lo}–${o.hi}) : trop difficile. Prends une version plus facile et vise ${o.lo}${o.u}.`,
@@ -870,7 +870,10 @@ function cdo(){
 }
 function switchProfile(profile){
   if(profile===S.p)return;
-  clearView();S.p=profile;save();go();scrollTo(0,0);
+  clearView();S.p=profile;
+  // another tab had just saved: save() loaded its newer data instead, so apply the switch on top of it (nothing else changes)
+  if(!save()&&S.p!==profile){S.p=profile;save()}
+  go();scrollTo(0,0);
 }
 function navigate(tab){
   closeAction();U.tab=tab;U.ed=null;U.sum=null;go();scrollTo(0,0);
@@ -1352,8 +1355,11 @@ function xTick(now){const c=cur();if(!c||!c.xr||!c.xt)return;const ms=xMs(c.xr,n
 // ===== Next target from what was actually done: the same engine for the advice during the workout, the summary and next time's loads =====
 // working load = the load of the last set; the sets at that load decide; other loads are mentioned (load changed during the exercise)
 function nextOf(id,sets,e,back){if(!e||!sets||!sets.length)return null;const n=e[1],lo=e[2],hi=e[3],bw=isBW(id),stp=isT(id)?5:1;
-  const W=sets.at(-1).w||0,atW=sets.filter(s=>(s.w||0)===W),rs=atW.map(s=>s.r),first=rs[0],minR=Math.min(...rs),maxR=Math.max(...rs),oth=sets.filter(s=>(s.w||0)!==W);
-  const o={w:W,r:lo,k:"keep",W,n,lo,hi,done:sets.length,minR,maxR,first,rest:e[4],mix:oth.length?{w:oth[0].w||0,r:Math.min(...oth.map(s=>s.r)),up:W>(oth[0].w||0)}:null};
+  // working load = the last set's, except when the end of the exercise was lightened after at least half of the sets were done
+  // in range at a heavier load (fatigue back-off): then the heavier load stays the reference
+  const L=sets.at(-1).w||0,H=Math.max(...sets.map(s=>s.w||0)),hv=sets.filter(s=>(s.w||0)===H),bo=H>L&&hv.length*2>=sets.length&&Math.min(...hv.map(s=>s.r))>=lo;
+  const W=bo?H:L,atW=sets.filter(s=>(s.w||0)===W),rs=atW.map(s=>s.r),first=rs[0],minR=Math.min(...rs),maxR=Math.max(...rs),oth=sets.filter(s=>(s.w||0)!==W);
+  const o={w:W,r:lo,k:"keep",W,n,lo,hi,done:sets.length,minR,maxR,first,rest:e[4],mix:oth.length?{w:oth[0].w||0,r:Math.min(...oth.map(s=>s.r)),up:W>(oth[0].w||0),bo}:null};
   if(back>=1){o.k="back";o.r=Math.max(lo,Math.min(hi,minR))}
   else if(first<lo){if(bw||!W){o.k="hardbw";o.r=lo}else{let d=rdn(id,W*.9);if(!(d<W))d=Math.max(0,r2(W-incOf(id)));o.w=d;o.k="heavy"}}
   else if(minR<lo){o.k="fatigue"}
@@ -1364,7 +1370,7 @@ function nextOf(id,sets,e,back){if(!e||!sets||!sets.length)return null;const n=e
   return o}
 function nxUnit(id){return isT(id)?" s":" reps"}
 function nxText(id,o){if(!o)return"";const u=nxUnit(id),W=f1(o.W),at=o.W>0?t("nx_at")(W):"";
-  const pre=o.mix?(o.mix.up?t("nx_mup")(f1(o.mix.w),W):t("nx_mdown")(f1(o.mix.w),W,o.mix.r+u)):"";
+  const pre=o.mix?(o.mix.bo?t("nx_mback")(f1(o.mix.w),W):o.mix.up?t("nx_mup")(f1(o.mix.w),W):t("nx_mdown")(f1(o.mix.w),W,o.mix.r+u)):"";
   return pre+t("nx_"+o.k)({...o,u,at,Wt:W,wt:f1(o.w),nxt:o.nx?f1(o.nx):""})}
 function nxTarget(id,o){return o?`${o.w>0?f1(o.w)+" kg · ":""}${o.r}${nxUnit(id)} × ${o.n}`:""}
 // review lines: the next target (from the engine), vs last time, time over target
@@ -1705,12 +1711,14 @@ function bCore(r,pf,hd,hdw){
     if(pr)put("weight",v[pr[0]]/v[pr[1]]*100,"≈");
     else{const h=(hd||[]).find(x=>x.d===r.d&&x.w!=null);if(h)put("weight",hdw??+h.w,"hd")}
   }
-  const W=v.weight;
-  if(W!=null)for(const [K,P] of [["fatKg","fatPct"],["muscleKg","musclePct"]]){
+  let W=v.weight;
+  // a mass heavier than the weight it belongs to: the weight or that value is wrong, so nothing is computed from the pair
+  const o={v,c};const cl=W!=null?["fatKg","muscleKg"].find(k=>v[k]!=null&&v[k]>W):null;
+  if(cl){o.clash={k:cl,v:v[cl],w:W,src:c.weight}}
+  if(W!=null&&!cl)for(const [K,P] of [["fatKg","fatPct"],["muscleKg","musclePct"]]){
     if(v[K]!=null&&v[P]==null)put(P,v[K]/W*100,"≈");else if(v[P]!=null&&v[K]==null)put(K,W*v[P]/100,"≈");
   }
-  const o={v,c};
-  if(W!=null&&v.fatKg!=null)o.ffm=W-v.fatKg;
+  if(W!=null&&v.fatKg!=null&&!cl)o.ffm=W-v.fatKg;
   if(o.ffm!=null&&v.muscleKg!=null){const x=o.ffm-v.muscleKg;if(x>=1&&x<=6)o.bone=x;else o.boneBad=x}
   const H=pf&&+pf.h>=120&&+pf.h<=230?pf.h/100:null;
   if(H&&W!=null)o.bmi=W/(H*H);
@@ -1736,7 +1744,7 @@ function bDerive(r,pf,hd){
   if(rel.length>1&&rel.length<=10){for(let m=0;m<(1<<rel.length);m++)add(ev(rel.map(([k,st],i)=>[k,(m>>i)&1?st:-st])));for(const q of comp)err[q]=Math.max(base[q]-lo[q],hi[q]-base[q])}
   else for(const q of comp){let e=0;for(const [k,st] of rel){const a=one[k+st][q],b=one[k+(-st)][q];e+=Math.max(a!=null?Math.abs(a-base[q]):0,b!=null?Math.abs(b-base[q]):0)}err[q]=rel.length>10?e*1.02:Math.max(e,base[q]-lo[q],hi[q]-base[q])}
   o.e={};for(const k in o.v)o.e[k]=o.c[k]===""?(k==="bmr"?.5:B_E):err["v."+k]||0;
-  o.effm=err.ffm||0;o.ebone=err.bone||0;
+  o.effm=err.ffm||0;o.ebone=err.bone||0;o.ebmi=err.bmi||0;o.effmi=err.ffmi||0;
   return o;
 }
 const bPmV=err=>Math.ceil(err*10-1e-9)/10,bPm=err=>err>.3?` (±${f1(bPmV(err))})`:"";
@@ -1744,10 +1752,11 @@ const bPmV=err=>Math.ceil(err*10-1e-9)/10,bPm=err=>err>.3?` (±${f1(bPmV(err))})
 function bVal(x,k,u){const val=x.v[k];if(val==null)return"";const how=x.c[k],txt=(k==="bmr"?Math.round(val).toLocaleString(S.lg):f1(val))+(u?" "+u:"");
   return how?`<span class=bcv>≈ ${txt}${bPm(x.e[k])}${how==="hd"?" · "+t("bFromHd"):how==="seg"?" · "+t("bFromSeg"):""}</span>`:txt}
 function bCalcList(x,sex){const L=[];
+  if(x.clash)L.push([t("bClashT"),t("bClash")(t(x.clash.k==="fatKg"?"bFat":"bMus"),f1(x.clash.v),f1(x.clash.w),x.clash.src==="hd"?t("bFromHd"):x.clash.src?t("bCalcd"):"")]);
   if(x.ffm!=null)L.push([t("bFfm"),`≈ ${f1(x.ffm)} kg${bPm(x.effm)}`]);
-  if(x.bone!=null)L.push([t("bBone"),`≈ ${f1(x.bone)} kg`]);else if(x.boneBad!=null)L.push([t("bBone"),t("bBoneBad")(f1(x.boneBad))]);
-  if(x.bmi!=null)L.push([t("bBmi"),f1(x.bmi)]);
-  if(x.ffmi!=null)L.push([t("bFfmi"),f1(x.ffmi)+(x.ffmiN!=null?` · ${t("bFfmiN")(f1(x.ffmiN))}`:"")]);
+  if(x.bone!=null)L.push([t("bBone"),`≈ ${f1(x.bone)} kg${bPm(x.ebone)}`]);else if(x.boneBad!=null)L.push([t("bBone"),t("bBoneBad")(f1(x.boneBad))]);
+  if(x.bmi!=null)L.push([t("bBmi"),f1(x.bmi)+bPm(x.ebmi)]);
+  if(x.ffmi!=null)L.push([t("bFfmi"),f1(x.ffmi)+bPm(x.effmi)+(x.ffmiN!=null?` · ${t("bFfmiN")(f1(x.ffmiN))}`:"")]);
   if(x.bmrEst!=null)L.push([t("bBmrEst"),`≈ ${x.bmrEst.toLocaleString(S.lg)} ${t("bKcal")}`]);
   const as=[["arm","bArms"],["leg","bLegs"]].filter(([n])=>x[n]);
   if(as.length)L.push([t("bAsym"),as.map(([n,l])=>`${t(l)} ${f1(x[n].a)} %`).join(" · ")+(as.every(([n])=>x[n].zero)?` (${t("bAsymOk")})`:"")]);
@@ -1838,7 +1847,7 @@ function th(){const r=document.documentElement;S.th?r.setAttribute("data-theme",
 function go(){th();CH=[];const ids=["today","plan","lib","prg","hist","set"],f={today,plan,lib,prg,hist,set}[U.tab];
 document.getElementById("v").innerHTML=`<div class=pf><div><button class="${S.p=="M"?"on":""}" onclick="switchProfile('M')">${t("him")}</button><button class="${S.p=="F"?"on":""}" onclick="switchProfile('F')">${t("her")}</button></div><div><button class="${S.lg=="fr"?"on":""}" onclick="S.lg='fr';save();go()">FR</button><button class="${S.lg=="en"?"on":""}" onclick="S.lg='en';save();go()">EN</button></div></div>`+f();
 document.getElementById("nv").innerHTML=ids.map((x,i)=>`<button class="${U.tab==x?"on":""}" onclick="navigate('${x}')">${t("tab")[i]}</button>`).join("");renderRest();hook()}
-const VER="2026-11-14p";
+const VER="2026-11-14q";
 function upd(){if(!/^https?:/.test(location.protocol))return;fetch(location.pathname+"?nocache="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(h=>{const m=/const VER="([^"]+)"/.exec(h);if(!m||m[1]==VER)return;
 if(!S.d.M.cur&&!S.d.F.cur&&!$("action-dialog").open&&U.ed==null){location.replace(location.pathname+"?v="+m[1]);return}
 const b=document.getElementById("upb");b.style.display="block";b.textContent=t("upd");b.onclick=()=>location.replace(location.pathname+"?v="+m[1])}).catch(()=>{})}
