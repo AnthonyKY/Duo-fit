@@ -553,6 +553,7 @@ function swapTo(i,nid,always){const c=cur();if(!c||!known(E,nid))return;ensurePl
   if(kept.length){let q=100+oi;while(c.pl.some(e=>e[7]===q))q+=100;const dn=[...c.pl[i]];dn[0]=old;dn[1]=kept.length;dn[7]=q;ne[1]=rest;
     c.pl.splice(i,0,dn);const ex={};Object.keys(c.ex).map(Number).sort((x,y)=>x-y).forEach(k=>{if(k<i)ex[k]=c.ex[k];else if(k>i)ex[k+1]=c.ex[k]});ex[i]=kept;ex[i+1]=fresh(rest);c.ex=ex}
   else{c.pl[i]=ne;c.ex[i]=fresh(a.length)}
+  if(i<=1)c.wu=[];
   U.sw=null;U.open=-1;U.gi=null;save();go();notice(t(always?"swAlways":"swToday")(nm(nid)))}
 // rep range of an exercise placed in a slot: its own range for holds and per-side work, otherwise the slot's range
 function rangeFor(w,o,id){const beg=D().pf.lvl=="beg";if(XR[id])return XR[id][beg?1:0];const sl=SL[S.p][w]||[],b=o<sl.length?prog()[w].ex[o]:(BON[S.p][w][o-sl.length]||[])[1];if(b?.[0]==="ms"&&PAT.rear.includes(id))return[12,18];return b?[b[2],b[3]]:null}
@@ -567,15 +568,33 @@ function remMin(){const c=cur(),pl=cx();
     const remaining=pl.flatMap((e,i)=>{const n=c.ex[i].filter(s=>!s.ok).length;return n?[[sid(i),n,...e.slice(2,7)]]:[]});
     const w=c.wd,worked=Object.values(c.ex).some(a=>a.some(s=>s.ok));
     const warm=w&&!worked?Math.max(0,(w.x?0:(w.ok?.[0]?0:w.gm)+w.d.filter((_,i)=>!w.ok?.[i+1]).length)+(w.ramp||0)):0;
-    return est(remaining,c.cmok?0:c.cm,warm)+(c.rest?restRemaining(c.rest)/60000:0);
+    return est(remaining,c.cmok?0:(num(c.cmv)||c.cm),warm)+(c.rest?restRemaining(c.rest)/60000:0);
   }
   let s=0;pl.forEach((e,i)=>{const un=c.ex[i].filter(x=>!x.ok).length;if(un)s+=(un*(40+e[4])+(c.ex[i].some(x=>x.ok)?0:90))/60});if(c.cm&&!c.cmok)s+=c.cm;return s}
 function timeLeft(N){const c=cur();if(!c)return;ensurePl();U.tl=false;
   if(remMin()<=N){go();notice(t("fits")(Math.ceil(remMin())));return}
   let rm=0,rs=0,cd=false;if(c.cm&&!c.cmok&&!num(c.cmv)){c.cm=0;cd=true}
-  while(remMin()>N){let k=-1;for(let i=c.pl.length-1;i>=2;i--){if(!c.ex[i].some(x=>x.ok||x.touchedR||x.touchedW)){k=i;break}}if(k<0)break;
-    c.pl.splice(k,1);const ex={};let n=0;Object.keys(c.ex).map(Number).sort((a,b)=>a-b).forEach(o=>{if(o!==k)ex[n++]=c.ex[o]});c.ex=ex;rm++}
-  let changed=true;while(remMin()>N&&changed){changed=false;for(let i=c.pl.length-1;i>=0&&remMin()>N;i--){const a=c.ex[i],z=a[a.length-1];if(a.length>(c.snapshot?1:2)&&!z.ok&&!z.touchedR&&!z.touchedW){a.pop();c.pl[i]=[...c.pl[i]];c.pl[i][1]=a.length;rs++;changed=true}}}
+  const originalRows=c.pl.length;
+  const entered=s=>s.ok||s.touchedR||s.touchedW||String(s.r??"").trim()!=="";
+  const protectedSlots=KEY_SLOTS[S.p][c.wk],focus=FOCUS_GROUPS[S.p][c.wk];
+  while(remMin()>N){
+    const fromEnd=c.pl.map((_,i)=>i).reverse();
+    const secondary=i=>!protectedSlots.includes(oix(i));
+    const trim=(i,min)=>c.ex[i].length>min&&!entered(c.ex[i].at(-1));
+    const drop=i=>!c.ex[i].some(entered)&&c.pl.length>1&&focus.every(group=>
+      !c.pl.some((_,k)=>group.includes(GR[sid(k)]))||c.pl.some((_,k)=>k!==i&&group.includes(GR[sid(k)])));
+    let set=fromEnd.find(i=>secondary(i)&&trim(i,2));
+    if(set==null)set=fromEnd.find(i=>trim(i,2));
+    let remove;
+    if(set==null)remove=fromEnd.find(i=>secondary(i)&&drop(i));
+    if(set==null&&remove==null)set=fromEnd.find(i=>trim(i,1));
+    if(set==null&&remove==null)remove=fromEnd.find(drop);
+    if(set!=null){c.ex[set].pop();c.pl[set][1]=c.ex[set].length;rs++;continue}
+    if(remove==null)break;
+    const sets=c.pl.map((_,i)=>c.ex[i]);
+    c.pl.splice(remove,1);sets.splice(remove,1);c.ex=Object.fromEntries(sets.entries());rm++;
+  }
+  if(c.pl.length!==originalRows){U.sw=null;U.open=-1;U.note=null;c.wu=[]}
   U.gi=null;save();go();notice(t("fitDone")(N,rm,rs,cd,Math.ceil(remMin())))}
 function tlPanel(){return U.tl?`<div class="c tlp"><b>${t("tlQ")}</b><div class=sg>${[15,20,30,45].map(n=>`<button onclick="timeLeft(${n})">${n} min</button>`).join("")}</div><button class=hb onclick="U.tl=false;go()">${t("cancel")}</button></div>`
   :`<button class="w tlb" onclick="U.tl=true;go()">⏱ ${t("tlB")}</button>`}
@@ -932,10 +951,11 @@ function noGym(i){const c=cur();if(!c)return;const o=oix(i),id=sid(i),s=slotOf(c
 // warm-up general part: minutes of easy cardio and number of drills, by time budget
 const wGen=tm=>tm<=30?2:tm<=45?3:tm<75?4:5;
 function wDrills(tm,w){const pf=D().pf,must=pf.back?(REG[S.p][w]==="l"?3:1):0;return Math.max(tm<=20?1:tm<=45?2:tm<75?3:4,must+(tm>45?1:0))}
+function finishPrep(){const w=cur()?.wd;if(!w)return;w.ok=Array(w.d.length+1).fill(true);w.x=1;U.wuo=0;save();go()}
 function wuCard(){const c=cur(),w=c.wd;if(!isRecord(w)||!Array.isArray(w.d)||!known(WU,w.g))return"";const k=li();w.ok=Array.isArray(w.ok)?w.ok:[];
   const its=[[w.g,w.gm+" min",WU[w.g][4+k]],...w.d.map(x=>[x,WU[x][2+k],WU[x][4+k]])],n=its.filter((_,j)=>w.ok[j]).length,started=Object.values(c.ex).flat().some(s=>s.ok);
   if(w.x||(started&&!U.wuo))return`<button class="w wub" onclick="U.wuo=1;cur().wd.x=0;save();go()">🔥 ${t("wuT")} · ${n}/${its.length} ✓ — ${t("wuShow")}</button>`;
-  return`<div class="c wuc"><div class="r wuh"><h2>🔥 ${t("wuT")}</h2><span class=mu>≈ ${w.m||""} min</span></div>${its.map(([x,dose,how],j)=>`<button class="wur ${w.ok[j]?"ok":""}" aria-pressed="${!!w.ok[j]}" onclick="wdT(${j})"><span class=wck>${w.ok[j]?"✓":""}</span><span class=wtx><b>${nmW(x)}</b>${dose?` <span class=wds>${dose}</span>`:""}<br><span class=mu>${how}</span></span></button>`).join("")}<p class=mu>${t("wuThen")}</p><button class=w onclick="cur().wd.x=1;U.wuo=0;save();go()">${t("wuClose")}</button></div>`}
+  return`<div class="c wuc"><div class="r wuh"><h2>🔥 ${t("wuT")}</h2><span class=mu>≈ ${w.m||""} min</span></div>${its.map(([x,dose,how],j)=>`<button class="wur ${w.ok[j]?"ok":""}" aria-pressed="${!!w.ok[j]}" onclick="wdT(${j})"><span class=wck>${w.ok[j]?"✓":""}</span><span class=wtx><b>${nmW(x)}</b>${dose?` <span class=wds>${dose}</span>`:""}<br><span class=mu>${how}</span></span></button>`).join("")}<p class=mu>${t("wuThen")}</p><button class=w onclick="finishPrep()">${t("wuClose")}</button></div>`}
 function wdT(j){const c=cur();if(!c||!isRecord(c.wd))return;const w=c.wd;w.ok=Array.isArray(w.ok)?w.ok:[];w.ok[j]=!w.ok[j];if(w.ok.filter(Boolean).length>=w.d.length+1){w.x=1;U.wuo=0}save();go()}
 const planLabels={
   gearTitle:["Available gym equipment","Matériel disponible dans ta salle"],gearHint:["Bodyweight movements remain available.","Les mouvements au poids du corps restent disponibles."],
@@ -1168,6 +1188,7 @@ function spf(k,v,live){
 function seg(key,opts){const pf=D().pf;return`<div class=sg>${opts.map(([v,l])=>`<button class="${pf[key]==v?"on":""}" onclick="spf('${key}','${v}')">${l}</button>`).join("")}</div>`}
 function fld(key,label,ph){const v=D().pf[key];return`<label class=fl><span>${label}</span><input type=text inputmode=decimal value="${v==null?"":String(v).replace(".",S.lg=="fr"?",":".")}" placeholder="${ph||""}" oninput="spf('${key}',this.value,1)" onchange="spf('${key}',this.value)"></label>`}
 // effective workout for this profile: level, time, goal
+const FOCUS_GROUPS={M:{A:[["ch"],["sh"]],B:[["bk"],["ar"]],C:[["lg"],["sh"]]},F:{A:[["lg"],["gl"]],B:[["ch","bk","sh"],["co"]],C:[["gl"],["lg"]]}};
 const KEY_SLOTS={M:{A:[0,1,2],B:[0,1,3,4],C:[0,1,4]},F:{A:[0,1,2],B:[0,1,4],C:[0,1,3]}};
 const BOTH_SIDES=new Set(["sp","dbg","pal","slp","ocr","ulp","ssq","ckb","gkm","qhe","step","bcu","lrr","clr","cyr"]);
 function setSeconds(e){
@@ -1206,7 +1227,7 @@ function eff(w){
   const ex=order.filter(i=>dr.ids[i]).map(i=>make(templates[i],i,dr.ids[i]));
   const missing=order.filter(i=>!dr.ids[i]);
   const groups=ex.map(e=>GR[e[0]]);
-  const required={M:{A:[["ch"],["sh"]],B:[["bk"],["ar"]],C:[["lg"],["sh"]]},F:{A:[["lg"],["gl"]],B:[["ch","bk","sh"],["co"]],C:[["gl"],["lg"]]}}[S.p][w];
+  const required=FOCUS_GROUPS[S.p][w];
   const unavailable=required.some(group=>!group.some(id=>groups.includes(id)));
   const gm=wGen(budget),wu=dr.wu.slice(0,wDrills(budget,w));
   const first=ex[0],second=ex[1];

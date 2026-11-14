@@ -84,6 +84,16 @@ test("a short session keeps logged and typed rows when the equipment or time lef
   assert.ok(h.run("remMin()<=15"));h.run("fin()");accept(h);assert.equal(h.state().d.M.logs[0].vol,355);
 });
 
+test("shortening partway preserves the day's focus and empty sets can be trimmed before removing a movement",()=>{
+  const h=harness();
+  for(const [p,w,group] of [["M","B","ar"],["M","C","sh"],["F","B","co"]]){
+    h.run(`S.p='${p}';start('${w}',0);finishPrep();timeLeft(15)`);
+    assert.ok(h.run(`cx().some((e,i)=>GR[sid(i)]==='${group}')`));
+    assert.ok(h.run("remMin()<=15"));
+    h.run("abandon()");accept(h);
+  }
+});
+
 test("migration preserves saved choices, validated data, and the identity of a pre-update session",()=>{
   const h=harness();h.run("D().sub.B0='lpn';start('B',0);setv(0,0,'w','35');setv(0,0,'r','10');done(0,0);save()");
   const backup=h.state();delete backup.d.M.cur.snapshot;delete backup.d.M.pf.gear;delete backup.d.M.pf.noOverhead;
