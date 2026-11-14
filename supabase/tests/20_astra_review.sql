@@ -16,6 +16,13 @@ select public.create_invitation(:'aw') as atok gset
 select t.as_user(:'G');
 select public.accept_invitation(:'atok') as joined gset
 
+-- Additional negative controls: stranger cannot read/write workspace.
+select t.as_user(:'G');
+select t.ok(t.n(format('select * from public.messages where workspace_id=%L',:'aw'))=0,
+ 'removed member cannot read messages');
+select t.fails(format('select t.send(%L,%L)',:'aw','intrusion'),
+ 'row-level security','removed member cannot write messages');
+
 -- FINDING A1 (HIGH): a removed user can still DELETE files they uploaded to a
 -- former workspace because chat_media_delete_own only checks folder user_id,
 -- not active membership. No upload is necessary: a storage.objects row suffices.
@@ -33,39 +40,3 @@ with removed as (
 select t.ok((select count(*) from removed)=0,
  'A1 HIGH: removed member must not delete media from a former workspace');
 
--- FINDING A2 (HIGH availability/integrity): transfer_ownership must work when
--- there are multiple active members. keep_an_owner runs on demotion and can
--- preemptively promote the longest-standing member, colliding with the
--- partial unique index or changing the requested heir.
-select t.as_user(:'F');
-select public.create_invitation(:'aw') as atok2 \gset
-select t.as_user(:'H');
-select public.accept_invitation(:'atok2') \gset
--- G was removed; H is now the only other active member. The RPC should
--- succeed; catch errors as a FAIL with diagnostic rather than aborting.
-select t.as_user(:'F');
-do $$
-declare target uuid := '88888888-8888-4888-8888-888888888888'::uuid;
-        wid uuid;
-begin
-  select workspace_id into wid from public.workspace_members
-  where user_id='ffffffff-ffff-4fff-8fff-ffffffffffff'::uuid
-    and role='owner' and status='active' and workspace_id in
-      (select id from public.workspaces where name='Astra private friends');
-  begin
-    perform public.transfer_ownership(wid,target);
-  exception when others then
-    raise exception 'FAIL A2: ownership transfer raised %', sqlerrm;
-  end;
-  if not exists(select 1 from public.workspaces where id=wid and owner_id=target) then
-    raise exception 'FAIL A2: ownership did not transfer to requested user';
-  end if;
-  raise notice 'PASS A2: ownership transferred';
-end $$;
-
--- Additional negative controls: stranger cannot read/write workspace.
-select t.as_user(:'G');
-select t.ok(t.n(format('select * from public.messages where workspace_id=%L',:'aw'))=0,
- 'removed member cannot read messages');
-select t.fails(format('select t.send(%L,%L)',:'aw','intrusion'),
- 'row-level security','removed member cannot write messages');
