@@ -16,8 +16,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Install
-        run: npm install --no-audit --no-fund
+      - name: Install (exact versions from package-lock.json when present)
+        run: if [ -f package-lock.json ]; then npm ci --no-audit --no-fund; else npm install --no-audit --no-fund; fi
       - name: Type check (strict TypeScript)
         run: npm run typecheck
       - name: Unit tests (rules, outbox, DUOFIT bridge)
@@ -39,13 +39,9 @@ jobs:
           set -o pipefail
           npm run test:web | tee /tmp/web-webkit
           ! grep -Eq '^FAIL|^CRASH' /tmp/web-webkit
-      - name: Keep the exact dependency versions of this install
+      - name: Lock file to commit (printed when the repository has none yet)
         if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: package-lock
-          path: package-lock.json
-          if-no-files-found: ignore
+        run: if ! git ls-files --error-unmatch package-lock.json >/dev/null 2>&1 && [ -f package-lock.json ]; then echo "LOCKFILE-BEGIN"; gzip -9c package-lock.json | base64 -w0; echo; echo "LOCKFILE-END"; fi
   database:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
