@@ -56,7 +56,7 @@ test("the scheduled preview survives offline-style reload, language changes and 
 });
 
 test("new draws use alternatives, respect a valid pin, and never borrow another exercise's working load",()=>{
-  const h=harness();const before=plain(h,"eff('B').ex").map(e=>e[0]);
+  const h=harness();h.run("S.d.M.pf.var='max'");const before=plain(h,"eff('B').ex").map(e=>e[0]);
   h.run("reroll('B')");const after=plain(h,"eff('B').ex").map(e=>e[0]);
   assert.notDeepEqual(after,before);assert.notEqual(after[0],before[0]);
   h.run("D().sub.B0='lpd';D().logs.push({date:Date.now(),wk:'B',ex:{lpd:[{w:80,r:9}]},sets:1,vol:720});save();reroll('B')");
@@ -99,7 +99,7 @@ test("migration preserves saved choices, validated data, and the identity of a p
   const backup=h.state();delete backup.d.M.cur.snapshot;delete backup.d.M.pf.gear;delete backup.d.M.pf.noOverhead;
   backup.d.M.pf.var='bal';backup.d.F.pf.gear=['ghost','C','C'];
   const restored=harness({raw:backup});assert.equal(restored.run("sid(0)"),"lpn");
-  assert.equal(restored.run("D().pf.var"),"bal");assert.equal(restored.run("D().pf.noOverhead"),true);
+  assert.equal(restored.run("D().pf.var"),"bal");assert.equal(restored.run("D().pf.noOverhead"),false);
   assert.deepEqual(plain(restored,"S.d.F.pf.gear"),["C"]);
   restored.run("fin()");accept(restored);assert.equal(restored.state().d.M.logs[0].vol,350);
 });

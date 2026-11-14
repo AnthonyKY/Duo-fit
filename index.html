@@ -37,6 +37,7 @@ dialog::backdrop{background:rgb(0 0 0 / .58)}dialog .r{margin-top:18px}dialog bu
 .wur.ok .wck{background:var(--ac);border-color:var(--ac);color:var(--on)}.wur.ok .wtx{opacity:.6}
 .wtx{min-width:0;overflow-wrap:break-word}.wds{color:var(--ac);font-weight:700;font-size:13px}
 .wub{margin:6px 0;text-align:left}
+.ssl{margin:4px 0;font-size:13px;color:var(--ac);font-weight:600}
 .swr{grid-template-columns:1fr 1fr;padding:6px 0;border-bottom:1px solid var(--bd)}.swr span{grid-column:1/-1;font-weight:600}
 .budget{margin:10px 0;border:1px solid var(--bd);border-radius:10px;padding:9px 12px}.budget summary{cursor:pointer;font-weight:600}.budget dl{margin:8px 0}.budget dl>div{display:flex;justify-content:space-between;gap:8px}.budget dd,.budget dt{margin:3px 0}.budget dd{white-space:nowrap;font-variant-numeric:tabular-nums}.gear{min-width:0;margin:12px 0;padding:8px 10px;border:1px solid var(--bd);border-radius:10px}.gear label{display:inline-flex;align-items:center;margin:4px 10px 4px 0}.gear input{width:auto}#varc{scroll-margin-top:70px}
 </style></head><body><div id="upb" style="display:none;position:fixed;top:calc(8px + env(safe-area-inset-top,0px));left:12px;right:12px;z-index:9;background:var(--ac);color:var(--on);font-weight:700;text-align:center;padding:12px;border-radius:12px;cursor:pointer"></div><div id="storage-warning" role="alert" hidden></div><main id="v"></main><div id="notice" role="status" hidden></div><div id="tm" hidden></div><nav id="nv"></nav>
@@ -189,6 +190,8 @@ Object.assign(L.en,{
   pinN:n=>`${n} pinned: it stays in this place.`,unpinN:"Unpinned: this place rotates again.",
   timX:"The workout adapts to this time: warm-up length, sets, bonus exercises.",
   nothingLeft:"Every set of this exercise is already entered: nothing left to replace.",
+  ssT:"superset",ssS:"Short workout: the 🔁 pair is done as a superset (one set of each, then rest).",
+  ssA:n=>`Superset with ${n}: do one set here, go straight to ${n}, then rest.`,ssB:n=>`Superset with ${n}: rest after this set, then back to ${n}.`,
   rfQ:"Does the pain go down your leg, or come with pins and needles, numbness or weakness?",rfNo:"No: adapted workout (loads −20%)",rfYes:"Yes",
   rfStopT:"No weight training today.",rfStop:"Pain that travels down the leg, or comes with pins and needles, numbness or weakness, should be checked by a doctor before you load your back again. An easy walk is fine if it does not bring the pain on.",
   rfUrg:"Emergency (15 in France, 112 in Europe) if you lose bladder or bowel control, or feel numb between the legs.",rfEnd:"Finish the workout now (keeps what you did)"
@@ -209,6 +212,8 @@ Object.assign(L.fr,{
   pinN:n=>`${n} épinglé : il reste à cette place.`,unpinN:"Désépinglé : cette place tourne à nouveau.",
   timX:"La séance s'adapte à ce temps : durée d'échauffement, nombre de séries, exercices bonus.",
   nothingLeft:"Toutes les séries de cet exercice sont déjà saisies : rien à remplacer.",
+  ssT:"superset",ssS:"Séance courte : la paire 🔁 se fait en superset (une série de chaque, puis repos).",
+  ssA:n=>`Superset avec ${n} : fais une série ici, enchaîne directement sur ${n}, puis repos.`,ssB:n=>`Superset avec ${n} : repos après cette série, puis retour sur ${n}.`,
   rfQ:"La douleur descend-elle dans la jambe, ou s'accompagne-t-elle de fourmillements, d'engourdissement ou de faiblesse ?",rfNo:"Non : séance adaptée (charges −20 %)",rfYes:"Oui",
   rfStopT:"Pas de musculation aujourd'hui.",rfStop:"Une douleur qui descend dans la jambe, ou avec fourmillements, engourdissement ou faiblesse, doit être vue par un médecin avant de recharger le dos. Une marche tranquille reste possible si elle ne réveille pas la douleur.",
   rfUrg:"Urgence (15, ou 112) en cas de perte de contrôle de la vessie ou des intestins, ou d'engourdissement entre les jambes.",rfEnd:"Terminer la séance maintenant (garde ce que tu as fait)"
@@ -491,12 +496,12 @@ function noteLine(id){const v=(D().notes||{})[id],ed=U.note===id;
   return `<div class=nt>${ed?`<input id="note_${id}" type=text maxlength=80 autocomplete=off placeholder="${t("noteph")}" value="${escapeHtml(v||"")}" oninput="setNote('${id}',this.value)"><button class=hb onclick="U.note=null;go()">OK</button>`
   :`<button class=nlink onclick="U.note='${id}';go();setTimeout(()=>{const e=$('note_${id}');if(e)e.focus()},30)">⚙️ ${v?escapeHtml(v):`<span class=mu>${t("noteadd")}</span>`}</button>`}</div>`}
 // warm-up on the first exercise of the session (not counted in volume/progression)
-function wuSets(id,W){if(isBW(id)||!(W>0))return[];const out=[];for(const [p,r] of [[.5,8],[.7,4]].concat(W>=40?[[.85,2]]:[])){const w=rnd(id,W*p);if(w<W&&!out.some(x=>x[0]===w))out.push([w,r])}return out}
+function wuSets(id,W,budget){if(isBW(id)||!(W>0))return[];const out=[];for(const [p,r] of [[.5,8],[.7,4]].concat(W>=40&&!(budget<=30)?[[.85,2]]:[])){const w=rnd(id,W*p);if(w<W&&!out.some(x=>x[0]===w))out.push([w,r])}return out}
 // ramp-up sets: on the first exercise, plus one feeler set on the 2nd main lift when it trains another muscle group
 function wuHtml(i){const c=cur();if(i>1)return"";const id=sid(i),W=num(c.ex[i][0].w);if(isBW(id))return"";
   if(i===1){const s=slotOf(c.wk,oix(1));if(!s||s[1]!=="m"||GR[sid(0)]===GR[id])return""}
   if(W===""||!(W>0))return i?"":`<div class=wu><span class=mu>🔥 ${t("rampT")} · ${t("wuNeed")}</span></div>`;
-  const ws=i?[[rnd(id,W*.6),6]].filter(x=>x[0]<W):wuSets(id,W);if(!ws.length)return"";c.wu=c.wu||[];const o=i?9:0;
+  const ws=i?[[rnd(id,W*.6),6]].filter(x=>x[0]<W):wuSets(id,W,c.budget);if(!ws.length)return"";c.wu=c.wu||[];const o=i?9:0;
   return`<div class=wu><span class=mu>🔥 ${t("rampT")}</span>${ws.map(([w,r],k)=>`<button class="chip ${c.wu[o+k]?"ok":""}" aria-pressed="${!!c.wu[o+k]}" onclick="wuT(${o+k})">${f1(w)} kg × ${r}</button>`).join("")}<span class=mu>${t("wuX")}</span></div>`}
 function refreshRamp(i){
   if(i>1)return;
@@ -531,7 +536,7 @@ function stp(i,j,k,d){const c=cur(),s=c?.ex[i]?.[j];if(!s||s.ok)return;const id=
   else{let v=num(s.r);v=(v===""?(+rph(id,e,j,c.wk)||e[2]):v)+d;v=Math.max(1,Math.round(v));s.r=v;s.touchedR=true}
   save();const el=$((k==="w"?"w":"r")+i+"_"+j);if(el)el.value=k==="w"?s.w:s.r;if(k==="w"&&i<=1&&j===0){refreshRamp(i);save()}}
 function curPos(){const c=cur(),pl=cx();if(U.gi!=null&&U.gi<pl.length){const j=c.ex[U.gi].findIndex(s=>!s.ok);if(j>=0)return[U.gi,j]}
-  for(let i=0;i<pl.length;i++){const j=c.ex[i].findIndex(s=>!s.ok);if(j>=0)return[i,j]}return null}
+  for(let i=0;i<pl.length;i++){const j=c.ex[i].findIndex(s=>!s.ok);if(j<0)continue;if(ssOf(i)===i+1){const k=c.ex[i+1].findIndex(s=>!s.ok);if(k>=0&&k<j)return[i+1,k]}return[i,j]}return null}
 function swapOptions(i){
   const c=cur(),o=oix(i),base=cx()[i][0],id=sid(i),s=slotOf(c.wk,o),pool=s?allowed(s[0],s[2]):[];
   const fixed=(c.mode||vmode())==="fix";
@@ -561,11 +566,11 @@ function fitRange(e,w,id){const r=rangeFor(w,e[7]??0,id);if(r){e[2]=r[0];e[3]=r[
 function ensurePl(){const c=cur();c.pl=cx().map((e,k)=>e[7]!=null?e:[...e.slice(0,7),k]);return c.pl}
 function busy(i){const c=cur();if(!c)return;const pl=ensurePl();if(i>=pl.length-1){notice(t("busyLast"));return}
   const name=nm(sid(i)),order=pl.map((_,k)=>k);order.splice(i,1);order.push(i);
-  if(i<2)c.wu=[];c.pl=order.map(k=>pl[k]);const ex={};order.forEach((k,n)=>{ex[n]=c.ex[k]});c.ex=ex;
+  if(i<2)c.wu=[];c.pl=fixPairs(order.map(k=>pl[k]));const ex={};order.forEach((k,n)=>{ex[n]=c.ex[k]});c.ex=ex;
   U.gi=null;U.open=-1;U.sw=null;U.note=null;save();go();notice(t("busyDone")(name))}
 function remMin(){const c=cur(),pl=cx();
   if(c.snapshot){
-    const remaining=pl.flatMap((e,i)=>{const n=c.ex[i].filter(s=>!s.ok).length;return n?[[sid(i),n,...e.slice(2,7)]]:[]});
+    const remaining=pl.flatMap((e,i)=>{const n=c.ex[i].filter(s=>!s.ok).length;if(!n)return[];const r=[...e];r[0]=sid(i);r[1]=n;return[r]});
     const w=c.wd,worked=Object.values(c.ex).some(a=>a.some(s=>s.ok));
     const warm=w&&!worked?Math.max(0,(w.x?0:(w.ok?.[0]?0:w.gm)+w.d.filter((_,i)=>!w.ok?.[i+1]).length)+(w.ramp||0)):0;
     return est(remaining,c.cmok?0:(num(c.cmv)||c.cm),warm)+(c.rest?restRemaining(c.rest)/60000:0);
@@ -594,7 +599,7 @@ function timeLeft(N){const c=cur();if(!c)return;ensurePl();U.tl=false;
     const sets=c.pl.map((_,i)=>c.ex[i]);
     c.pl.splice(remove,1);sets.splice(remove,1);c.ex=Object.fromEntries(sets.entries());rm++;
   }
-  if(c.pl.length!==originalRows){U.sw=null;U.open=-1;U.note=null;c.wu=[]}
+  fixPairs(c.pl);if(c.pl.length!==originalRows){U.sw=null;U.open=-1;U.note=null;c.wu=[]}
   U.gi=null;save();go();notice(t("fitDone")(N,rm,rs,cd,Math.ceil(remMin())))}
 function tlPanel(){return U.tl?`<div class="c tlp"><b>${t("tlQ")}</b><div class=sg>${[15,20,30,45].map(n=>`<button onclick="timeLeft(${n})">${n} min</button>`).join("")}</div><button class=hb onclick="U.tl=false;go()">${t("cancel")}</button></div>`
   :`<button class="w tlb" onclick="U.tl=true;go()">⏱ ${t("tlB")}</button>`}
@@ -607,7 +612,7 @@ function guidedWorkout(){
     main=`<div class="c gd"><div class=mu>${t("exN")} ${i+1}/${plan.length} · ${t("series")} ${j+1}/${c.ex[i].length}</div>
     <h2 class=gx>${nm(id)}</h2>
     <div class=mu>${e[2]}–${e[3]}${isT(id)?" s":" reps"} · RIR ${e[5]} · <button class=rest-link onclick="manualRest(${i})">${t("rest")} ${e[4]} s</button></div>
-    <div class=mu>${t("last")} : ${ps?fs(id,ps)+" ("+fd(prev.date)+")":"—"}</div><div class=tip-text>${g.t}</div>
+    ${ssLine(i)}<div class=mu>${t("last")} : ${ps?fs(id,ps)+" ("+fd(prev.date)+")":"—"}</div><div class=tip-text>${g.t}</div>
     ${noteLine(id)}${j===0?`<div id="ramp-${i}">${wuHtml(i)}</div>`:""}
     <div class=stp><span class=sl>${bw?t("opt"):t("load")}</span><button aria-label="− ${t("load")}" onclick="stp(${i},${j},'w',-1)">−</button><input id="w${i}_${j}" type=text inputmode=decimal autocomplete=off aria-label="${t("load")}" placeholder="${bw?"0":"kg"}" value="${escapeHtml(s.w===0&&bw?"":s.w)}" oninput="setv(${i},${j},'w',this.value)"><button aria-label="+ ${t("load")}" onclick="stp(${i},${j},'w',1)">+</button></div>
     <div class=stp><span class=sl>${isT(id)?t("seconds"):t("reps")}</span><button aria-label="− ${t("reps")}" onclick="stp(${i},${j},'r',-1)">−</button><input id="r${i}_${j}" type=text inputmode=numeric pattern="[0-9]*" autocomplete=off aria-label="${t("reps")}" placeholder="${rph(id,e,j,c.wk)}" value="${escapeHtml(s.r)}" oninput="setv(${i},${j},'r',this.value)"><button aria-label="+ ${t("reps")}" onclick="stp(${i},${j},'r',1)">+</button></div>
@@ -732,7 +737,7 @@ function exerciseCard(entry,i){
   }).join("");
   return `<div class=c><div class=r><h2 style="flex:3">${nm(id)}</h2><button class=hb onclick="U.open=U.open===${i}?-1:${i};go()">${t("guide")}</button>${canSwap?`<button class=hb aria-label="${t("swap")} · ${nm(id)}" onclick="U.sw=U.sw===${i}?null:${i};go()">⇄</button>`:""}<button class=hb aria-label="${t("busyB")} · ${nm(id)}" onclick="busy(${i})">⏭</button></div>
     <div class=mu>${entry[1]}×${entry[2]}–${entry[3]}${isT(id)?" s":""} · <button class=rest-link aria-label="${t("startRest")} · ${entry[4]} s" onclick="manualRest(${i})">${t("rest")} ${entry[4]} s</button> · RIR ${entry[5]}</div>
-    <div class=mu>${t("last")}: ${previous?fd(previous.date)+" — "+previous.ex[id].map(s=>fs(id,s)).join(", "):"—"}</div>
+    ${ssLine(i)}<div class=mu>${t("last")}: ${previous?fd(previous.date)+" — "+previous.ex[id].map(s=>fs(id,s)).join(", "):"—"}</div>
     <div class=tip-text>${sug(id,entry,c.wk).t}</div>${U.sw===i?swapPanel(i):""}${U.open===i?card(id):""}${noteLine(id)}<div id="ramp-${i}">${wuHtml(i)}</div>${rows}</div>`;
 }
 function activeWorkout(){
@@ -759,7 +764,7 @@ function workoutSummary(){
 }
 
 function today(){const d=D(),k=li();if(U.sum)return workoutSummary();if(cur())return activeWorkout();if(U.chk)return checkIn(U.chk);
-const wd=wkd(),w=U.pick||wd||"A",c=prog()[w],ef=eff(w),nn=nut();return`<h1>${t("hi")}</h1><p class=mu>${wd?t("tod")+" : "+wd+" — "+prog()[wd].n[k]:t("recday")}</p><div class=r>${["A","B","C"].map(x=>`<button class="${x==w?"p":""}" onclick="U.pick='${x}';go()">${x}</button>`).join("")}</div>${ef.unavailable?`<div class=c><h2>${c.n[k]}</h2><p role=status>${t(ef.tooShort?"tooLittle":"noPlan")}</p><button class=w onclick="navigate('set')">${t("editProfile")}</button></div>`:`<div class=c><h2>${c.n[k]}</h2><p class=mu>${t("selectionMode")} <button class=hb onclick="navigate('set');document.getElementById('varc')?.scrollIntoView({block:'start'})">${t("var_"+vmode())}</button></p><div class=wul>🔥 <b>${t("wuT")}</b> <span class=mu>≈ ${ef.wm} min · ${nmW(ef.g)} ${ef.gm} min · ${ef.wu.map(nmW).join(" · ")} · ${t("rampT")} ${ef.ramp} min</span></div>${ef.ex.map((e,i)=>{const o=e[7]??i,id=e[0],g=sug(id,e,w),sl=slotOf(w,o),fresh=d.logs.length>0&&!d.logs.some(l=>l.ex[id]);return`<div class=exl data-planned="${id}">${nm(id)} <span class=mu>${e[1]}×${e[2]}–${e[3]}${isT(id)?' s':''}${g.w>0?" · "+f1(g.w)+" kg":""}</span>${d.sub[w+o]===id?` <span class=xtg title="${t("pinT")}">📌</span>`:""}${sl&&sl[1]==="m"&&vmode()!=="fix"?` <span class=xtg>${t("mainT")}</span>`:""}${fresh?` <span class="xtg nw">${t("newT")}</span>`:""}</div>`}).join("")}${ef.cm?`<div>🚶 ${t("cdT")} <span class=mu>${ef.cm} min</span></div>`:""}<p class=mu>${t("durE")(ef.dur,ef.wm)}${ef.red?" "+t("redS")(+d.pf.time||60):""}${ef.cut?" "+t("trim")(ef.cut,+d.pf.time||60):""}${ef.add?" "+t("addS"):""}${ef.bon?" "+t("bonS")(ef.bon):""}${d.pf.lvl=="beg"?" "+t("begx"):""}</p>${vmode()!=="fix"?`<button class="w rr" onclick="reroll('${w}')">🎲 ${t("reroll")}</button><p class=mu>${vmode()==="bal"?t("blkL")(fd(blkInfo().end))+" ":""}${t("rrX")}</p>`:""}${ef.missing.length?`<p class=mu>${t("missingSlots")}: ${ef.missing.map(o=>nm(slotOf(w,o)[2])).join(", ")}</p>`:""}${budgetPanel(ef)}<button class="p w" onclick="begin('${w}')">${t("start")}</button></div>`}${nn?`<div class=c><span class=ts>${t("todN")(nn.kc.toLocaleString(S.lg),nn.P)}</span> <a href=# onclick="U.tab='set';go();return false" class=mu>${t("more")}</a></div>`:`<div class=c><span class=mu>${t("nutNo2")}</span> <a href=# onclick="U.tab='set';go();return false" class=mu>${t("more")}</a></div>`}<div class=c><b>${d.logs.filter(l=>Date.now()-l.date<6048e5).length}/3</b> <span class=mu>${t("wk7")} · ${d.logs.length} ${t("totalLogs")} · 🔥 ${streak()} ${t("streak")}</span></div>`}
+const wd=wkd(),w=U.pick||wd||"A",c=prog()[w],ef=eff(w),nn=nut();return`<h1>${t("hi")}</h1><p class=mu>${wd?t("tod")+" : "+wd+" — "+prog()[wd].n[k]:t("recday")}</p><div class=r>${["A","B","C"].map(x=>`<button class="${x==w?"p":""}" onclick="U.pick='${x}';go()">${x}</button>`).join("")}</div>${ef.unavailable?`<div class=c><h2>${c.n[k]}</h2><p role=status>${t(ef.tooShort?"tooLittle":"noPlan")}</p><button class=w onclick="navigate('set')">${t("editProfile")}</button></div>`:`<div class=c><h2>${c.n[k]}</h2><p class=mu>${t("selectionMode")} <button class=hb onclick="navigate('set');document.getElementById('varc')?.scrollIntoView({block:'start'})">${t("var_"+vmode())}</button></p><div class=wul>🔥 <b>${t("wuT")}</b> <span class=mu>≈ ${ef.wm} min · ${nmW(ef.g)} ${ef.gm} min · ${ef.wu.map(nmW).join(" · ")} · ${t("rampT")} ${ef.ramp} min</span></div>${ef.ex.map((e,i)=>{const o=e[7]??i,id=e[0],g=sug(id,e,w),sl=slotOf(w,o),fresh=d.logs.length>0&&!d.logs.some(l=>l.ex[id]);return`<div class=exl data-planned="${id}">${nm(id)} <span class=mu>${e[1]}×${e[2]}–${e[3]}${isT(id)?' s':''}${g.w>0?" · "+f1(g.w)+" kg":""}</span>${d.sub[w+o]===id?` <span class=xtg title="${t("pinT")}">📌</span>`:""}${sl&&sl[1]==="m"&&vmode()!=="fix"?` <span class=xtg>${t("mainT")}</span>`:""}${fresh?` <span class="xtg nw">${t("newT")}</span>`:""}${e[8]?` <span class=xtg>🔁 ${t("ssT")}</span>`:""}</div>`}).join("")}${ef.cm?`<div>🚶 ${t("cdT")} <span class=mu>${ef.cm} min</span></div>`:""}<p class=mu>${t("durE")(ef.dur,ef.wm)}${ef.ss?" "+t("ssS"):""}${ef.red?" "+t("redS")(+d.pf.time||60):""}${ef.cut?" "+t("trim")(ef.cut,+d.pf.time||60):""}${ef.add?" "+t("addS"):""}${ef.bon?" "+t("bonS")(ef.bon):""}${d.pf.lvl=="beg"?" "+t("begx"):""}</p>${vmode()!=="fix"?`<button class="w rr" onclick="reroll('${w}')">🎲 ${t("reroll")}</button><p class=mu>${vmode()==="bal"?t("blkL")(fd(blkInfo().end))+" ":""}${t("rrX")}</p>`:""}${ef.missing.length?`<p class=mu>${t("missingSlots")}: ${ef.missing.map(o=>nm(slotOf(w,o)[2])).join(", ")}</p>`:""}${budgetPanel(ef)}<button class="p w" onclick="begin('${w}')">${t("start")}</button></div>`}${nn?`<div class=c><span class=ts>${t("todN")(nn.kc.toLocaleString(S.lg),nn.P)}</span> <a href=# onclick="U.tab='set';go();return false" class=mu>${t("more")}</a></div>`:`<div class=c><span class=mu>${t("nutNo2")}</span> <a href=# onclick="U.tab='set';go();return false" class=mu>${t("more")}</a></div>`}<div class=c><b>${d.logs.filter(l=>Date.now()-l.date<6048e5).length}/3</b> <span class=mu>${t("wk7")} · ${d.logs.length} ${t("totalLogs")} · 🔥 ${streak()} ${t("streak")}</span></div>`}
 function plan(){return`<h1>${t("plan")}</h1>`+[1,2,3,4,5,6,0].map(n=>`<div class="c r"><b style="flex:.4">${DN[S.lg][n]}</b><select onchange="this.value?D().sched[${n}]=this.value:delete D().sched[${n}];save();go()">${["","A","B","C"].map(x=>`<option value="${x}" ${(D().sched[n]||"")==x?"selected":""}>${x?x+" — "+prog()[x].n[li()]:t("recov")}</option>`).join("")}</select></div>`).join("")}
 // not drawn for a back-sensitive profile: axial loading, hinging, or repeated loaded flexion (cable crunch)
 const AX=["ssq","dsp","hsq","rdl","cc"];
@@ -817,9 +822,9 @@ const GN={sh:["Shoulders","Épaules"],ch:["Chest","Pectoraux"],bk:["Back","Dos"]
 
 // ===== Variety: each workout is a list of slots (movement pattern + role); the exercise in each slot is drawn =====
 // pools by movement pattern, best first; filtered per profile (back sensitivity, level, "not in my gym")
-const PAT={vpush:["ms","dsp"],ipress:["idp","lip","sip","ibpu"],hpress:["cp","fdp","lip","ibpu"],fly:["pd","cfl"],lat:["clr","dlr","mlr","lrr","cyr"],rear:["rdf","rcf","fpl"],
+const PAT={vpush:["ms","dsp"],ipress:["idp","lip","sip"],hpress:["cp","fdp","lip"],fly:["pd","cfl"],lat:["clr","dlr","mlr","lrr","cyr"],rear:["rdf","rcf","fpl"],
  tri:["rpd","oce","ske","tdm","barpd"],bi:["idc","bcc","pcm","hmc","bcu"],vpull:["lpd","lpn","slp"],rowS:["csr","tbr","sdr","mrw"],row:["scr","csr","mrw","ocr","sdr"],lats:["sap"],
- quad:["lp","bsq","ulp","hsq","step"],qiso:["le"],ham:["slc","llc","rdl"],glute:["hp","sht","gb"],gluiso:["ckb","gkm","qhe"],uni:["ssq","ulp","step"],hip:["abd","add"],calf:["scm","lpc"],core:["pl","dbg","pal","sp","cc"]};
+ quad:["lp","bsq","ulp","hsq"],qiso:["le"],ham:["slc","llc","rdl"],glute:["hp","sht","gb"],gluiso:["ckb","gkm"],uni:["ssq","ulp"],hip:["abd","add"],calf:["scm","lpc"],core:["pl","dbg","pal","sp","cc"]};
 // slots aligned with P[profile][workout].ex: [pattern, role] — m = main lift (kept for a whole block), a = accessory (changes every session)
 const SL={M:{A:[["vpush","m"],["ipress","m"],["lat","a"],["fly","a"],["tri","a"],["core","a"]],
  B:[["vpull","m"],["rowS","m"],["rear","a"],["bi","a"],["tri","a"],["lat","a"]],
@@ -870,11 +875,15 @@ function blkInfo(){const pf=D().pf,n=wkNo(Date.now()),r0=pf.r0!=null?pf.r0:n,L=b
 function eligible(id,base){
   const pf=D().pf;
   return known(E,id)&&!(pf.no||[]).includes(id)&&(isBW(id)||pf.gear.includes(E[id][4]))&&
-    !(pf.back&&AX.includes(id))&&!(pf.noOverhead&&["ms","dsp","ssq","hsq","rdl","cc","oce","ocr"].includes(id))&&
+    !(pf.back&&AX.includes(id))&&!(pf.noOverhead&&["ms","dsp","ssq","hsq","rdl","cc","oce"].includes(id))&&
     (pf.lvl!=="beg"||E[id][5]===0||(vmode()==="fix"&&id===base));
 }
+// stand-ins used only when the gym (or today's equipment) has nothing better for that movement:
+// bodyweight versions cannot be loaded progressively, and a back-sensitive lifter rows chest-supported when possible
+const PATF={ipress:["ibpu"],hpress:["ibpu"],quad:["step"],uni:["step"],gluiso:["qhe"],rowS:["scr","ocr"],fly:["ibpu"]};
 function allowed(pt,base){
-  return [...new Set([base,...(PAT[pt]||[])])].filter(id=>eligible(id,base));
+  const main=[...new Set([base,...(PAT[pt]||[])])].filter(id=>eligible(id,base));
+  return main.length?main:(PATF[pt]||[]).filter(id=>eligible(id,base));
 }
 function slotOf(w,o){
   const s=SL[S.p][w],b=BON[S.p][w];
@@ -922,7 +931,8 @@ function draw(w,again){const d=D(),pf=d.pf;if(!isRecord(d.draw))d.draw={};let di
   }
   const drillGear={cer:"C",fpw:"C",scp:"C",dh:"M",bpa:"band",mwk:"band"};
   const warmAllowed=id=>!drillGear[id]||pf.gear.includes(drillGear[id]);
-  const cardioAllowed=id=>id==="march"||pf.gear.includes("M");
+  // a cardio machine when the gym has machines, marching in place only when it has none
+  const cardioAllowed=id=>id==="march"?!pf.gear.includes("M"):pf.gear.includes("M");
   const r=REG[S.p][w],must=pf.back?(r==="l"?["cup","spw","bdg"]:["bdg"]):[];let wu,g;
   if(keep&&Array.isArray(old.wu)&&old.wu.every(x=>known(WU,x)&&warmAllowed(x))&&known(WU,old.g)&&cardioAllowed(old.g)&&must.every(x=>old.wu.includes(x))){wu=old.wu;g=old.g}
   else{const pool=Object.keys(WU).filter(x=>warmAllowed(x)&&WU[x][6]!=="g"&&WU[x][6].includes(r)&&!must.includes(x)&&!(again&&isRecord(old)&&(old.wu||[]).includes(x)&&!must.includes(x)));
@@ -1149,7 +1159,7 @@ async function exp(){
 }
 
 // ===== Profile, body, nutrition, adaptive plan =====
-const PFD={M:{sex:"m",age:27,h:188,w:80,lvl:"int",act:"auto",time:60,goal:"gain",tw:null,kadj:0,kat:0,back:true,inc:{DB:2,M:5,C:2.5,SM:2.5},var:"max",noOverhead:true,gear:["M","DB","C","SM"],no:[],r0:null},F:{sex:"f",age:null,h:null,w:null,lvl:"beg",act:"auto",time:60,goal:"loss",tw:null,kadj:0,kat:0,back:false,inc:{DB:2,M:5,C:2.5,SM:2.5},var:"max",noOverhead:false,gear:["M","DB","C","SM"],no:[],r0:null}};
+const PFD={M:{sex:"m",age:27,h:188,w:80,lvl:"int",act:"auto",time:60,goal:"gain",tw:null,kadj:0,kat:0,back:true,inc:{DB:2,M:5,C:2.5,SM:2.5},var:"bal",noOverhead:false,gear:["M","DB","C","SM"],no:[],r0:null},F:{sex:"f",age:null,h:null,w:null,lvl:"beg",act:"auto",time:60,goal:"loss",tw:null,kadj:0,kat:0,back:false,inc:{DB:2,M:5,C:2.5,SM:2.5},var:"bal",noOverhead:false,gear:["M","DB","C","SM"],no:[],r0:null}};
 const MK=["wa","hi","ch","sh","ar","th","bf"];
 function lastWE(){const h=D().hd.filter(x=>x.w!=null&&dms(x.d));return h.length?h[h.length-1]:null}
 function curW(){const e=lastWE();return e?e.w:D().pf.w}
@@ -1199,6 +1209,8 @@ function budgetParts(ex,cm,wm){
   let work=0,rest=0,move=0;
   for(const e of ex){
     work+=e[1]*setSeconds(e);
+    // superset, first exercise: after each set, straight to the partner (e[4] = transition), no separate station change
+    if(e[8]===1){rest+=e[1]*e[4];continue}
     rest+=(e[1]-1)*e[4];
     // Changing stations and recovery after the last set overlap.
     move+=Math.max(60,e[4]);
@@ -1207,6 +1219,15 @@ function budgetParts(ex,cm,wm){
   return {warm,work,rest,move,cardio,total:warm+work+rest+move+cardio};
 }
 function est(ex,cm,wm){return budgetParts(ex,cm||0,wm??5).total/60}
+// supersets for short workouts (30 min or less): two accessories alternate set by set (A1 → B1 → rest → A2 → B2),
+// which keeps the arms (or shoulders/core) in a 20-minute workout instead of cutting them
+const SSP={M:{A:[[2,4]],B:[[3,4]],C:[[4,5]]},F:{A:[[3,4]],B:[[3,4]],C:[[2,4]]}};
+function pairUp(ex,w){for(const [a,b] of SSP[S.p][w]||[]){const A=ex.find(e=>e[7]===a),B=ex.find(e=>e[7]===b);if(!A||!B||A[8]||B[8])continue;
+  ex.splice(ex.indexOf(B),1);ex.splice(ex.indexOf(A)+1,0,B);A[8]=1;A[9]=A[4];A[4]=15;B[8]=2}return ex}
+// a pair broken by a removal or a move goes back to normal rests
+function ssLine(i){const k=ssOf(i);if(k<0)return"";return`<div class=ssl>🔁 ${t(k>i?"ssA":"ssB")(nm(sid(k)))}</div>`}
+function fixPairs(pl){pl.forEach((e,i)=>{if(e[8]===1&&pl[i+1]?.[8]!==2){if(e[9])e[4]=e[9];e.length=8}else if(e[8]===2&&pl[i-1]?.[8]!==1)e.length=8});return pl}
+const ssOf=i=>{const pl=cx(),e=pl[i];return e[8]===1&&pl[i+1]?.[8]===2?i+1:e[8]===2&&pl[i-1]?.[8]===1?i-1:-1};
 function budgetPanel(p){
   const rows=[["wuT",p.timing.warm],["workTime",p.timing.work],["breakTime",p.timing.rest],["moveTime",p.timing.move],["cdl",p.timing.cardio],["marginTime",p.budget*60-p.timing.total]];
   const duration=s=>Math.floor(s/60)+" min"+(s%60?" "+s%60+" s":"");
@@ -1246,6 +1267,10 @@ function eff(w){
     if(!main(e[7])&&e[1]<3){e[1]++;if(over())e[1]--}
   }
   while(cm>0&&over())cm=Math.max(0,cm-5);
+  // short workouts: an accessory done one side at a time takes twice as long, so use a two-sided variant when the slot has one (pins are kept)
+  if(budget<=30)for(const e of ex){if(main(e[7])||!BOTH_SIDES.has(e[0])||D().sub[w+e[7]]===e[0])continue;const sl=slotOf(w,e[7]);if(!sl)continue;
+    const alt=allowed(sl[0],sl[2]).find(x=>!BOTH_SIDES.has(x)&&!ex.some(o=>o[0]===x));if(alt){e[0]=alt;const r=rangeFor(w,e[7],alt);if(r){e[2]=r[0];e[3]=r[1]}}}
+  if(budget<=30)pairUp(ex,w);
   while(ex.length&&over()){
     const endFirst=ex.slice().reverse();
     const secondary=e=>!priority.includes(e[7])&&!main(e[7]);
@@ -1253,15 +1278,16 @@ function eff(w){
       (budget<=30&&endFirst.find(e=>e[1]>2));
     if(trim){trim[1]--;red++;continue}
     const remove=endFirst.find(e=>secondary(e)&&required.every(group=>ex.some(other=>other!==e&&group.includes(GR[other[0]]))));
-    if(remove){ex.splice(ex.indexOf(remove),1);if(remove[7]>=n)bon--;else cut++;continue}
+    if(remove){ex.splice(ex.indexOf(remove),1);fixPairs(ex);if(remove[7]>=n)bon--;else cut++;continue}
     const shorten=endFirst.find(e=>e[1]>1);
     if(shorten){shorten[1]--;red++;continue}
     const optional=endFirst.find(e=>required.every(group=>ex.some(other=>other!==e&&group.includes(GR[other[0]]))));
     if(!optional)break;
-    ex.splice(ex.indexOf(optional),1);if(optional[7]>=n)bon--;else cut++;
+    ex.splice(ex.indexOf(optional),1);fixPairs(ex);if(optional[7]>=n)bon--;else cut++;
   }
+  fixPairs(ex);const ss=ex.filter(e=>e[8]===1).length;
   const timing=budgetParts(ex,cm,wm);
-  return {ex,cm,cut,add,bon,red,wm,wu,g:dr.g,gm,ramp:ramp+feeler,budget,timing,missing,
+  return {ex,cm,cut,add,bon,red,ss,wm,wu,g:dr.g,gm,ramp:ramp+feeler,budget,timing,missing,
     unavailable:unavailable||timing.total>budget*60,tooShort:!unavailable&&timing.total>budget*60,dur:Math.ceil(timing.total/60)};
 }
 const cx=()=>cur().pl||prog()[cur().wk].ex;
@@ -1318,7 +1344,7 @@ function th(){const r=document.documentElement;S.th?r.setAttribute("data-theme",
 function go(){th();CH=[];const ids=["today","plan","lib","prg","hist","set"],f={today,plan,lib,prg,hist,set}[U.tab];
 document.getElementById("v").innerHTML=`<div class=pf><div><button class="${S.p=="M"?"on":""}" onclick="switchProfile('M')">${t("him")}</button><button class="${S.p=="F"?"on":""}" onclick="switchProfile('F')">${t("her")}</button></div><div><button class="${S.lg=="fr"?"on":""}" onclick="S.lg='fr';save();go()">FR</button><button class="${S.lg=="en"?"on":""}" onclick="S.lg='en';save();go()">EN</button></div></div>`+f();
 document.getElementById("nv").innerHTML=ids.map((x,i)=>`<button class="${U.tab==x?"on":""}" onclick="navigate('${x}')">${t("tab")[i]}</button>`).join("");renderRest();hook()}
-const VER="2026-11-14f";
+const VER="2026-11-14g";
 function upd(){if(!/^https?:/.test(location.protocol))return;fetch(location.pathname+"?nocache="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(h=>{const m=/const VER="([^"]+)"/.exec(h);if(!m||m[1]==VER)return;
 if(!S.d.M.cur&&!S.d.F.cur&&!$("action-dialog").open&&U.ed==null){location.replace(location.pathname+"?v="+m[1]);return}
 const b=document.getElementById("upb");b.style.display="block";b.textContent=t("upd");b.onclick=()=>location.replace(location.pathname+"?v="+m[1])}).catch(()=>{})}

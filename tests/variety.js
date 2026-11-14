@@ -21,8 +21,8 @@ const doSession=async(w)=>{ // start, log the first set of each exercise, save
 const advance=async days=>{now+=days*DAY;await p.clock.setFixedTime(now)};
 
 // ===== 1. Defaults =====
-ok('1. New profiles rotate all exercises by default',await E(()=>S.d.M.pf.var==='max'&&S.d.F.pf.var==='max'));
-ok('1. The default Him profile avoids overhead pressing and axial loading',await E(()=>S.d.M.pf.noOverhead&&eff('A').ex.every(e=>!['ms','dsp','ssq','hsq','rdl'].includes(e[0]))));
+ok('1. New profiles start in Balanced (2 reference lifts kept 4 weeks, accessories rotate)',await E(()=>S.d.M.pf.var==='bal'&&S.d.F.pf.var==='bal'));
+ok('1. Him: axial loading always avoided (back); the no-overhead option is off by default and removes the shoulder press when on',await E(()=>{const pf=S.d.M.pf,a=!pf.noOverhead&&eff('A').ex.every(e=>!['dsp','ssq','hsq','rdl'].includes(e[0]));pf.noOverhead=true;delete D().draw.A;const b=eff('A').ex.every(e=>!['ms','dsp','oce'].includes(e[0]));pf.noOverhead=false;delete D().draw.A;return a&&b}));
 // The following block exercises explicitly selected balanced mode and its reference lifts.
 await E(()=>{for(const k of ['M','F'])S.d[k].pf.var='bal';S.d.M.pf.noOverhead=false;save();go()});
 await E(()=>{S.p='M';U.pick='A';go()});
@@ -154,9 +154,9 @@ await E(()=>{spf('lvl','beg');switchProfile('M')});
 // ===== 13. Storage =====
 const imp=await E(()=>{const raw=JSON.parse(JSON.stringify(S));raw.d.M.draw.A={sig:'x',ids:['nope'],bon:[],wu:['zz'],g:'bike'};raw.d.M.pf.var='weird';raw.d.M.pf.no=['clr','ghost'];
   try{const st=readState(JSON.stringify(raw));return{draw:!st.d.M.draw.A,var:st.d.M.pf.var,no:st.d.M.pf.no}}catch(e){return{err:e.message}}});
-ok('13. Corrupted draw / variety settings are repaired on load',imp.draw&&imp.var==='max'&&JSON.stringify(imp.no)==='["clr"]',JSON.stringify(imp));
+ok('13. Corrupted draw / variety settings are repaired on load',imp.draw&&imp.var==='bal'&&JSON.stringify(imp.no)==='["clr"]',JSON.stringify(imp));
 const legacy=await E(()=>{const raw={p:'M',d:{M:{logs:[],sched:{1:'A'},hd:[],ms:[],sub:{},cur:null},F:{logs:[],sched:{},hd:[],ms:[],sub:{},cur:null}}};const st=readState(JSON.stringify(raw));return st.d.M.pf.var+'|'+JSON.stringify(st.d.M.draw)});
-ok('13. Old backups load with variety on and an empty draw',legacy==='max|{}',legacy);
+ok('13. Old backups load with variety on and an empty draw',legacy==='bal|{}',legacy);
 ok('13. A session started before this update (no warm-up data) still renders',await E(()=>{U.pick='A';go();begin('A');delete cur().wd;go();const okk=document.getElementById('v').textContent.includes('Développé');return okk}));
 await tap(p.locator('#v >> text=Abandonner'));await accept();
 
