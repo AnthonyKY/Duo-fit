@@ -22,6 +22,8 @@ node tests/variety.js                      # variety: drawn exercises per slot (
 node tests/priorities.js                   # the 3 priorities end to end (iPhone SE, /Duo-fit/): variety vs equipment/level/exclusions + pinned
                                            # reference lift and last loads; real 20-min cable-only Back & Arms run; timer, pause, replace after a
                                            # logged set, shortening, airplane-mode relaunch, finish offline, abandon, history, pre-update data
+node tests/backup.js                       # backup copy: weekly reminder (✕ = hidden 7 days), share sheet with a .json file, cancel,
+                                           # download fallback, restore from that file, bad file refused
 node tests/pages.js                        # as GitHub Pages serves it: /Duo-fit/ sub-path, icons, offline cold start, auto-update keeps the workout
 node tests/budget-iphone.js                # 20-minute cable-only plan on iPhone SE, input-only ramp up, offline resume, history and EN
 node --test tests/budget.test.cjs          # 324 plan combinations, equipment, exclusions, time allocation, migration and session snapshots

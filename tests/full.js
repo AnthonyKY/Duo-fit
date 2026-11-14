@@ -233,11 +233,11 @@ await p.click('#tm [data-rest=stop]');ok('Dismiss end message',!(await p.isVisib
 await p.click('text=Abandonner');await p.click('#action-accept');
 
 // ===== Export / Import / Reset =====
-await p.click('nav >> text=Profil');await p.click('button:text-is("Exporter")');const js=await p.inputValue('#jx');
+await p.click('nav >> text=Profil');await p.click('#bkc summary');await p.click('button:text-is("Exporter")');const js=await p.inputValue('#jx');
 const before=await E(()=>JSON.stringify(S.d));
 await p.click('button:has-text("Effacer les données de ce profil")');await p.click('#action-accept');await p.click('#action-accept');
 ok('Reset clears only current profile',await E(()=>S.d.M.logs.length==0&&S.d.F.logs.length==1));
-await p.click('nav >> text=Profil');await p.fill('#jx',js);await p.click('button:text-is("Importer")');await p.click('#action-accept');
+await p.click('nav >> text=Profil');await p.click('#bkc summary');await p.fill('#jx',js);await p.click('button:text-is("Importer")');await p.click('#action-accept');
 ok('Import restores everything exactly',await E(()=>JSON.stringify(S.d))==before);
 
 // ===== Persistence across app restart (new page, same storage) =====
