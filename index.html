@@ -212,7 +212,7 @@ Object.assign(L.fr,{
   bFirst:w=>`Premier relevé « ${w} ». Pour comparer, refais-le dans les mêmes conditions.`
   ,bCalcT:"Calculs",bCalcP:"Calculs : ",bCalcX:"≈ = calculé à partir de tes saisies (jamais enregistré). ± = marge due aux arrondis de la balance.",
   bFromHd:"pesée du jour",bFromSeg:"somme des segments",bFfm:"Masse maigre",bBone:"Os (estimé)",bBoneBad:v=>`incohérent (poids − gras − muscle = ${v} kg), vérifie la saisie`,
-  bBmi:"IMC",bFfmi:"FFMI (indice de masse maigre)",bFfmiN:v=>`${v} ramené à 1,80 m`,bFfmiRef:"FFMI, repère homme : moyenne ≈ 18–20, plafond naturel ≈ 25.",
+  bBmi:"IMC",bFfmi:"FFMI (indice de masse maigre)",bFfmiN:v=>`${v} ramené à 1,80 m`,bFfmiRef:"FFMI, repère homme : ≈ 18–20 en moyenne ; ≈ 25 = plus haute valeur observée chez des sportifs sans stéroïdes (Kouri, 1995), pas une limite individuelle.",
   bBmrEst:"Métabolisme estimé (Cunningham)",bAsym:"Écart gauche / droite (muscle)",bArms:"bras",bLegs:"jambes",bAsymOk:"dans la marge d’arrondi"
 });
 Object.assign(L.en,{
@@ -241,7 +241,7 @@ Object.assign(L.en,{
   bFirst:w=>`First “${w}” reading. To compare, repeat it under the same conditions.`
   ,bCalcT:"Calculations",bCalcP:"Calculations: ",bCalcX:"≈ = computed from what you entered (never stored). ± = margin from the scale's rounding.",
   bFromHd:"today's weigh-in",bFromSeg:"sum of segments",bFfm:"Fat-free mass",bBone:"Bone (estimated)",bBoneBad:v=>`inconsistent (weight − fat − muscle = ${v} kg), check the values`,
-  bBmi:"BMI",bFfmi:"FFMI (fat-free mass index)",bFfmiN:v=>`${v} scaled to 1.80 m`,bFfmiRef:"FFMI, reference for men: average ≈ 18–20, natural ceiling ≈ 25.",
+  bBmi:"BMI",bFfmi:"FFMI (fat-free mass index)",bFfmiN:v=>`${v} scaled to 1.80 m`,bFfmiRef:"FFMI, reference for men: ≈ 18–20 on average; ≈ 25 = highest value seen in steroid-free athletes (Kouri, 1995), not a personal limit.",
   bBmrEst:"Estimated BMR (Cunningham)",bAsym:"Left / right gap (muscle)",bArms:"arms",bLegs:"legs",bAsymOk:"within rounding"
 });
 Object.assign(L.en,{
@@ -1690,35 +1690,49 @@ function bDel(id){
 // Each value carries its uncertainty from the scale's 0.1 rounding (worst case, propagated), so nothing looks more precise than it is.
 const B_E=.05;
 function bRowOf(b){const r={d:b.d};for(const k of BKEYS){const x=num(b.v[k]);if(x!==""&&x>=BF[k][0]&&x<=BF[k][1])r[k]=x}return r}
-function bDerive(r,pf,hd){
-  const v={},e={},c={},ok=(k,x)=>Number.isFinite(x)&&x>=BF[k][0]&&x<=BF[k][1];
-  const put=(k,x,err,how)=>{if(ok(k,x)){v[k]=x;e[k]=err;c[k]=how}};
-  for(const k of BKEYS)if(r[k]!=null){v[k]=r[k];e[k]=k==="bmr"?.5:B_E;c[k]=""}
+function bCore(r,pf,hd,hdw){
+  const v={},c={},ok=(k,x)=>Number.isFinite(x)&&x>=BF[k][0]&&x<=BF[k][1];
+  const put=(k,x,how)=>{if(ok(k,x)){v[k]=x;c[k]=how}};
+  for(const k of BKEYS)if(r[k]!=null){v[k]=r[k];c[k]=""}
   const sm=BSEG.map(g=>v[g+"Muscle"]);
-  if(v.muscleKg==null&&sm.every(x=>x!=null))put("muscleKg",sm.reduce((a,x)=>a+x,0),B_E*5,"seg");
+  if(v.muscleKg==null&&sm.every(x=>x!=null))put("muscleKg",sm.reduce((a,x)=>a+x,0),"seg");
   if(v.weight==null){
-    const pairs=[["muscleKg","musclePct"],["fatKg","fatPct"]].filter(([K,P])=>v[K]!=null&&v[P]!=null).map(([K,P])=>{const w=v[K]/v[P]*100;return[w,w*(e[K]/v[K]+e[P]/v[P])]}).sort((x,y)=>x[1]-y[1]);
-    if(pairs.length)put("weight",pairs[0][0],pairs[0][1],"≈");
-    else{const h=(hd||[]).find(x=>x.d===r.d&&x.w!=null);if(h)put("weight",+h.w,B_E,"hd")}
+    // the pair whose 0.1 rounding moves the weight least: muscle (big numbers) before fat
+    const pr=[["muscleKg","musclePct"],["fatKg","fatPct"]].filter(([K,P])=>v[K]!=null&&v[P]!=null).sort((x,y)=>(1/v[x[0]]+1/v[x[1]])-(1/v[y[0]]+1/v[y[1]]))[0];
+    if(pr)put("weight",v[pr[0]]/v[pr[1]]*100,"≈");
+    else{const h=(hd||[]).find(x=>x.d===r.d&&x.w!=null);if(h)put("weight",hdw??+h.w,"hd")}
   }
   const W=v.weight;
   if(W!=null)for(const [K,P] of [["fatKg","fatPct"],["muscleKg","musclePct"]]){
-    if(v[K]!=null&&v[P]==null){const x=v[K]/W*100;put(P,x,x*(e[K]/v[K]+e.weight/W),"≈")}
-    else if(v[P]!=null&&v[K]==null)put(K,W*v[P]/100,(v[P]*e.weight+W*e[P])/100,"≈");
+    if(v[K]!=null&&v[P]==null)put(P,v[K]/W*100,"≈");else if(v[P]!=null&&v[K]==null)put(K,W*v[P]/100,"≈");
   }
-  const o={v,e,c};
-  if(W!=null&&v.fatKg!=null){o.ffm=W-v.fatKg;o.effm=e.weight+e.fatKg}
-  if(o.ffm!=null&&v.muscleKg!=null){const x=o.ffm-v.muscleKg;if(x>=1&&x<=6){o.bone=x;o.ebone=o.effm+e.muscleKg}else o.boneBad=x}
+  const o={v,c};
+  if(W!=null&&v.fatKg!=null)o.ffm=W-v.fatKg;
+  if(o.ffm!=null&&v.muscleKg!=null){const x=o.ffm-v.muscleKg;if(x>=1&&x<=6)o.bone=x;else o.boneBad=x}
   const H=pf&&+pf.h>=120&&+pf.h<=230?pf.h/100:null;
   if(H&&W!=null)o.bmi=W/(H*H);
   if(H&&o.ffm!=null){o.ffmi=o.ffm/(H*H);if(pf.sex==="m"&&Math.abs(H-1.8)>=.01)o.ffmiN=o.ffmi+6.1*(1.8-H)}
   if(v.bmr==null&&o.ffm!=null)o.bmrEst=Math.round((500+22*o.ffm)/10)*10;
   for(const [n,g1,g2] of [["arm","leftArm","rightArm"],["leg","leftLeg","rightLeg"]]){
-    const L=v[g1+"Muscle"],R=v[g2+"Muscle"];if(L!=null&&R!=null){const m=Math.max(L,R);o[n]={a:Math.abs(L-R)/m*100,ea:(e[g1+"Muscle"]+e[g2+"Muscle"])/m*100}}
+    const L=r[g1+"Muscle"],R=r[g2+"Muscle"];if(L!=null&&R!=null){const d=Math.abs(L-R);o[n]={a:d/Math.max(L,R)*100,zero:d<=2*B_E+1e-9}}
   }
   return o;
 }
-const bPm=err=>err>.3?` (±${f1(err)})`:"";
+const bFlat=o=>{const f={};for(const k in o.v)f["v."+k]=o.v[k];for(const k of ["ffm","bone","bmi","ffmi","ffmiN","bmrEst"])if(o[k]!=null)f[k]=o[k];return f};
+// margins: each entered value (and a borrowed weigh-in) can be off by half the scale's 0.1 step; push each one both ways and
+// add up how far every result moves (first-order worst case — a value used twice, like fat in weight and in fat-free mass, counts once)
+function bDerive(r,pf,hd){
+  const o=bCore(r,pf,hd),base=bFlat(o),err={};for(const q in base)err[q]=0;
+  const ins=BKEYS.filter(k=>r[k]!=null).map(k=>[k,k==="bmr"?.5:B_E]);if(o.c.weight==="hd")ins.push(["@hd",B_E]);
+  for(const [k,st] of ins){const mx={};
+    for(const sg of [1,-1]){const f=bFlat(k==="@hd"?bCore(r,pf,hd,o.v.weight+sg*st):bCore({...r,[k]:r[k]+sg*st},pf,hd));
+      for(const q in base)if(f[q]!=null)mx[q]=Math.max(mx[q]||0,Math.abs(f[q]-base[q]))}
+    for(const q in mx)err[q]+=mx[q]}
+  o.e={};for(const k in o.v)o.e[k]=o.c[k]===""?(k==="bmr"?.5:B_E):err["v."+k];
+  o.effm=err.ffm;o.ebone=err.bone;
+  return o;
+}
+const bPmV=err=>Math.ceil(err*10-1e-9)/10,bPm=err=>err>.3?` (±${f1(bPmV(err))})`:"";
 // one value as shown: entered plainly, computed with ≈ (+ its margin, + where the weight came from)
 function bVal(x,k,u){const val=x.v[k];if(val==null)return"";const how=x.c[k],txt=(k==="bmr"?Math.round(val).toLocaleString(S.lg):f1(val))+(u?" "+u:"");
   return how?`<span class=bcv>≈ ${txt}${bPm(x.e[k])}${how==="hd"?" · "+t("bFromHd"):how==="seg"?" · "+t("bFromSeg"):""}</span>`:txt}
@@ -1729,7 +1743,7 @@ function bCalcList(x,sex){const L=[];
   if(x.ffmi!=null)L.push([t("bFfmi"),f1(x.ffmi)+(x.ffmiN!=null?` · ${t("bFfmiN")(f1(x.ffmiN))}`:"")]);
   if(x.bmrEst!=null)L.push([t("bBmrEst"),`≈ ${x.bmrEst.toLocaleString(S.lg)} ${t("bKcal")}`]);
   const as=[["arm","bArms"],["leg","bLegs"]].filter(([n])=>x[n]);
-  if(as.length)L.push([t("bAsym"),as.map(([n,l])=>`${t(l)} ${f1(x[n].a)} %`).join(" · ")+(as.every(([n])=>x[n].a<=x[n].ea+1e-9)?` (${t("bAsymOk")})`:"")]);
+  if(as.length)L.push([t("bAsym"),as.map(([n,l])=>`${t(l)} ${f1(x[n].a)} %`).join(" · ")+(as.every(([n])=>x[n].zero)?` (${t("bAsymOk")})`:"")]);
   return L}
 function bLiveLine(x){return bCalcList(x).map(([l,v])=>`${l} ${v}`).join(" · ")}
 function bCmp(r,rows){
@@ -1737,7 +1751,7 @@ function bCmp(r,rows){
   if(same){
     const pf=D().pf,hd=D().hd,a=bDerive(r,pf,hd),b=bDerive(same,pf,hd);
     const parts=[["weight","kg","bWs"],["fatKg","kg","bFs"],["fatPct",t("bPt"),"bPs"],["muscleKg","kg","bMs"]].filter(([k])=>a.v[k]!=null&&b.v[k]!=null)
-      .map(([k,u,l])=>{const m=a.e[k]+b.e[k];return`${t(l)} ${a.c[k]||b.c[k]?"≈ ":""}${bSg(a.v[k]-b.v[k])} ${u}${m>.3?` (±${f1(m)})`:""}`});
+      .map(([k,u,l])=>{const m=a.e[k]+b.e[k];return`${t(l)} ${a.c[k]||b.c[k]?"≈ ":""}${bSg(a.v[k]-b.v[k])} ${u}${m>.3?` (±${f1(bPmV(m))})`:""}`});
     return parts.length?t("bCmp")(bDate(same.d),parts.join(" · ")):t("bCmp0")(bDate(same.d));
   }
   const prev=before.at(-1);
@@ -1757,7 +1771,7 @@ function bRow(r,rows){
   <div class=r><button class=hb onclick="bOpen('${r.id}')">✏️ ${t("edit")}</button><button class=hb onclick="bDel('${r.id}')">🗑️ ${t("del")}</button></div></details>`;
 }
 // live while typing: grey "≈ value" in the empty fields + one line of results; no re-render (the iPhone keyboard stays open)
-const bPh=(x,k,b)=>String(b.v[k]??"").trim()===""&&x.c[k]?"≈ "+(k==="bmr"?Math.round(x.v[k]).toLocaleString(S.lg):f1(x.v[k])):"";
+const bPh=(x,k,b)=>String(b.v[k]??"").trim()===""&&x.c[k]?"≈ "+(k==="bmr"?Math.round(x.v[k]).toLocaleString(S.lg):f1(x.v[k]))+(x.e[k]>.3?" ± "+f1(bPmV(x.e[k])):""):"";
 function bLive(){const b=U.bd;if(!b)return;const x=bDerive(bRowOf(b),D().pf,D().hd);
   for(const k of BKEYS){const el=$("b_"+k);if(el)el.placeholder=bPh(x,k,b)}
   const el=$("b_calc");if(el){const l=bLiveLine(x);el.textContent=l?t("bCalcP")+l:"";el.hidden=!l}}
