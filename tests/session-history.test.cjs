@@ -18,7 +18,7 @@ test("all profile, language and navigation combinations render and carry correct
   }
 });
 test("exact decimal load, pre-filled weight, unchecked entries, double save and retained precision",()=>{
-  const h=harness();setup(h);h.run("done(0,0);setv(0,1,'r','8')");
+  const h=harness();setup(h);h.run("runExercise(0);done(0,0);setv(0,1,'r','8')");
   h.tick(13700);h.run("fin()");assert.match(h.el("action-detail").textContent,/405 kg/);
   accept(h);accept(h);assert.equal(h.state().d.M.logs.length,1);
   const log=h.state().d.M.logs[0];assert.deepEqual([log.durSec,log.vol,log.sets],[13,405,2]);

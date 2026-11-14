@@ -10,6 +10,8 @@ Run from the repo root:
 
 ```
 python3 -m http.server 8766 &              # serve index.html
+node tests/exercise-iphone.js              # exercise timers, overrun colors, add movements, offline feedback and history
+node --test tests/exercise-clock.test.cjs  # aggregate time, pause, replacement, additions and progression
 node tests/full.js                         # whole app: sessions, progression engine, history, progress, tracking, profiles, export/import
 node tests/nut2.js                         # profile, nutrition, auto-adjustment, adaptive sessions, measurements
 node tests/ios.js                          # iPhone flows: ✓, rest timer, session clock, Terminer, Abandonner, history edit/delete
