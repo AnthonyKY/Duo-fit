@@ -44,7 +44,7 @@ const ios=require('./iosinit.js');
       await p.evaluate(()=>{const backup=localStorage.getItem('duofit');applyStorage(backup);S.p='M';U.bd=null;go()});
       check('reading restored without derived fields',await p.evaluate(()=>D().body[0].fatPct===15.5&&D().body[0].fatKg==null&&Math.abs(bCalc(D().body[0]).fatKg.value-11.222)<.001));
       await p.evaluate(()=>{U.tab='today';start('A',0);go()});
-      await p.locator('#v .xt.x0').first().click();
+      await p.locator('#v .c').filter({has:p.locator('[data-row]')}).first().locator('.xt.x0').click();
       check('exercise stopwatch starts',await p.evaluate(()=>cur().xr===xkey(0)));
       await ctx.close();
     }
