@@ -11,6 +11,7 @@ const tap=loc=>loc.evaluate(el=>el.click());
 const nav=n=>tap(p.locator('nav button').nth(n));
 const accept=()=>tap(p.locator('#action-accept'));
 await p.goto(URL);
+await E(()=>{for(const k of ['M','F'])S.d[k].pf.var='fix';save();go()}); // exercise rotation is tested in variety.js
 
 // ===== A. Offline =====
 await E(()=>navigator.serviceWorker.ready.then(()=>true));await p.reload();
@@ -99,7 +100,7 @@ await tap(p.locator('#v >> text=Abandonner'));await accept();
 await E(()=>{S.d.M.pf.goal='loss';save()});await tap(p.locator('button:text-is("A")'));await tap(p.locator('text=Commencer la séance'));await tap(p.locator('.bkbtn'));await tap(p.locator('.bkp button',{hasText:'Douleur'}));
 tx=await txt();const ids=await E(()=>cx().map((e,i)=>sid(i)));
 ok('B. Pain: banner tells when to stop',tx.includes('descend dans la jambe'));
-ok('B. Pain: cable crunch replaced by plank (safer), no cardio',ids.includes('pl')&&!ids.includes('cc')&&await E(()=>!cur().cm),ids.join(','));
+ok('B. Pain: no loaded spinal flexion or axial exercise (Pallof press instead of cable crunch), no cardio',ids.includes('pal')&&!ids.some(x=>['cc','dsp','ssq','hsq','rdl'].includes(x))&&await E(()=>!cur().cm),ids.join(','));
 ok('B. Pain: shoulder press suggestion −20 % (45 → 35 kg)',await p.inputValue('#w0_0')==='35',await p.inputValue('#w0_0'));
 await tap(p.locator('#v >> text=Abandonner'));await accept();await E(()=>{S.d.M.pf.goal='gain';save()});
 // Her: back check-in off by default → starts directly

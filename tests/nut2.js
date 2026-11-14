@@ -4,7 +4,7 @@ const R=[];let fails=0;const ok=(n,c,x='')=>{const l=(c?'PASS ':'FAIL ')+n+(x?' 
 const errs=[];p.on('pageerror',e=>errs.push(e.message));p.on('dialog',d=>d.accept());
 await p.clock.setFixedTime(new Date(2026,10,16,9).getTime()); // Mon 16 Nov
 await p.goto('http://localhost:8766/index.html');
-await p.evaluate(()=>{S.gm=false;for(const k of ['M','F']){S.d[k].pf.back=false;S.d[k].pf.inc={DB:2,M:2.5,C:1.25,SM:2.5}}save();go()}); // legacy list mode for this suite (V2 has its own tests)
+await p.evaluate(()=>{S.gm=false;for(const k of ['M','F']){S.d[k].pf.back=false;S.d[k].pf.inc={DB:2,M:2.5,C:1.25,SM:2.5};S.d[k].pf.var='fix'}save();go()}); // legacy list mode for this suite (V2 has its own tests)
 
 const E=(f,a)=>p.evaluate(f,a);const txt=async()=>(await p.textContent('#v')).replace(/[\u202f\u00a0]/g,' ');
 // --- Him defaults
@@ -65,7 +65,7 @@ ok('Her 45 min: cardio dropped, all 5 exercises kept',!tx.includes('Cardio (opti
 // --- Him: 45 min trims accessories, 75 min adds sets
 await p.click('.pf >> text=Lui');await p.click('nav >> text=Profil');await p.locator('.sg button',{hasText:'45 min'}).click();
 await p.click('nav >> text=Séance');await p.click('button:text-is("A")');tx=await txt();
-const ef45=await E(()=>eff('A'));ok('Him 45 min: '+ef45.ex.length+' exercises, ≈'+ef45.dur+' min, note shown',ef45.ex.length==5&&ef45.dur<=47&&tx.includes('1 exercice(s) d\'appoint retiré(s)'),JSON.stringify(ef45.ex.map(e=>e[0])));
+const ef45=await E(()=>eff('A'));ok('Him 45 min: '+ef45.ex.length+' exercises, ≈'+ef45.dur+' min, accessories cut to 2 sets before dropping any',ef45.ex.length>=5&&ef45.dur<=47&&ef45.ex.slice(2).some(e=>e[1]==2)&&tx.includes('passent à 2 séries'),JSON.stringify(ef45.ex.map(e=>e[0]+'×'+e[1]))+' dur '+ef45.dur);
 await p.click('nav >> text=Profil');await p.locator('.sg button',{hasText:'75 min'}).click();
 const ef75=await E(()=>eff('A'));ok('Him 75 min: shoulder press 4 sets, incline 4 sets',ef75.ex[0][1]==4&&ef75.ex[1][1]==4&&ef75.ex[2][1]==4,JSON.stringify(ef75.ex.map(e=>e[1])));
 await p.click('nav >> text=Séance');await p.click('button:text-is("A")');await p.click('text=Commencer la séance');

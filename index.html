@@ -27,6 +27,17 @@ dialog::backdrop{background:rgb(0 0 0 / .58)}dialog .r{margin-top:18px}dialog bu
 #notice,#storage-warning{max-width:680px;margin:8px auto;padding:10px 14px;border:1px solid var(--ac);border-radius:10px;background:var(--cd);color:var(--tx)}
 #notice{position:fixed;left:12px;right:12px;bottom:calc(122px + env(safe-area-inset-bottom,0px));z-index:5;pointer-events:none}
 @media(max-width:480px){input,textarea,select{font-size:16px}.history-entry>.r{align-items:flex-start}.session-clock button,#tm button,.s button{min-height:40px}.session-clock{padding:7px 12px}}
+.wul{margin:4px 0 8px;font-size:14px}.exl{margin:3px 0}
+.xtg{display:inline-block;font-size:11px;padding:1px 7px;border-radius:99px;background:var(--c2);color:var(--mu);vertical-align:1px}
+.xtg.nw{background:var(--ac);color:var(--on);font-weight:700}
+.rr{margin-top:8px}.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}.exd{opacity:.75}
+.wuc .wuh{align-items:baseline;flex-wrap:nowrap}.wuc .wuh h2{flex:1 1 auto;margin:0;white-space:nowrap}.wuc .wuh span{flex:none}
+.wur{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--bd);border-radius:0;padding:10px 2px;color:var(--tx)}
+.wur .wck{flex:none;width:26px;height:26px;border-radius:50%;border:2px solid var(--bd);display:flex;align-items:center;justify-content:center;font-weight:700}
+.wur.ok .wck{background:var(--ac);border-color:var(--ac);color:var(--on)}.wur.ok .wtx{opacity:.6}
+.wtx{min-width:0;overflow-wrap:break-word}.wds{color:var(--ac);font-weight:700;font-size:13px}
+.wub{margin:6px 0;text-align:left}
+.swr{grid-template-columns:1fr 1fr;padding:6px 0;border-bottom:1px solid var(--bd)}.swr span{grid-column:1/-1;font-weight:600}
 </style></head><body><div id="upb" style="display:none;position:fixed;top:calc(8px + env(safe-area-inset-top,0px));left:12px;right:12px;z-index:9;background:var(--ac);color:var(--on);font-weight:700;text-align:center;padding:12px;border-radius:12px;cursor:pointer"></div><div id="storage-warning" role="alert" hidden></div><main id="v"></main><div id="notice" role="status" hidden></div><div id="tm" hidden></div><nav id="nv"></nav>
 <dialog id="action-dialog" aria-labelledby="action-title" aria-describedby="action-detail">
   <h2 id="action-title"></h2><p id="action-detail"></p><div class="r">
@@ -58,9 +69,44 @@ le:["Leg extension","Leg extension","Quads","Quadriceps","M",0,"Pad above ankles
 hp:["Machine hip thrust","Hip thrust machine","Glutes","Fessiers","M",0,"Upper back on pad, drive hips up, ribs down, squeeze 1 s.","Haut du dos sur le coussin, monter le bassin, côtes basses, serrer 1 s.","Over-arching lower back.","Cambrer le bas du dos.",["gb"]],
 gb:["Glute bridge","Pont fessier","Glutes, hamstrings","Fessiers, ischios","BW",0,"On back, feet near hips, drive hips up, tuck ribs.","Sur le dos, pieds près des fesses, monter le bassin, côtes rentrées.","Lower-back hyperextension.","Hyperextension lombaire.",["hp"]],
 ssq:["Smith split squat (supported)","Fente bulgare au Smith (appui)","Quads, glutes","Quadriceps, fessiers","SM",1,"Hold for balance, upright torso, lower straight down.","Se tenir pour l'équilibre, buste droit, descendre à la verticale.","Leaning far forward.","Trop pencher le buste.",["lp"]],
-ckb:["Cable glute kickback","Kickback fessier poulie","Glutes","Fessiers","C",0,"Ankle strap, hold frame, kick back with flat back, squeeze.","Sangle à la cheville, se tenir, pousser la jambe en arrière dos plat, serrer.","Arching to swing.","Cambrer pour balancer.",["gb"]]};
+ckb:["Cable glute kickback","Kickback fessier poulie","Glutes","Fessiers","C",0,"Ankle strap, hold frame, kick back with flat back, squeeze.","Sangle à la cheville, se tenir, pousser la jambe en arrière dos plat, serrer.","Arching to swing.","Cambrer pour balancer.",["gb"]],
+fdp:["Flat DB press","Développé couché haltères","Chest, triceps","Pectoraux, triceps","DB",1,"Shoulder blades pinned, feet planted. Lower to chest level in 2-3 s, press up.","Omoplates serrées, pieds ancrés. Descendre à hauteur de poitrine en 2-3 s, pousser.","Elbows flared at 90°; bouncing.","Coudes à 90° du corps ; rebond en bas.",["cp"]],
+sip:["Smith incline press (30°)","Développé incliné Smith (30°)","Upper chest, delts","Haut des pecs, épaules","SM",1,"Bench at 30° so the bar comes down on the upper chest. Lower in 2-3 s.","Banc à 30°, la barre descend sur le haut des pecs. Descendre en 2-3 s.","Bar landing near the neck; arching.","Barre qui arrive vers le cou ; cambrer.",["idp"]],
+cfl:["Low-to-high cable fly","Écarté poulie bas vers haut","Upper chest","Haut des pecs","C",0,"Pulleys low, slight elbow bend, bring hands up and together to chin height.","Poulies basses, coudes légèrement fléchis, ramener les mains ensemble jusqu'au menton.","Turning it into a press; shrugging.","Transformer en développé ; hausser les épaules.",["pd"]],
+mlr:["Machine lateral raise","Élévation latérale machine","Side delts","Deltoïde latéral","M",0,"Pads against the outside of the elbows; raise to shoulder height, lower in 2 s.","Coussins contre l'extérieur des coudes ; monter à hauteur d'épaules, descendre en 2 s.","Shrugging; jerking the weight.","Hausser les épaules ; donner des à-coups.",["clr"]],
+lrr:["Chest-supported lateral raise","Élévation latérale buste appuyé","Side delts","Deltoïde latéral","DB",0,"Chest on a 30-45° incline bench, raise the arms out to the sides leading with the elbows.","Poitrine sur un banc incliné à 30-45°, monter les bras sur les côtés en menant avec les coudes.","Swinging; going too heavy.","Élan ; charge trop lourde.",["dlr"]],
+cyr:["Cable Y-raise","Y-raise à la poulie","Side & rear delts","Deltoïde latéral et arrière","C",1,"Cables crossed low, raise the arms up and out in a Y, slightly above shoulder height.","Câbles croisés en bas, monter les bras en Y, un peu au-dessus des épaules.","Arching the back; shrugging.","Cambrer ; hausser les épaules.",["clr"]],
+fpl:["Face pull","Face pull","Rear delts, upper back","Arrière d'épaule, haut du dos","C",0,"Rope at eye level, pull toward the face, elbows high, rotate the hands back.","Corde à hauteur des yeux, tirer vers le visage, coudes hauts, mains vers l'arrière.","Leaning back; pulling with the lower back.","Se pencher en arrière ; tirer avec les lombaires.",["rdf"]],
+rcf:["Reverse cable fly","Oiseau à la poulie","Rear delts","Arrière d'épaule","C",0,"Cables crossed at shoulder height, arms almost straight, open wide to the shoulder line.","Câbles croisés à hauteur d'épaules, bras presque tendus, ouvrir jusqu'à la ligne des épaules.","Pulling with the traps; bending the elbows a lot.","Tirer avec les trapèzes ; trop plier les coudes.",["rdf"]],
+lpn:["Close neutral-grip pulldown","Tirage vertical prise serrée neutre","Lats, biceps","Grand dorsal, biceps","C",0,"Neutral handle, chest up, drive the elbows down to the ribs.","Poignée neutre, poitrine haute, ramener les coudes vers les côtes.","Leaning far back; swinging.","Se pencher trop en arrière ; balancer.",["lpd"]],
+slp:["Single-arm cable pulldown","Tirage vertical unilatéral poulie","Lats","Grand dorsal","C",1,"Kneel or sit, pull the elbow down to your hip, full stretch at the top.","À genoux ou assis, ramener le coude vers la hanche, étirement complet en haut.","Twisting the torso.","Tourner le buste.",["lpd"]],
+tbr:["Chest-supported T-bar row","Rowing T-bar appui poitrine","Mid back, lats","Milieu du dos, dorsaux","M",0,"Chest on the pad, pull the handles to the lower ribs, squeeze the shoulder blades.","Poitrine sur le coussin, tirer vers le bas des côtes, serrer les omoplates.","Chest leaving the pad.","Décoller la poitrine.",["csr"]],
+sdr:["Chest-supported DB row","Rowing haltères buste sur banc incliné","Mid back, lats","Milieu du dos, dorsaux","DB",0,"Lie face down on a 30-45° bench, row the dumbbells to the hips, pause 1 s.","Allongé face au banc incliné à 30-45°, tirer les haltères vers les hanches, pause 1 s.","Lifting the chest off the bench.","Décoller la poitrine du banc.",["csr"]],
+mrw:["Machine row (iso-lateral)","Rowing machine (iso-latéral)","Back","Dos","M",0,"Chest on the pad, pull one or both handles back, elbows close to the body.","Poitrine contre le coussin, tirer une ou deux poignées, coudes près du corps.","Shrugging; jerking.","Hausser les épaules ; à-coups.",["csr"]],
+ocr:["Single-arm seated cable row","Tirage horizontal unilatéral poulie","Lats, mid back","Dorsaux, milieu du dos","C",0,"Sit tall, pull the handle to the hip, let the shoulder reach forward at the stretch.","Assis bien droit, tirer la poignée vers la hanche, laisser l'épaule avancer à l'étirement.","Rotating with the lower back.","Tourner avec le bas du dos.",["scr"]],
+sap:["Straight-arm cable pulldown","Pull-over poulie bras tendus","Lats","Grand dorsal","C",0,"Slight hinge, arms almost straight, sweep the bar or rope down to the thighs.","Buste légèrement penché, bras presque tendus, ramener la barre ou la corde jusqu'aux cuisses.","Bending the elbows (it becomes a pushdown).","Plier les coudes (ça devient du triceps).",["lpd"]],
+bcc:["Cable curl","Curl à la poulie basse","Biceps","Biceps","C",0,"Elbows by your sides, curl up, lower in 2-3 s.","Coudes le long du corps, fléchir, redescendre en 2-3 s.","Swinging; elbows moving forward.","Élan ; coudes qui avancent.",["idc"]],
+pcm:["Machine preacher curl","Curl pupitre machine","Biceps","Biceps","M",0,"Armpits tight to the pad, full stretch at the bottom, no bouncing.","Aisselles collées au pupitre, étirement complet en bas, sans rebond.","Lifting the elbows off the pad.","Décoller les coudes.",["idc"]],
+hmc:["Hammer curl","Curl marteau","Biceps, brachialis, forearms","Biceps, brachial, avant-bras","DB",0,"Neutral grip, elbows still, alternate arms.","Prise neutre, coudes fixes, en alterné.","Swinging the torso.","Balancer le buste.",["bcc"]],
+bcu:["Bayesian cable curl","Curl poulie derrière le corps (Bayesian)","Biceps (long head)","Biceps (longue portion)","C",1,"Back to a low pulley, arm slightly behind the body, curl without moving the elbow forward.","Dos à la poulie basse, bras un peu derrière le corps, fléchir sans avancer le coude.","Elbow drifting forward.","Coude qui avance.",["idc"]],
+ske:["Lying DB triceps extension","Extension triceps couché haltères","Triceps","Triceps","DB",1,"Lie on a bench, elbows pointing up, lower the dumbbells beside the head, extend.","Allongé sur un banc, coudes vers le plafond, descendre les haltères à côté de la tête, tendre.","Elbows flaring out.","Coudes qui s'écartent.",["oce"]],
+tdm:["Seated dip machine","Dips assis machine","Triceps, chest","Triceps, pectoraux","M",0,"Sit tall, elbows back, press down to full extension, come up under control.","Assis droit, coudes vers l'arrière, pousser jusqu'à extension, remonter en contrôle.","Shoulders rolling forward.","Épaules qui partent en avant.",["rpd"]],
+bsq:["Belt squat (machine)","Belt squat (squat à la ceinture)","Quads, glutes","Quadriceps, fessiers","M",0,"Belt on the hips, torso upright, squat to a comfortable depth: no load on the spine.","Ceinture aux hanches, buste droit, descendre à une profondeur confortable : aucune charge sur la colonne.","Rounding the lower back at the bottom.","Arrondir le bas du dos en bas.",["lp"]],
+ulp:["Single-leg leg press","Presse à cuisses unilatérale","Quads, glutes","Quadriceps, fessiers","M",1,"One foot in the middle of the platform, stop before the pelvis tucks, push through the heel.","Un pied au milieu du plateau, s'arrêter avant que le bassin bascule, pousser par le talon.","Hips lifting off the pad.","Bassin qui décolle.",["lp"]],
+hsq:["Hack squat (machine)","Hack squat (machine)","Quads, glutes","Quadriceps, fessiers","M",1,"Back flat on the pad, feet mid-platform, lower under control, drive up.","Dos plaqué, pieds au milieu du plateau, descendre en contrôle, remonter.","Knees caving; bouncing.","Genoux vers l'intérieur ; rebond.",["lp"]],
+llc:["Lying leg curl","Leg curl allongé","Hamstrings","Ischio-jambiers","M",0,"Hips pressed into the pad, curl the heels to the glutes, lower in 3 s.","Bassin plaqué, ramener les talons vers les fesses, redescendre en 3 s.","Hips lifting; arching.","Bassin qui se soulève ; cambrer.",["slc"]],
+rdl:["DB Romanian deadlift","Soulevé de terre roumain haltères","Hamstrings, glutes","Ischios, fessiers","DB",1,"Soft knees, push the hips back with a flat back, dumbbells close to the legs, stop at mid-shin.","Genoux souples, reculer les hanches dos plat, haltères près des jambes, arrêt mi-tibia.","Rounding the back.","Arrondir le dos.",["slc"]],
+sht:["Smith hip thrust","Hip thrust au Smith","Glutes","Fessiers","SM",1,"Upper back on a bench, pad on the hips, drive up, ribs down, squeeze 1 s.","Haut du dos sur un banc, coussin sur les hanches, monter, côtes basses, serrer 1 s.","Over-arching the lower back.","Cambrer le bas du dos.",["hp"]],
+gkm:["Glute kickback machine","Kickback fessier machine","Glutes","Fessiers","M",0,"Chest on the pad, push the platform back with the heel, squeeze at the top.","Poitrine sur le coussin, pousser le plateau avec le talon, serrer en haut.","Arching to kick higher.","Cambrer pour monter plus haut.",["ckb"]],
+abd:["Hip abduction machine","Abducteurs machine","Glutes (side)","Moyen fessier","M",0,"Sit tall or lean slightly forward, push the knees out, pause 1 s.","Assis droit ou légèrement penché en avant, écarter les genoux, pause 1 s.","Swinging the weight.","Donner de l'élan.",["ckb"]],
+add:["Hip adduction machine","Adducteurs machine","Inner thighs","Adducteurs","M",0,"Squeeze the knees together, return slowly to a comfortable stretch.","Serrer les genoux, revenir lentement jusqu'à un étirement confortable.","Overstretching at the start.","Étirement excessif au départ.",["abd"]],
+scm:["Seated calf raise","Mollets assis machine","Calves (soleus)","Mollets (soléaire)","M",0,"Pad on the lower thighs, 1 s stretch at the bottom, rise high.","Coussin sur le bas des cuisses, étirement 1 s en bas, monter haut.","Bouncing; half reps.","Rebond ; demi-amplitude.",["lpc"]],
+lpc:["Leg-press calf raise","Mollets à la presse","Calves","Mollets","M",0,"Balls of the feet on the platform edge, knees soft, full stretch then press high.","Avant des pieds au bord du plateau, genoux souples, étirer puis pousser haut.","Bending the knees; bouncing.","Plier les genoux ; rebond.",["scm"]],
+sp:["Side plank (seconds)","Gainage latéral (secondes)","Obliques, core","Obliques, sangle abdominale","BW",0,"Elbow under the shoulder, hips high, body straight; time per side.","Coude sous l'épaule, bassin haut, corps aligné ; temps par côté.","Hips sagging.","Bassin qui s'affaisse.",["pl"]],
+dbg:["Dead bug","Dead bug","Deep core","Abdos profonds","BW",0,"Lower back pressed into the floor, slowly extend the opposite arm and leg; reps per side.","Bas du dos plaqué au sol, tendre lentement bras et jambe opposés ; reps par côté.","Lower back lifting off the floor.","Bas du dos qui décolle.",["pl"]],
+pal:["Pallof press","Pallof press (anti-rotation)","Core, obliques","Sangle abdominale, obliques","C",0,"Side-on to the cable, press the handle straight out and hold 2 s without rotating; reps per side.","De profil à la poulie, tendre la poignée devant toi et tenir 2 s sans tourner ; reps par côté.","Twisting; leaning.","Tourner ; se pencher.",["pl"]]};
 const EQ={M:["Machine","Machine"],DB:["Dumbbells","Haltères"],C:["Cable","Poulie"],BW:["Bodyweight","Poids du corps"],SM:["Smith machine","Smith machine"]},LV=[["Beginner","Débutant"],["Intermediate","Intermédiaire"]];
-const P={M:{A:{n:["Shoulders & Chest","Épaules & Pecs"],y:["Priority muscles first while fresh. All supported: no spinal loading.","Muscles prioritaires en premier, frais. Tout est guidé ou avec dossier : pas de charge sur la colonne."],ex:[["ms",3,8,12,120,2,2.5],["idp",3,8,12,120,2,2],["clr",4,12,15,60,1,1.25],["pd",3,12,15,75,1,2.5],["rpd",3,10,15,60,1,2.5],["cc",3,10,15,60,2,2.5]]},
+const P={M:{A:{n:["Shoulders & Chest","Épaules & Pecs"],y:["Priority muscles first while fresh. All supported: no spinal loading.","Muscles prioritaires en premier, frais. Tout est guidé ou avec dossier : pas de charge sur la colonne."],ex:[["ms",3,8,12,120,2,2.5],["idp",3,8,12,120,2,2],["clr",4,12,15,60,1,1.25],["pd",3,12,15,75,1,2.5],["rpd",3,10,15,60,1,2.5],["pal",3,10,15,60,2,2.5]]},
 B:{n:["Back & Arms","Dos & Bras"],y:["Chest-supported pulling builds the V-taper without lumbar load.","Tirages avec appui poitrine pour le V sans charger les lombaires."],ex:[["lpd",3,8,12,120,2,2.5],["csr",3,8,12,120,2,2.5],["rdf",3,12,20,60,1,2.5],["idc",3,10,12,75,1,1],["oce",3,10,15,60,1,2.5],["clr",3,15,20,45,1,1.25]]},
 C:{n:["Legs & Delts","Jambes & Épaules"],y:["Spine-friendly legs plus a 2nd weekly hit for delts and upper chest.","Jambes sans charge axiale + 2e séance hebdo épaules et haut des pecs."],ex:[["lp",3,8,12,150,2,5],["slc",3,10,15,90,1,2.5],["le",3,12,15,75,1,2.5],["lip",3,8,12,120,2,2.5],["clr",3,12,20,60,1,1.25],["pl",3,30,60,60,2,5]]}},
 F:{A:{n:["Lower Body","Bas du corps"],y:["Machines to learn safely; 3 reps in reserve keeps technique clean.","Machines pour apprendre en sécurité ; garder 3 reps en réserve pour une technique propre."],ex:[["lp",3,10,12,120,3,5],["hp",3,10,12,90,3,5],["slc",3,12,15,75,2,2.5],["lpd",3,10,12,90,3,2.5],["pl",3,20,40,45,2,5]]},
@@ -68,13 +114,13 @@ B:{n:["Upper Body & Core","Haut du corps & Gainage"],y:["Upper-body muscle helps
 C:{n:["Glutes & Legs","Fessiers & Jambes"],y:["2nd weekly lower session for glutes. Optional: 10-15 min incline walk.","2e séance bas du corps pour les fessiers. Option : 10-15 min de marche inclinée."],ex:[["hp",3,8,12,90,3,5],["ssq",3,8,10,90,3,2.5],["ckb",3,12,15,60,2,1.25],["le",2,12,15,60,2,2.5],["pl",3,20,40,45,2,5]]}}};
 const L={en:{hi:"Hi 👋",tod:"Today",recday:"Recovery day: walk or mobility, or pick a workout:",start:"Start workout",est:"~55-60 min incl. 5 min warm-up (light sets of the 1st exercise).",wk7:"sessions in the last 7 days",streak:"week streak",fin:"Finish session",disc:"Discard",discq:"Discard session?",notes:"Session notes",last:"Last",rest:"Rest",guide:"Guide",swap:"Swap",sets:"sets",min:"min",done:"Session done 🎉",close:"Close",prev:"Previous",first:"First time doing this workout.",prs:"🏆 PRs",nopr:"No new weight PR.",plan:"Weekly planner",recov:"Recovery / light activity",lib:"Exercise library",search:"Search name, muscle, equipment",txt:"Text guides only (no demo photos/videos).",setup:"How",avoid:"Avoid",alts:"Alternatives",none:"none",prog:"Progress",vol:"Volume per session (kg)",topw:"Top weight",nod:"No data yet.",two:"Log at least 2 points for a chart.",hd:"Daily tracking & watch",hdn:"Enter manually, or paste data (see help below). Fields: weight kg, steps, resting HR, sleep h.",add:"Save",paste:"Paste CSV: date,weight,steps,rhr,sleep",imp:"Import",hist:"History",nos:"No sessions yet.",del:"Delete",delq:"Delete?",set:"Settings",theme:"Theme",auto:"Auto",bk:"Backup / restore",bkn:"Data stays on this phone only (no cloud sync). Export copies everything; paste it into a note weekly. To restore: paste here and Import.",exp:"Export",ok:"Imported",bad:"Invalid data",nut:"Nutrition",nutt:"Him (~80 kg, muscle gain): about 140-160 g protein/day, e.g. 200 g chicken breast (≈45 g) + 250 g skyr (≈25 g) + 3 eggs (≈18 g) + protein in other meals. Her (fat loss): about 100-120 g/day, same foods in smaller portions, at a mild deficit — no crash diet.",lang:"Language",s5:(w,r)=>`Next step ${w} kg is a jump of more than 10%: keep this weight and aim for ${r} reps on every set, then go up.`,noteph:"Machine settings (e.g. seat 4, back 2)",noteadd:"Add machine settings",wuT:"Warm-up",wuNeed:"enter your working weight to compute it",wuX:"not counted",back1b:"😐 Back: mild discomfort — loads −10% and 1 extra rep in reserve. Stop any exercise that hurts.",back2b:"😣 Back pain — loads −20%, safest variants, no cardio. Stop and see a doctor if the pain spreads into the leg, tingles or gets worse.",bkT:"Back check",bkQ:"Before you start: how is your back today?",bk0:"Fine",bk1:"Mild discomfort",bk2:"Pain",bkx:"This only adapts today's loads. It is not medical advice.",bkL:"Back",noalt:"No alternative for this exercise.",swapBy:"Replace with",today1:"Today",always:"Always",swAlways:n=>`${n} now replaces it in this workout.`,swToday:n=>`${n} for today only.`,busyLast:"It is already the last exercise.",busyDone:n=>`${n} moved to the end.`,busyB:"Machine busy",swapB2:"Replace",fits:m=>`It fits: about ${m} min left.`,fitDone:(n,rm,rs,cd,m)=>`Adapted to ${n} min: ${rm} exercise(s) removed, ${rs} set(s) less${cd?", cardio skipped":""} (about ${m} min).`,tlQ:"How much time do you have left?",tlB:"I only have… left",gmOn:"Guided mode",gmOff:"List",exN:"Exercise",valid:"Log set",allDone:"All sets done",allDoneX:"Finish with cardio if planned, then tap Finish.",planT:"Today's plan",firstEx:"first time",repsW:"reps",same:"same as last time",nxT:"Next time",gymT:"Your gym & your back",backOpt:"Back check before back workouts",backOptX:"Asked only before back workouts (e.g. Back & Arms). On any other day, tap “Back sensitive today?” during the workout to adapt the loads.",bkAsk:"Back sensitive today?",bkQ2:"How is your back?",incT:"Smallest weight step available",incX:"Suggested weights always land on a weight your gym has.",allm:"All muscles",alle:"All equipment",alll:"All levels",bkf:"Back-friendly (no spinal loading)",nores:"No exercise found — change the search or filters.",pfT:"Profile & settings",me:"My info",male:"Man",female:"Woman",age:"Age",hgt:"Height (cm)",wgt:"Weight (kg)",lastw:(w,d)=>`Weight: ${w} kg (last weigh-in, ${d}) — log new weigh-ins in Progress.`,lvl:"Level",beg:"Beginner",int:"Intermediate",adv:"Advanced",tim:"Time per session",act:"Activity outside the gym",aauto:"Auto (steps)",sed:"Sedentary",light:"Light",acti:"Active",very:"Very active",autoS:(s,l)=>`Auto: ~${s} steps/day over 14 days → ${l}`,autoN:"Auto: no steps logged yet → Light (add steps in Progress).",goalT:"Goal",loss:"Fat loss",recomp:"Recomp",maint:"Maintain",gain:"Muscle gain",gx_loss:"Lose fat while keeping muscle: moderate deficit, high protein; strength training stays the priority, cardio is a bonus.",gx_recomp:"Lose a bit of fat and build muscle at near-stable weight. Slower, ideal for beginners.",gx_maint:"Keep your weight, get stronger and fitter.",gx_gain:"Build muscle with a small surplus to limit fat gain (lean bulk).",tw:"Target weight (kg, optional)",proj:(w,d)=>`At your current pace: ${w} kg around ${d}.`,projR:(w,n)=>`At the recommended pace: ${w} kg in about ${n} weeks.`,projX:"Your target is in the opposite direction of this goal — check the goal.",projOk:"You're at your target weight 🎯",nutT:"Nutrition — your numbers",nutNo:"Fill in age, height and weight above to get your numbers.",nutNo2:"🍽 Fill in your profile to get your calories and protein.",more:"See →",kcal:"kcal / day",prot:"Protein / day",carb:"Carbs / day",fat:"Fat / day",wat:"Water",watx:"per day (+0.5 L on training days)",mnt:(a,b)=>`Maintenance ≈ ${a} kcal/day (activity: ${b}).`,flr:"Safety floor applied (never below your resting needs).",adjNow:k=>`Includes your adjustment of ${k>0?"+":""}${k} kcal.`,day:"Example day",bf:"Breakfast",lu:"Lunch",sn:"Snack",di:"Dinner",tot:(k,p)=>`Total ≈ ${k} kcal · ${p} g protein`,swapx:"Swap freely: chicken ↔ turkey; fish ↔ lean beef 5% ↔ tofu; rice ↔ pasta, or potatoes (×1.5 the weight).",advT:"Auto-adjustment from your weight curve",adv0:"Weigh yourself 3-4×/week, morning, before breakfast (Progress tab). After 2 weeks the app compares your trend with your goal and suggests an adjustment.",advR:(r,lo,hi)=>`Your trend: ${r} kg/week (7-day averages). Target for your goal: ${lo} to ${hi} kg/week.`,advOk:"✅ On track — change nothing.",advUpL:"⚠️ Losing too fast (risk of losing muscle): +150 kcal/day, e.g. 1 banana + 1 plain yogurt.",advDnL:"⚠️ Losing too slowly: −150 kcal/day, e.g. 1 tbsp oil less + 1 fruit less.",advUpG:"⚠️ Not gaining enough: +150 kcal/day, e.g. 25 g almonds or 100 g more cooked rice.",advDnG:"⚠️ Gaining too fast (mostly fat): −150 kcal/day, e.g. 1 tbsp oil less + 1 fruit less.",advUp:"⚠️ Weight dropping: +150 kcal/day, e.g. 1 banana + 1 plain yogurt.",advDn:"⚠️ Weight rising: −150 kcal/day, e.g. 1 tbsp oil less + 1 fruit less.",apply:d=>`Apply ${d>0?"+":""}${d} kcal/day`,wait:n=>`Recent adjustment: wait ${n} more day(s) before judging again.`,adjRst:"Reset adjustment to 0",ndisc:"Estimates, not medical advice. The scale over 2-3 weeks has the final word.",msT:"Body measurements",msx:"Every 2-4 weeks, same time of day, tape snug but not tight. Waist at the navel.",msNo:"Add your measurements in the Profile tab.",need2:"Enter at least one measurement",m_wa:"Waist",m_hi:"Hips",m_ch:"Chest",m_sh:"Shoulders",m_ar:"Arm",m_th:"Thigh",m_bf:"Body fat %",s_wa:"Waist",s_hi:"Hips",s_ch:"Chest",s_sh:"Shoul.",s_ar:"Arm",s_th:"Thigh",s_bf:"% fat",ratio:"Shoulder / waist ratio",ratx:"classic physique aesthetic target ≈ 1.6",cdT:"Cardio (optional)",cdx:"Incline walk or bike, moderate effort (you can still talk). Fat loss comes mostly from food; this helps a bit. Log the minutes and tap ✓.",cdl:"Cardio",trim:(n,m)=>`Adapted to ${m} min: ${n} accessory exercise(s) removed.`,addS:"+1 set on the first 2 exercises (75 min / advanced).",begx:"Beginner: 1 extra rep in reserve to learn the moves.",durE:m=>`≈ ${m} min including 5 min warm-up (light sets of the 1st exercise).`,todN:(k,p)=>`🍽 Today: ~${k} kcal · ${p} g protein`,s1b:"Bodyweight: log your reps (or seconds); weight is optional.",s2b:"Top of range on all sets: add a little load or a harder variation.",s3b:h=>`Beat your reps (goal ${h} on every set).`,opt:"kg (opt.)",one2:"1st data point — the curve appears from the 2nd one.",edit:"Edit",edh:"Change weight/reps; clear the reps to delete a set.",save:"Save",cancel:"Cancel",date:"Date",exs:"exercises",rst:"Erase this profile's data",rstx:"Deletes all sessions, tracking and settings of the selected profile only (e.g. to remove test data). Export first if unsure.",rq1:"Erase ALL data of this profile?",rq2:"Really? This cannot be undone.",upd:"New version available — tap to update (your session is kept)",p4:"4 wk",p12:"3 mo",pall:"All",sess:"Sessions",perw:"/ week avg",vol2:"Volume lifted",dw:"Weight change",str:"Strength",e1:"Est. 1-rep max",e1x:"Est. 1-rep max = the heaviest single rep you could do, estimated from your best set. Best way to compare 8 reps vs 12 reps.",top:"Top weight",rec:"Progress per exercise",exn:"Exercise",start2:"First",best:"Best",vw:"Weekly volume (kg)",fw:"Sessions per week",wof:"Week of",goal:"Goal",mus:"Sets per muscle — last 7 days",musM:"Priority muscles (shoulders, back, chest): aim for ~10-20 hard sets/week.",musF:"Glutes & legs: aim for ~8-15 sets/week; the rest ~6-10.",raw:"Weigh-in",avg7:"7-day avg",go:"Rest over — next set! 💪",swq:"Swapping resets this exercise's logged sets. Continue?",cp:"Copied to clipboard — paste it into a note.",need:"Enter weight and reps first",nolog:"No sets logged. Discard session?",wt:"Weight",st:"Steps",hr:"Resting HR",sl:"Sleep h",tab:["Workout","Plan","Library","Progress","History","Profile"],him:"Him",her:"Her",s1:r=>`First time: choose a weight leaving ${r} reps in reserve.`,s2:i=>`Top of range on all sets: +${i} kg if form was clean.`,s3:(w,h)=>`Keep ${w} kg, beat your reps (goal ${h} on every set).`,s4:"Missed the range twice: deload ~10%."},
 fr:{hi:"Salut 👋",tod:"Aujourd'hui",recday:"Jour de récupération : marche ou mobilité, ou choisis une séance :",start:"Commencer la séance",est:"~55-60 min avec 5 min d'échauffement (séries légères du 1er exercice).",wk7:"séances sur les 7 derniers jours",streak:"semaines d'affilée",fin:"Terminer la séance",disc:"Abandonner",discq:"Abandonner la séance ?",notes:"Notes de séance",last:"Dernière fois ",rest:"Repos",guide:"Guide",swap:"Remplacer",sets:"séries",min:"min",done:"Séance terminée 🎉",close:"Fermer",prev:"Précédente",first:"Première fois sur cette séance.",prs:"🏆 Records",nopr:"Pas de nouveau record de charge.",plan:"Planning de la semaine",recov:"Récupération / activité légère",lib:"Bibliothèque d'exercices",search:"Chercher nom, muscle, matériel",txt:"Guides texte uniquement (pas de photos/vidéos).",setup:"Exécution",avoid:"À éviter",alts:"Alternatives",none:"aucune",prog:"Progression",vol:"Volume par séance (kg)",topw:"Charge max",nod:"Pas encore de données.",two:"Il faut au moins 2 points pour un graphique.",hd:"Suivi quotidien & montre",hdn:"Saisie manuelle, ou colle tes données (voir l'aide plus bas). Champs : poids kg, pas, FC repos, sommeil h.",add:"Enregistrer",paste:"Coller un CSV : date,poids,pas,fc,sommeil",imp:"Importer",hist:"Historique",nos:"Aucune séance pour l'instant.",del:"Supprimer",delq:"Supprimer ?",set:"Réglages",theme:"Thème",auto:"Auto",bk:"Sauvegarde / restauration",bkn:"Les données restent sur ce téléphone (pas de synchro cloud). Exporter copie tout ; colle-le dans une note chaque semaine. Pour restaurer : colle ici puis Importer.",exp:"Exporter",ok:"Importé",bad:"Données invalides",nut:"Nutrition",nutt:"Lui (~80 kg, prise de muscle) : environ 140-160 g de protéines/jour, par ex. 200 g de blanc de poulet (≈45 g) + 250 g de skyr (≈25 g) + 3 œufs (≈18 g) + les protéines des autres repas. Elle (perte de gras) : environ 100-120 g/jour, mêmes aliments en plus petites portions, avec un léger déficit — pas de régime extrême.",lang:"Langue",s5:(w,r)=>`Le palier suivant (${w} kg) est un saut de plus de 10 % : garde cette charge et vise ${r} reps sur chaque série, puis monte.`,noteph:"Réglages machine (ex. siège 4, dossier 2)",noteadd:"Ajouter les réglages machine",wuT:"Échauffement",wuNeed:"entre ta charge de travail pour le calculer",wuX:"non compté",back1b:"😐 Dos : gêne légère — charges −10 % et 1 rep de plus en réserve. Arrête tout exercice qui fait mal.",back2b:"😣 Douleur au dos — charges −20 %, variantes les plus sûres, pas de cardio. Arrête et consulte si la douleur descend dans la jambe, fourmille ou s'aggrave.",bkT:"Bilan dos",bkQ:"Avant de commencer : comment va ton dos aujourd'hui ?",bk0:"Ça va",bk1:"Gêne légère",bk2:"Douleur",bkx:"Ça adapte seulement les charges du jour. Ce n'est pas un avis médical.",bkL:"Dos",noalt:"Pas d'alternative pour cet exercice.",swapBy:"Remplacer par",today1:"Aujourd'hui",always:"Toujours",swAlways:n=>`${n} le remplace désormais dans cette séance.`,swToday:n=>`${n} pour aujourd'hui seulement.`,busyLast:"C'est déjà le dernier exercice.",busyDone:n=>`${n} déplacé à la fin.`,busyB:"Machine occupée",swapB2:"Remplacer",fits:m=>`Ça rentre : environ ${m} min restantes.`,fitDone:(n,rm,rs,cd,m)=>`Adapté à ${n} min : ${rm} exercice(s) retiré(s), ${rs} série(s) en moins${cd?", cardio retiré":""} (≈ ${m} min).`,tlQ:"Combien de temps te reste-t-il ?",tlB:"Il me reste…",gmOn:"Mode guidé",gmOff:"Liste",exN:"Exercice",valid:"Valider la série",allDone:"Toutes les séries sont faites",allDoneX:"Termine par le cardio s'il est prévu, puis touche Terminer.",planT:"Plan du jour",firstEx:"première fois",repsW:"reps",same:"comme la dernière fois",nxT:"La prochaine fois",gymT:"Ta salle & ton dos",backOpt:"Bilan dos avant les séances dos",backOptX:"Demandé seulement avant les séances dos (ex. Dos & Bras). Les autres jours, touche « Dos sensible aujourd'hui ? » pendant la séance pour adapter les charges.",bkAsk:"Dos sensible aujourd'hui ?",bkQ2:"Comment va ton dos ?",incT:"Plus petit saut de charge disponible",incX:"Les charges proposées tombent toujours sur un poids qui existe dans ta salle.",allm:"Tous muscles",alle:"Tout matériel",alll:"Tous niveaux",bkf:"Ménage le dos (sans charge sur la colonne)",nores:"Aucun exercice trouvé — change la recherche ou les filtres.",pfT:"Profil & réglages",me:"Mes infos",male:"Homme",female:"Femme",age:"Âge",hgt:"Taille (cm)",wgt:"Poids (kg)",lastw:(w,d)=>`Poids : ${w} kg (dernière pesée, ${d}) — ajoute tes pesées dans Progrès.`,lvl:"Niveau",beg:"Débutant",int:"Intermédiaire",adv:"Avancé",tim:"Temps par séance",act:"Activité hors salle",aauto:"Auto (pas)",sed:"Sédentaire",light:"Légère",acti:"Active",very:"Très active",autoS:(s,l)=>`Auto : ~${s} pas/jour sur 14 jours → ${l}`,autoN:"Auto : pas encore de pas enregistrés → Légère (ajoute tes pas dans Progrès).",goalT:"Objectif",loss:"Perte de gras",recomp:"Recompo",maint:"Maintien",gain:"Prise de muscle",gx_loss:"Perdre du gras en gardant le muscle : déficit modéré, beaucoup de protéines ; la muscu reste la priorité, le cardio est un bonus.",gx_recomp:"Perdre un peu de gras et prendre du muscle à poids quasi stable. Plus lent, idéal en débutant.",gx_maint:"Garder ton poids, gagner en force et en forme.",gx_gain:"Prendre du muscle avec un léger surplus pour limiter le gras (prise sèche).",tw:"Poids cible (kg, optionnel)",proj:(w,d)=>`À ton rythme actuel : ${w} kg vers ${d}.`,projR:(w,n)=>`Au rythme conseillé : ${w} kg dans ~${n} semaines.`,projX:"Ton poids cible va dans le sens inverse de cet objectif — vérifie l'objectif.",projOk:"Tu es à ton poids cible 🎯",nutT:"Nutrition — tes chiffres",nutNo:"Complète âge, taille et poids ci-dessus pour obtenir tes chiffres.",nutNo2:"🍽 Complète ton profil pour avoir tes calories et protéines.",more:"Voir →",kcal:"kcal / jour",prot:"Protéines / jour",carb:"Glucides / jour",fat:"Lipides / jour",wat:"Eau",watx:"par jour (+0,5 L les jours de séance)",mnt:(a,b)=>`Maintien ≈ ${a} kcal/jour (activité : ${b}).`,flr:"Plancher de sécurité appliqué (jamais sous tes besoins au repos).",adjNow:k=>`Inclut ton ajustement de ${k>0?"+":""}${k} kcal.`,day:"Exemple de journée",bf:"Petit-déj",lu:"Déjeuner",sn:"Collation",di:"Dîner",tot:(k,p)=>`Total ≈ ${k} kcal · ${p} g de protéines`,swapx:"Remplace librement : poulet ↔ dinde ; poisson ↔ bœuf 5 % ↔ tofu ; riz ↔ pâtes, ou pommes de terre (×1,5 en poids).",advT:"Ajustement auto selon ta courbe de poids",adv0:"Pèse-toi 3-4×/semaine, le matin à jeun (onglet Progrès). Après 2 semaines, l'app compare ta tendance à ton objectif et propose un ajustement.",advR:(r,lo,hi)=>`Ta tendance : ${r} kg/semaine (moyennes sur 7 jours). Cible pour ton objectif : entre ${lo} et ${hi} kg/semaine.`,advOk:"✅ Dans la cible — ne change rien.",advUpL:"⚠️ Tu perds trop vite (risque de perdre du muscle) : +150 kcal/jour, ex. 1 banane + 1 yaourt nature.",advDnL:"⚠️ Perte trop lente : −150 kcal/jour, ex. 1 c. à soupe d'huile en moins + 1 fruit en moins.",advUpG:"⚠️ Tu ne prends pas assez : +150 kcal/jour, ex. 25 g d'amandes ou 100 g de riz cuit en plus.",advDnG:"⚠️ Prise trop rapide (surtout du gras) : −150 kcal/jour, ex. 1 c. à soupe d'huile en moins + 1 fruit en moins.",advUp:"⚠️ Ton poids baisse : +150 kcal/jour, ex. 1 banane + 1 yaourt nature.",advDn:"⚠️ Ton poids monte : −150 kcal/jour, ex. 1 c. à soupe d'huile en moins + 1 fruit en moins.",apply:d=>`Appliquer ${d>0?"+":""}${d} kcal/jour`,wait:n=>`Ajustement récent : attends encore ${n} jour(s) avant de rejuger.`,adjRst:"Remettre l'ajustement à 0",ndisc:"Estimations, pas un avis médical. La balance sur 2-3 semaines a le dernier mot.",msT:"Mensurations",msx:"Toutes les 2-4 semaines, même moment de la journée, mètre ruban ajusté sans serrer. Taille au niveau du nombril.",msNo:"Ajoute tes mensurations dans l'onglet Profil.",need2:"Entre au moins une mesure",m_wa:"Tour de taille",m_hi:"Hanches",m_ch:"Poitrine",m_sh:"Épaules",m_ar:"Bras",m_th:"Cuisse",m_bf:"% de gras",s_wa:"Taille",s_hi:"Hanch.",s_ch:"Poitr.",s_sh:"Épaul.",s_ar:"Bras",s_th:"Cuisse",s_bf:"% gras",ratio:"Ratio épaules / taille",ratx:"cible esthétique « classic physique » ≈ 1,6",cdT:"Cardio (optionnel)",cdx:"Marche inclinée ou vélo, effort modéré (tu peux encore parler). La perte de gras vient surtout de l'alimentation ; ça aide un peu. Note les minutes puis ✓.",cdl:"Cardio",trim:(n,m)=>`Adapté à ${m} min : ${n} exercice(s) d'appoint retiré(s).`,addS:"+1 série sur les 2 premiers exercices (75 min / avancé).",begx:"Débutant : 1 rep de plus en réserve pour apprendre les mouvements.",durE:m=>`≈ ${m} min avec 5 min d'échauffement (séries légères du 1er exercice).`,todN:(k,p)=>`🍽 Aujourd'hui : ~${k} kcal · ${p} g de protéines`,s1b:"Poids du corps : note tes reps (ou secondes) ; le poids est facultatif.",s2b:"Haut de la fourchette sur toutes les séries : ajoute un peu de charge ou une variante plus dure.",s3b:h=>`Bats tes reps (objectif ${h} sur chaque série).`,opt:"kg (option)",one2:"1re mesure — la courbe apparaît dès la 2e.",edit:"Modifier",edh:"Corrige charge/reps ; vide les reps pour supprimer une série.",save:"Enregistrer",cancel:"Annuler",date:"Date",exs:"exercices",rst:"Effacer les données de ce profil",rstx:"Supprime toutes les séances, le suivi et les réglages du profil sélectionné uniquement (ex. pour retirer les données de test). Exporte d'abord en cas de doute.",rq1:"Effacer TOUTES les données de ce profil ?",rq2:"Vraiment ? C'est irréversible.",upd:"Nouvelle version dispo — touche pour mettre à jour (ta séance est conservée)",p4:"4 sem",p12:"3 mois",pall:"Tout",sess:"Séances",perw:"/ sem en moy.",vol2:"Volume soulevé",dw:"Évolution poids",str:"Force",e1:"1RM estimé",e1x:"1RM estimé = la charge max que tu pourrais soulever 1 fois, calculée depuis ta meilleure série. Permet de comparer 8 reps et 12 reps.",top:"Charge max",rec:"Progrès par exercice",exn:"Exercice",start2:"Début",best:"Record",vw:"Volume par semaine (kg)",fw:"Séances par semaine",wof:"Semaine du",goal:"Objectif",mus:"Séries par muscle — 7 derniers jours",musM:"Muscles prioritaires (épaules, dos, pecs) : vise ~10-20 séries dures/semaine.",musF:"Fessiers & jambes : vise ~8-15 séries/semaine ; le reste ~6-10.",raw:"Pesée",avg7:"Moy. 7 j",go:"Repos terminé — série suivante ! 💪",swq:"Remplacer efface les séries déjà notées pour cet exercice. Continuer ?",cp:"Copié — colle-le dans une note.",need:"Entre d'abord la charge et les reps",nolog:"Aucune série notée. Abandonner ?",wt:"Poids",st:"Pas",hr:"FC repos",sl:"Sommeil h",tab:["Séance","Planning","Exercices","Progrès","Historique","Profil"],him:"Lui",her:"Elle",s1:r=>`Première fois : choisis une charge en gardant ${r} reps en réserve.`,s2:i=>`Haut de la fourchette sur toutes les séries : +${i} kg si la technique était propre.`,s3:(w,h)=>`Garde ${w} kg, bats tes reps (objectif ${h} sur chaque série).`,s4:"Fourchette ratée 2 fois : baisse de ~10 % (décharge)."}};
-const mk=()=>({logs:[],sched:{1:"A",3:"B",5:"C"},hd:[],ms:[],sub:{},notes:{},cur:null});
+const mk=()=>({logs:[],sched:{1:"A",3:"B",5:"C"},hd:[],ms:[],sub:{},notes:{},draw:{},cur:null});
 const defaultLanguage=(navigator.language||"fr").startsWith("fr")?"fr":"en";
 const freshState=()=>({p:"M",th:"",lg:defaultLanguage,d:{M:mk(),F:mk()}});
 let S=freshState(), lastStored=null, unreadable=false;
 const D=()=>S.d[S.p],t=k=>L[S.lg][k],li=()=>S.lg==="fr"?1:0,nm=id=>E[id][li()];
 const DN={en:["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],fr:["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"]};
-const U={bk:false,gi:null,sw:null,note:null,tl:false,chk:null,fm:"",fe:"",fl:"",fb:false,mm:"wa",ed:null,per:12,tab:"today",open:-1,pick:null,q:"",sum:null,ex:""};
+const U={bk:false,gi:null,sw:null,note:null,tl:false,chk:null,wuo:0,fm:"",fe:"",fl:"",fb:false,mm:"wa",ed:null,per:12,tab:"today",open:-1,pick:null,q:"",sum:null,ex:""};
 Object.assign(L.fr,{
   timer:"Chrono de séance",pause:"Pause",resume:"Reprendre",paused:"En pause",
   startRest:"Démarrer le repos",pauseRest:"Mettre le repos en pause",resumeRest:"Reprendre le repos",resetRest:"Réinitialiser le repos",stopRest:"Fermer le repos",
@@ -111,6 +157,38 @@ Object.assign(L.en,{
   validDate:"Enter a valid date no later than today.",invalidValues:"Check the values you entered.",needTracking:"Enter at least one value.",
   totalLogs:"in total",copymanual:"The backup is selected. Copy it to keep it."
 });
+Object.assign(L.en,{
+  rampT:"Ramp-up sets",wuShow:"show",wuThen:"Then do the ramp-up sets shown on the first exercise.",wuClose:"Warm-up done",
+  durE:(m,w)=>`≈ ${m} min including ${w} min of warm-up.`,addS:"+1 set on the main lifts (75 min+ / advanced).",
+  redS:m=>`Fitted to ${m} min: some accessories drop to 2 sets.`,bonS:n=>`+${n} bonus exercise${n>1?"s":""} (you have the time).`,
+  reroll:"Draw other exercises",rrX:"Accessories change every session. Tap 🎲 before starting to draw others.",rerolled:"New exercises drawn.",
+  blkL:d=>`Main lifts kept until ${d}, so your progress stays measurable.`,mainT:"main",newT:"new",
+  varT:"Exercise variety",var_fix:"Fixed",var_bal:"Balanced",var_max:"Maximum",
+  varX_fix:()=>"Always the same exercises: the easiest progression to read.",
+  varX_bal:n=>`Recommended. The 2 main lifts of each workout stay ${n} weeks so you can see your progress, then change. Accessories change every session, among good variants that suit your profile (back, level, gym).`,
+  varX_max:()=>"Everything changes every session. More novelty, but strength progress on the main lifts is harder to follow.",
+  exclT:"Not in my gym / excluded",exclNone:"None. Exclude an exercise with ⇄ during a workout, or from the Library.",exclTag:"excluded",reallow:"Allow again",noGymB:"Not in my gym",
+  noGymN:(a,b)=>b?`${a} won't be drawn again: replaced by ${b} today.`:`${a} won't be drawn again.`,
+  pinT:"Pinned (always the same)",pinNone:"None. 📌 in ⇄ keeps an exercise in its place.",pinB:"Keep it every time",unpinB:"Back to rotation",
+  pinN:n=>`${n} pinned: it stays in this place.`,unpinN:"Unpinned: this place rotates again.",
+  timX:"The workout adapts to this time: warm-up length, sets, bonus exercises."
+});
+Object.assign(L.fr,{
+  rampT:"Séries d'approche",wuShow:"afficher",wuThen:"Ensuite : les séries d'approche indiquées sur le 1er exercice.",wuClose:"Échauffement terminé",
+  durE:(m,w)=>`≈ ${m} min, dont ${w} min d'échauffement.`,addS:"+1 série sur les exercices principaux (75 min et plus / avancé).",
+  redS:m=>`Adapté à ${m} min : certains exercices d'appoint passent à 2 séries.`,bonS:n=>`+${n} exercice${n>1?"s":""} bonus (tu as le temps).`,
+  reroll:"Tirer d'autres exercices",rrX:"Les exercices d'appoint changent à chaque séance. Touche 🎲 avant de commencer pour en tirer d'autres.",rerolled:"Nouveaux exercices tirés.",
+  blkL:d=>`Exercices principaux gardés jusqu'au ${d}, pour que ta progression reste mesurable.`,mainT:"principal",newT:"nouveau",
+  varT:"Variété des exercices",var_fix:"Fixe",var_bal:"Équilibrée",var_max:"Maximale",
+  varX_fix:()=>"Toujours les mêmes exercices : la progression la plus lisible.",
+  varX_bal:n=>`Recommandé. Les 2 exercices principaux de chaque séance restent ${n} semaines pour voir ta progression, puis changent. Les exercices d'appoint changent à chaque séance, parmi de bonnes variantes adaptées à ton profil (dos, niveau, salle).`,
+  varX_max:()=>"Tout change à chaque séance. Plus de nouveauté, mais la progression de force sur les gros exercices est plus difficile à suivre.",
+  exclT:"Pas dans ma salle / exclus",exclNone:"Aucun. Exclus un exercice avec ⇄ pendant la séance, ou depuis la Bibliothèque.",exclTag:"exclu",reallow:"Réautoriser",noGymB:"Pas dans ma salle",
+  noGymN:(a,b)=>b?`${a} ne sera plus tiré : remplacé par ${b} aujourd'hui.`:`${a} ne sera plus tiré.`,
+  pinT:"Épinglés (toujours le même)",pinNone:"Aucun. 📌 dans ⇄ garde un exercice à sa place.",pinB:"Garder à chaque fois",unpinB:"Reprendre la rotation",
+  pinN:n=>`${n} épinglé : il reste à cette place.`,unpinN:"Désépinglé : cette place tourne à nouveau.",
+  timX:"La séance s'adapte à ce temps : durée d'échauffement, nombre de séries, exercices bonus."
+});
 const $=id=>document.getElementById(id);
 const escapeHtml=value=>String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
 const isRecord=v=>v!==null&&typeof v==="object"&&!Array.isArray(v);
@@ -130,6 +208,8 @@ function readState(raw){
     requireData(["loss","recomp","maint","gain"].includes(pf.goal)&&["auto","sed","light","acti","very"].includes(pf.act));
     for(const f of ["age","h","w","tw","time","kadj","kat"]){requireData(pf[f]==null||Number.isFinite(+pf[f]));if(pf[f]!=null)pf[f]=+pf[f]}
     pf.back=typeof pf.back==="boolean"?pf.back:PFD[key].back;pf.inc=Object.fromEntries(Object.keys(INC0).map(q=>[q,isRecord(pf.inc)&&+pf.inc[q]>0?+pf.inc[q]:INC0[q]]));
+    pf.var=VARS.includes(pf.var)?pf.var:"bal";pf.no=Array.isArray(pf.no)?[...new Set(pf.no.filter(x=>typeof x==="string"&&known(E,x)))]:[];pf.r0=pf.r0!=null&&Number.isFinite(+pf.r0)?+pf.r0:null;
+    if(!isRecord(profile.draw))profile.draw={};for(const [w,v] of Object.entries(profile.draw)){if(!known(P[key],w)||!isRecord(v)||!Array.isArray(v.ids)||!v.ids.every(x=>known(E,x))||!Array.isArray(v.bon)||!v.bon.every(x=>known(E,x))||!Array.isArray(v.wu)||!v.wu.every(x=>known(WU,x))||!known(WU,v.g))delete profile.draw[w]}
     if(!isRecord(profile.notes))profile.notes={};for(const [k,v] of Object.entries(profile.notes)){if(!known(E,k)||typeof v!=="string")delete profile.notes[k]}
     if(Array.isArray(profile.bw)){profile.bw.forEach((w,i)=>profile.hd.push({d:"old-"+i,w}));delete profile.bw}
     for(const [rows,fields] of [[profile.hd,["w","st","hr","sl"]],[profile.ms,MK]]){
@@ -153,7 +233,7 @@ function readState(raw){
       requireData(isRecord(c)&&known(P[key],c.wk)&&Number.isFinite(c.start)&&isRecord(c.ex));
       const plan=c.pl||P[key][c.wk].ex;
       requireData(Array.isArray(plan)&&plan.length&&plan.every((entry,i)=>Array.isArray(entry)&&known(E,entry[0])&&entry.slice(1,7).length===6&&entry.slice(1,7).every(nonnegative)&&Array.isArray(c.ex[i])&&c.ex[i].every(isRecord)));
-      c.note=String(c.note??"");if(c.swp!=null){requireData(isRecord(c.swp));for(const [k,v] of Object.entries(c.swp))if(!known(E,v))delete c.swp[k]}if(c.back!=null&&![0,1,2].includes(c.back))c.back=null;if(c.rest&&!(nonnegative(c.rest.totalMs)&&nonnegative(c.rest.remainingMs)&&(c.rest.end==null||Number.isFinite(c.rest.end))))delete c.rest;
+      c.note=String(c.note??"");if(c.swp!=null){requireData(isRecord(c.swp));for(const [k,v] of Object.entries(c.swp))if(!known(E,v))delete c.swp[k]}if(c.back!=null&&![0,1,2].includes(c.back))c.back=null;if(c.wd!=null&&!(isRecord(c.wd)&&Array.isArray(c.wd.d)&&c.wd.d.every(x=>known(WU,x))&&known(WU,c.wd.g)))delete c.wd;if(c.rest&&!(nonnegative(c.rest.totalMs)&&nonnegative(c.rest.remainingMs)&&(c.rest.end==null||Number.isFinite(c.rest.end))))delete c.rest;
     }
     state.d[key]=profile;
   }
@@ -177,7 +257,7 @@ function askAction(title,detail,accept,callback,cancel=t("cancel")){
   pendingAction=callback;dialog.showModal();$("action-cancel").focus();
 }
 function clearView(){
-  closeAction();Object.assign(U,{ed:null,sum:null,open:-1,pick:null,ex:"",gi:null,sw:null,note:null,tl:false,chk:null,bk:false});
+  closeAction();Object.assign(U,{ed:null,sum:null,open:-1,pick:null,ex:"",gi:null,sw:null,note:null,tl:false,chk:null,bk:false,wuo:0});
 }
 function applyStorage(raw){
   const next=raw===null?freshState():readState(raw);
@@ -287,7 +367,7 @@ function tick(){
 const prog=()=>P[S.p],wkd=()=>D().sched[new Date().getDay()],cur=()=>D().cur,sid=i=>{const c=cur(),o=oix(i);return(c.swp&&c.swp[o])||D().sub[c.wk+o]||cx()[i][0]};
 function last(id,n=0,wk){let l=D().logs.filter(x=>x.ex[id]);if(wk){const m=l.filter(x=>x.wk==wk);if(m.length>n)l=m}return l[l.length-1-n]}
 const isBW=id=>E[id][4]=="BW",tday=(ms=Date.now())=>{const d=new Date(ms);return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")},
-fs=(id,x)=>isBW(id)?(x.w?f1(x.w)+" kg × ":"")+x.r+(id=="pl"?" s":" reps"):f1(x.w)+" × "+x.r;
+fs=(id,x)=>isBW(id)?(x.w?f1(x.w)+" kg × ":"")+x.r+(isT(id)?" s":" reps"):f1(x.w)+" × "+x.r;
 function rph(id,e,j,wk){const l=last(id,0,wk);if(l){const a=l.ex[id];return(a[j]||a[a.length-1]).r}return e[2]}
 function sug(id,c,wk){const l=last(id,0,wk),bw=isBW(id);if(!l)return{w:bw?0:"",t:bw?t("s1b"):t("s1")(c[5])};const s=l.ex[id],w=Math.max(...s.map(x=>x.w)),p=last(id,1,wk);if(bw)return{w,t:s.length>=c[1]&&s.every(x=>x.r>=c[3])?t("s2b"):t("s3b")(c[3])};
 if(s.some(x=>x.r<c[2])&&p&&p.ex[id].some(x=>x.r<c[2])){const d=rnd(id,w*.9);return{w:d<w?d:Math.max(0,r2(w-incOf(id))),t:t("s4")}}
@@ -299,14 +379,14 @@ function start(wk,back){
   U.chk=null;back=back==null?null:+back;
   const plan=eff(wk),ex={},swp={},f=back===2?.8:back===1?.9:1;
   if(back>=1)plan.ex.forEach(e=>{e[5]=Math.min(4,e[5]+1)});
-  if(back===2)plan.ex.forEach((e,i)=>{const id=D().sub[wk+i]||e[0];if(SAFE[id])swp[i]=SAFE[id]});
+  if(back===2)plan.ex.forEach((e,i)=>{const o=e[7]??i,id=D().sub[wk+o]||e[0];if(SAFE[id])swp[o]=SAFE[id]});
   plan.ex.forEach((entry,i)=>{
-    const id=swp[i]||D().sub[wk+i]||entry[0],suggestion=sug(id,entry,wk);let w=suggestion.w;
+    const o=entry[7]??i,id=swp[o]||D().sub[wk+o]||entry[0],suggestion=sug(id,entry,wk);let w=suggestion.w;
     if(f<1&&w!==""&&w>0&&!isBW(id))w=rdn(id,w*f);
     ex[i]=Array.from({length:entry[1]},()=>({w,r:"",ok:0}));
   });
-  D().cur={wk,start:Date.now(),ex,note:"",pl:plan.ex,cm:back===2?0:plan.cm,cmv:"",cmok:0,back,swp,wu:[]};
-  U.pick=null;U.sum=null;U.open=-1;U.gi=null;U.sw=null;U.tl=false;save();go();scrollTo(0,0);
+  D().cur={wk,start:Date.now(),ex,note:"",pl:plan.ex,cm:back===2?0:plan.cm,cmv:"",cmok:0,back,swp,wu:[],wd:{g:plan.g,gm:plan.gm,m:plan.wm,d:plan.wu,ok:[],x:0}};
+  U.pick=null;U.sum=null;U.open=-1;U.gi=null;U.sw=null;U.tl=false;U.wuo=0;save();go();scrollTo(0,0);
 }
 function num(value){
   const raw=String(value??"").trim().replace(",",".");
@@ -359,10 +439,10 @@ function swap(i){
 }
 // ===== V2: real increments, back check-in, warm-up, machine settings, guided mode, adapt on the spot, next targets =====
 const INC0={DB:2,M:5,C:2.5,SM:2.5},INCO={DB:[1,2,2.5],M:[2.5,5],C:[1.25,2.5,5],SM:[2.5,5]};
-const SAFE={scr:"csr",dsp:"ms",cc:"pl",ssq:"le"};
+const SAFE={scr:"csr",dsp:"ms",cc:"pl",ssq:"le",hsq:"lp",rdl:"slc",ocr:"csr"};
 // the check-in is asked only for back workouts (at least 2 back exercises, e.g. Him: "Back & Arms");
 // on any other day the in-session "Back sensitive today?" button applies the same adjustments on demand
-function needsBack(wk){const d=D();return eff(wk).ex.filter((e,i)=>GR[d.sub[wk+i]||e[0]]==="bk").length>=2}
+function needsBack(wk){const d=D();return eff(wk).ex.filter((e,i)=>GR[d.sub[wk+(e[7]??i)]||e[0]]==="bk").length>=2}
 function incOf(id){const q=E[id][4];if(q==="BW")return 0;const v=+((D().pf.inc||{})[q]);return v>0?v:INC0[q]||2.5}
 function rnd(id,w){const s=incOf(id);if(!s||!(w>0))return w;return Math.max(s,Math.round(Math.round(w/s*1000)/1000)*s)}
 function rdn(id,w){const s=incOf(id);if(!s||!(w>0))return w;return Math.max(s,Math.floor(Math.round(w/s*1000)/1000)*s)}
@@ -375,10 +455,12 @@ function noteLine(id){const v=(D().notes||{})[id],ed=U.note===id;
   :`<button class=nlink onclick="U.note='${id}';go();setTimeout(()=>{const e=$('note_${id}');if(e)e.focus()},30)">⚙️ ${v?escapeHtml(v):`<span class=mu>${t("noteadd")}</span>`}</button>`}</div>`}
 // warm-up on the first exercise of the session (not counted in volume/progression)
 function wuSets(id,W){if(isBW(id)||!(W>0))return[];const out=[];for(const [p,r] of [[.5,8],[.7,4]].concat(W>=40?[[.85,2]]:[])){const w=rnd(id,W*p);if(w<W&&!out.some(x=>x[0]===w))out.push([w,r])}return out}
-function wuHtml(i){const c=cur();if(i!==0)return"";const id=sid(i),W=num(c.ex[i][0].w);if(isBW(id))return"";
-  if(W===""||!(W>0))return`<div class=wu><span class=mu>🔥 ${t("wuT")} · ${t("wuNeed")}</span></div>`;
-  const ws=wuSets(id,W);if(!ws.length)return"";c.wu=c.wu||[];
-  return`<div class=wu><span class=mu>🔥 ${t("wuT")}</span>${ws.map(([w,r],k)=>`<button class="chip ${c.wu[k]?"ok":""}" aria-pressed="${!!c.wu[k]}" onclick="wuT(${k})">${f1(w)} kg × ${r}</button>`).join("")}<span class=mu>${t("wuX")}</span></div>`}
+// ramp-up sets: on the first exercise, plus one feeler set on the 2nd main lift when it trains another muscle group
+function wuHtml(i){const c=cur();if(i>1)return"";const id=sid(i),W=num(c.ex[i][0].w);if(isBW(id))return"";
+  if(i===1){const s=slotOf(c.wk,oix(1));if(!s||s[1]!=="m"||GR[sid(0)]===GR[id])return""}
+  if(W===""||!(W>0))return i?"":`<div class=wu><span class=mu>🔥 ${t("rampT")} · ${t("wuNeed")}</span></div>`;
+  const ws=i?[[rnd(id,W*.6),6]].filter(x=>x[0]<W):wuSets(id,W);if(!ws.length)return"";c.wu=c.wu||[];const o=i?9:0;
+  return`<div class=wu><span class=mu>🔥 ${t("rampT")}</span>${ws.map(([w,r],k)=>`<button class="chip ${c.wu[o+k]?"ok":""}" aria-pressed="${!!c.wu[o+k]}" onclick="wuT(${o+k})">${f1(w)} kg × ${r}</button>`).join("")}<span class=mu>${t("wuX")}</span></div>`}
 function wuT(k){const c=cur();if(!c)return;c.wu=c.wu||[];c.wu[k]=!c.wu[k];save();go()}
 // back check-in
 function backBanner(){const c=cur();if(!c)return"";if(!c.back)return backAsk();return`<div class="c bkb ${c.back===2?"bad":""}">${c.back===2?t("back2b"):t("back1b")}</div>`}
@@ -402,9 +484,10 @@ function stp(i,j,k,d){const c=cur(),s=c?.ex[i]?.[j];if(!s||s.ok)return;const id=
   save();const el=$((k==="w"?"w":"r")+i+"_"+j);if(el)el.value=k==="w"?s.w:s.r;if(k==="w"&&i===0&&j===0)go()}
 function curPos(){const c=cur(),pl=cx();if(U.gi!=null&&U.gi<pl.length){const j=c.ex[U.gi].findIndex(s=>!s.ok);if(j>=0)return[U.gi,j]}
   for(let i=0;i<pl.length;i++){const j=c.ex[i].findIndex(s=>!s.ok);if(j>=0)return[i,j]}return null}
-function swapPanel(i){const c=cur(),e=cx()[i],base=e[0],id=sid(i),opts=[...new Set([base,...E[base][10],...E[id][10]])].filter(x=>x!==id&&known(E,x));
-  if(!opts.length)return`<div class=swp><span class=mu>${t("noalt")}</span></div>`;
-  return`<div class=swp><b>${t("swapBy")}</b>${opts.map(x=>`<div class=swr><span>${nm(x)}</span><button class=hb onclick="swapTo(${i},'${x}',0)">${t("today1")}</button><button class=hb onclick="swapTo(${i},'${x}',1)">${t("always")}</button></div>`).join("")}<button class="hb" onclick="U.sw=null;go()">${t("cancel")}</button></div>`}
+function swapPanel(i){const c=cur(),e=cx()[i],o=oix(i),base=e[0],id=sid(i),s=slotOf(c.wk,o),no=D().pf.no||[],pin=D().sub[c.wk+o]===id,
+  opts=[...new Set([base,...(s?allowed(s[0],s[2]):[]),...E[base][10],...E[id][10]])].filter(x=>x!==id&&known(E,x)&&!no.includes(x));
+  return`<div class=swp>${opts.length?`<b>${t("swapBy")}</b>${opts.map(x=>`<div class=swr><span>${nm(x)}</span><button class=hb onclick="swapTo(${i},'${x}',0)">${t("today1")}</button><button class=hb onclick="swapTo(${i},'${x}',1)">${t("always")}</button></div>`).join("")}`:`<span class=mu>${t("noalt")}</span>`}
+  <div class="r tools"><button class=hb onclick="pinCur(${i})">${pin?"↺ "+t("unpinB"):"📌 "+t("pinB")}</button><button class=hb onclick="noGym(${i})">🚫 ${t("noGymB")}</button></div><button class="hb" onclick="U.sw=null;go()">${t("cancel")}</button></div>`}
 function swapTo(i,nid,always){const c=cur();if(!c||!known(E,nid))return;const oi=oix(i),base=cx()[i][0];
   const apply=()=>{if(always){if(c.swp)delete c.swp[oi];if(nid===base)delete D().sub[c.wk+oi];else D().sub[c.wk+oi]=nid}
     else{c.swp=c.swp||{};if(nid===(D().sub[c.wk+oi]||base))delete c.swp[oi];else c.swp[oi]=nid}
@@ -433,11 +516,11 @@ function guidedWorkout(){
   if(pos){const [i,j]=pos,e=plan[i],id=sid(i),s=c.ex[i][j],prev=last(id,0,c.wk),bw=isBW(id),g=sug(id,e,c.wk),ps=prev?prev.ex[id][j]||prev.ex[id][prev.ex[id].length-1]:null;
     main=`<div class="c gd"><div class=mu>${t("exN")} ${i+1}/${plan.length} · ${t("series")} ${j+1}/${c.ex[i].length}</div>
     <h2 class=gx>${nm(id)}</h2>
-    <div class=mu>${e[2]}–${e[3]}${id==="pl"?" s":" reps"} · RIR ${e[5]} · <button class=rest-link onclick="manualRest(${i})">${t("rest")} ${e[4]} s</button></div>
+    <div class=mu>${e[2]}–${e[3]}${isT(id)?" s":" reps"} · RIR ${e[5]} · <button class=rest-link onclick="manualRest(${i})">${t("rest")} ${e[4]} s</button></div>
     <div class=mu>${t("last")} : ${ps?fs(id,ps)+" ("+fd(prev.date)+")":"—"}</div><div class=tip-text>${g.t}</div>
     ${noteLine(id)}${j===0?wuHtml(i):""}
     <div class=stp><span class=sl>${bw?t("opt"):t("load")}</span><button aria-label="− ${t("load")}" onclick="stp(${i},${j},'w',-1)">−</button><input id="w${i}_${j}" type=text inputmode=decimal autocomplete=off aria-label="${t("load")}" placeholder="${bw?"0":"kg"}" value="${escapeHtml(s.w===0&&bw?"":s.w)}" oninput="setv(${i},${j},'w',this.value)"><button aria-label="+ ${t("load")}" onclick="stp(${i},${j},'w',1)">+</button></div>
-    <div class=stp><span class=sl>${id==="pl"?t("seconds"):t("reps")}</span><button aria-label="− ${t("reps")}" onclick="stp(${i},${j},'r',-1)">−</button><input id="r${i}_${j}" type=text inputmode=numeric pattern="[0-9]*" autocomplete=off aria-label="${t("reps")}" placeholder="${rph(id,e,j,c.wk)}" value="${escapeHtml(s.r)}" oninput="setv(${i},${j},'r',this.value)"><button aria-label="+ ${t("reps")}" onclick="stp(${i},${j},'r',1)">+</button></div>
+    <div class=stp><span class=sl>${isT(id)?t("seconds"):t("reps")}</span><button aria-label="− ${t("reps")}" onclick="stp(${i},${j},'r',-1)">−</button><input id="r${i}_${j}" type=text inputmode=numeric pattern="[0-9]*" autocomplete=off aria-label="${t("reps")}" placeholder="${rph(id,e,j,c.wk)}" value="${escapeHtml(s.r)}" oninput="setv(${i},${j},'r',this.value)"><button aria-label="+ ${t("reps")}" onclick="stp(${i},${j},'r',1)">+</button></div>
     <button class="p w big" onclick="done(${i},${j})">✓ ${t("valid")}</button>${exTools(i)}</div>`}
   else main=`<div class="c gd"><h2>🎉 ${t("allDone")}</h2><p class=mu>${t("allDoneX")}</p></div>`;
   const list=`<div class=c><b>${t("planT")}</b>${plan.map((e,i)=>{const id=sid(i),a=c.ex[i];return`<button class="pli ${pos&&pos[0]===i?"cur":""}" onclick="U.gi=${i};U.sw=null;U.open=-1;go();scrollTo(0,0)"><span>${nm(id)}${c.swp&&c.swp[oix(i)]?" · "+t("today1"):""}</span><span class=dots>${a.map(s=>s.ok?"●":"○").join("")}</span></button>`}).join("")}</div>`;
@@ -447,7 +530,7 @@ function guidedWorkout(){
     <div class="session-clock"><div><span class=mu>${t("timer")}${c.pausedAt!=null?" · "+t("paused"):""}</span><strong id="session-clock" role="timer" aria-live="off">${timeText(elapsedSeconds(c))}</strong></div>
     <button onclick="toggleSessionClock()">${t(c.pausedAt==null?"pause":"resume")}</button></div>
     <div class=bar><i style="width:${count/sets.length*100}%"></i></div><p class=mu>${count}/${sets.length} ${t("sets")}</p>
-    ${backBanner()}${main}${list}${cardio}${tlPanel()}
+    ${backBanner()}${wuCard()}${main}${list}${cardio}${tlPanel()}
     <textarea aria-label="${t("notes")}" placeholder="${t("notes")}" oninput="cur().note=this.value;save()">${escapeHtml(c.note)}</textarea>
     <button class="p w" onclick="fin()">${t("fin")}</button><button class=w onclick="abandon()">${t("disc")}</button>`;
 }
@@ -457,7 +540,7 @@ function progLine(id,wk){const a=last(id,0,wk),b=last(id,1,wk);if(!b)return{c:""
   if(dw>0)return{c:"up",x:"↑ +"+f1(dw)+" kg"};if(dw<0)return{c:"dn",x:"↓ "+f1(dw)+" kg"};
   const dr=tr(a)-tr(b);return dr>0?{c:"up",x:"↑ +"+dr+" "+t("repsW")}:dr<0?{c:"dn",x:"↓ "+dr+" "+t("repsW")}:{c:"",x:"= "+t("same")}}
 function nextLine(id,e,wk){const g=sug(id,e,wk),bw=isBW(id),rng=g.rep?String(e[3]+3):e[2]+"–"+e[3];
-  return bw?`${g.w?f1(g.w)+" kg × ":""}${rng}${id==="pl"?" s":" reps"}`:`${f1(g.w)} kg × ${rng}`}
+  return bw?`${g.w?f1(g.w)+" kg × ":""}${rng}${isT(id)?" s":" reps"}`:`${f1(g.w)} kg × ${rng}`}
 function gymCard(){const pf=D().pf,inc={...INC0,...(pf.inc||{})},k=li();
  return`<div class=c><b>${t("gymT")}</b><label class=tg2><input type=checkbox ${pf.back?"checked":""} onclick="spf('back',this.checked)"> ${t("backOpt")}</label><p class=mu>${t("backOptX")}</p>
  <p class=lb>${t("incT")}</p>${Object.keys(INCO).map(q=>`<div class=incr><span>${EQ[q][k]}</span><div class=sg>${INCO[q].map(v=>`<button class="${inc[q]==v?"on":""}" onclick="setInc('${q}',${v})">${String(v).replace(".",k?",":".")} kg</button>`).join("")}</div></div>`).join("")}<p class=mu>${t("incX")}</p></div>`}
@@ -469,9 +552,11 @@ function workoutTotals(exercises){
 }
 function writeSessionEnd(log){
   const profile=D(),draft=profile.cur;if(!draft)return false;
-  if(log)profile.logs.push(log);profile.cur=null;
+  // a saved workout consumes its draw: next time this day gets new accessories
+  const drawn=log&&isRecord(profile.draw)?profile.draw[log.wk]:undefined;
+  if(log){profile.logs.push(log);if(drawn)delete profile.draw[log.wk]}profile.cur=null;
   if(save())return true;
-  if(D()===profile){profile.cur=draft;if(log)profile.logs.pop()}
+  if(D()===profile){profile.cur=draft;if(log){profile.logs.pop();if(drawn)profile.draw[log.wk]=drawn}}
   return false;
 }
 function abandon(){
@@ -544,18 +629,18 @@ function chart(a,u){a=a.filter(v=>v!=null&&!isNaN(v));if(a.length<2)return`<p cl
 function card(id){const e=E[id],k=li();return`<b>${e[k]}</b><div><span class=t>${e[2+k]}</span><span class=t>${EQ[e[4]][k]}</span><span class=t>${LV[e[5]][k]}</span>${AX.includes(id)?"":`<span class=t>✓ ${t("bkf")}</span>`}</div><p class=mu><b>${t("setup")}:</b> ${e[6+k]}<br><b>${t("avoid")}:</b> ${e[8+k]}<br><b>${t("alts")}:</b> ${e[10].map(nm).join(", ")||t("none")}</p>`}
 function exerciseCard(entry,i){
   const c=cur(),id=sid(i),previous=last(id,0,c.wk),bw=isBW(id);
-  const canSwap=id!==entry[0]||E[id][10].length;
+  const canSwap=true;
   const rows=c.ex[i].map((set,j)=>{
-    const repsLabel=id==="pl"?t("seconds"):t("reps"),prefix=nm(id)+" · "+t("series")+" "+(j+1)+" · ";
+    const repsLabel=isT(id)?t("seconds"):t("reps"),prefix=nm(id)+" · "+t("series")+" "+(j+1)+" · ";
     return `<div class="s" data-row="${i}-${j}">
       <span class=mu>${j+1}</span>
       <input type=text inputmode=decimal autocomplete=off aria-label="${prefix}${t("load")}" id="w${i}_${j}" placeholder="${bw?t("opt"):"kg"}" value="${escapeHtml(set.w===0&&bw?"":set.w)}" oninput="setv(${i},${j},'w',this.value)">
-      <input type=text inputmode=numeric pattern="[0-9]*" autocomplete=off aria-label="${prefix}${repsLabel}" id="r${i}_${j}" placeholder="${rph(id,entry,j,c.wk)}${id==="pl"?" s":""}" value="${escapeHtml(set.r)}" oninput="setv(${i},${j},'r',this.value)">
+      <input type=text inputmode=numeric pattern="[0-9]*" autocomplete=off aria-label="${prefix}${repsLabel}" id="r${i}_${j}" placeholder="${rph(id,entry,j,c.wk)}${isT(id)?" s":""}" value="${escapeHtml(set.r)}" oninput="setv(${i},${j},'r',this.value)">
       <button class="${set.ok?"ok":""}" aria-label="${t(set.ok?"undoSet":"loggedSet")} ${j+1} · ${nm(id)}" aria-pressed="${!!set.ok}" onclick="done(${i},${j})">✓</button>
     </div>`;
   }).join("");
   return `<div class=c><div class=r><h2 style="flex:3">${nm(id)}</h2><button class=hb onclick="U.open=U.open===${i}?-1:${i};go()">${t("guide")}</button>${canSwap?`<button class=hb aria-label="${t("swap")} · ${nm(id)}" onclick="U.sw=U.sw===${i}?null:${i};go()">⇄</button>`:""}<button class=hb aria-label="${t("busyB")} · ${nm(id)}" onclick="busy(${i})">⏭</button></div>
-    <div class=mu>${entry[1]}×${entry[2]}–${entry[3]}${id==="pl"?" s":""} · <button class=rest-link aria-label="${t("startRest")} · ${entry[4]} s" onclick="manualRest(${i})">${t("rest")} ${entry[4]} s</button> · RIR ${entry[5]}</div>
+    <div class=mu>${entry[1]}×${entry[2]}–${entry[3]}${isT(id)?" s":""} · <button class=rest-link aria-label="${t("startRest")} · ${entry[4]} s" onclick="manualRest(${i})">${t("rest")} ${entry[4]} s</button> · RIR ${entry[5]}</div>
     <div class=mu>${t("last")}: ${previous?fd(previous.date)+" — "+previous.ex[id].map(s=>fs(id,s)).join(", "):"—"}</div>
     <div class=tip-text>${sug(id,entry,c.wk).t}</div>${U.sw===i?swapPanel(i):""}${U.open===i?card(id):""}${noteLine(id)}${wuHtml(i)}${rows}</div>`;
 }
@@ -568,7 +653,7 @@ function activeWorkout(){
     <div class="session-clock"><div><span class=mu>${t("timer")}${c.pausedAt!=null?" · "+t("paused"):""}</span><strong id="session-clock" role="timer" aria-live="off">${timeText(elapsedSeconds(c))}</strong></div>
     <button onclick="toggleSessionClock()">${t(c.pausedAt==null?"pause":"resume")}</button></div>
     <div class=bar><i style="width:${count/sets.length*100}%"></i></div><p class=mu>${count}/${sets.length} ${t("sets")} · ${t("seriesHelp")}</p>
-    ${backBanner()}${plan.map(exerciseCard).join("")}${cardio}${tlPanel()}
+    ${backBanner()}${wuCard()}${plan.map(exerciseCard).join("")}${cardio}${tlPanel()}
     <textarea aria-label="${t("notes")}" placeholder="${t("notes")}" oninput="cur().note=this.value;save()">${escapeHtml(c.note)}</textarea>
     <button class="p w" onclick="fin()">${t("fin")}</button><button class=w onclick="abandon()">${t("disc")}</button>`;
 }
@@ -583,16 +668,17 @@ function workoutSummary(){
 }
 
 function today(){const d=D(),k=li();if(U.sum)return workoutSummary();if(cur())return activeWorkout();if(U.chk)return checkIn(U.chk);
-const wd=wkd(),w=U.pick||wd||"A",c=prog()[w],ef=eff(w),nn=nut();return`<h1>${t("hi")}</h1><p class=mu>${wd?t("tod")+" : "+wd+" — "+prog()[wd].n[k]:t("recday")}</p><div class=r>${["A","B","C"].map(x=>`<button class="${x==w?"p":""}" onclick="U.pick='${x}';go()">${x}</button>`).join("")}</div><div class=c><h2>${c.n[k]}</h2><p class=mu>${c.y[k]}</p>${ef.ex.map((e,i)=>{const id=d.sub[w+i]||e[0],g=sug(id,e,w);return`<div>${nm(id)} <span class=mu>${e[1]}×${e[2]}–${e[3]}${id==='pl'?' s':''}${g.w>0?" · "+f1(g.w)+" kg":""}</span></div>`}).join("")}${ef.cm?`<div>🚶 ${t("cdT")} <span class=mu>${ef.cm} min</span></div>`:""}<p class=mu>${t("durE")(ef.dur)}${ef.cut?" "+t("trim")(ef.cut,d.pf.time):""}${ef.add?" "+t("addS"):""}${d.pf.lvl=="beg"?" "+t("begx"):""}</p><button class="p w" onclick="begin('${w}')">${t("start")}</button></div>${nn?`<div class=c><span class=ts>${t("todN")(nn.kc.toLocaleString(S.lg),nn.P)}</span> <a href=# onclick="U.tab='set';go();return false" class=mu>${t("more")}</a></div>`:`<div class=c><span class=mu>${t("nutNo2")}</span> <a href=# onclick="U.tab='set';go();return false" class=mu>${t("more")}</a></div>`}<div class=c><b>${d.logs.filter(l=>Date.now()-l.date<6048e5).length}/3</b> <span class=mu>${t("wk7")} · ${d.logs.length} ${t("totalLogs")} · 🔥 ${streak()} ${t("streak")}</span></div>`}
+const wd=wkd(),w=U.pick||wd||"A",c=prog()[w],ef=eff(w),nn=nut();return`<h1>${t("hi")}</h1><p class=mu>${wd?t("tod")+" : "+wd+" — "+prog()[wd].n[k]:t("recday")}</p><div class=r>${["A","B","C"].map(x=>`<button class="${x==w?"p":""}" onclick="U.pick='${x}';go()">${x}</button>`).join("")}</div><div class=c><h2>${c.n[k]}</h2><p class=mu>${c.y[k]}</p><div class=wul>🔥 <b>${t("wuT")}</b> <span class=mu>≈ ${ef.wm} min · ${nmW(ef.g)} ${ef.gm} min · ${ef.wu.map(nmW).join(" · ")}</span></div>${ef.ex.map((e,i)=>{const o=e[7]??i,id=d.sub[w+o]||e[0],g=sug(id,e,w),sl=slotOf(w,o),fresh=d.logs.length>0&&!d.logs.some(l=>l.ex[id]);return`<div class=exl>${nm(id)} <span class=mu>${e[1]}×${e[2]}–${e[3]}${isT(id)?' s':''}${g.w>0?" · "+f1(g.w)+" kg":""}</span>${d.sub[w+o]?` <span class=xtg title="${t("pinT")}">📌</span>`:""}${sl&&sl[1]==="m"&&vmode()!=="fix"?` <span class=xtg>${t("mainT")}</span>`:""}${fresh?` <span class="xtg nw">${t("newT")}</span>`:""}</div>`}).join("")}${ef.cm?`<div>🚶 ${t("cdT")} <span class=mu>${ef.cm} min</span></div>`:""}<p class=mu>${t("durE")(ef.dur,ef.wm)}${ef.red?" "+t("redS")(+d.pf.time||60):""}${ef.cut?" "+t("trim")(ef.cut,+d.pf.time||60):""}${ef.add?" "+t("addS"):""}${ef.bon?" "+t("bonS")(ef.bon):""}${d.pf.lvl=="beg"?" "+t("begx"):""}</p>${vmode()!=="fix"?`<button class="w rr" onclick="reroll('${w}')">🎲 ${t("reroll")}</button><p class=mu>${vmode()==="bal"?t("blkL")(fd(blkInfo().end))+" ":""}${t("rrX")}</p>`:""}<button class="p w" onclick="begin('${w}')">${t("start")}</button></div>${nn?`<div class=c><span class=ts>${t("todN")(nn.kc.toLocaleString(S.lg),nn.P)}</span> <a href=# onclick="U.tab='set';go();return false" class=mu>${t("more")}</a></div>`:`<div class=c><span class=mu>${t("nutNo2")}</span> <a href=# onclick="U.tab='set';go();return false" class=mu>${t("more")}</a></div>`}<div class=c><b>${d.logs.filter(l=>Date.now()-l.date<6048e5).length}/3</b> <span class=mu>${t("wk7")} · ${d.logs.length} ${t("totalLogs")} · 🔥 ${streak()} ${t("streak")}</span></div>`}
 function plan(){return`<h1>${t("plan")}</h1>`+[1,2,3,4,5,6,0].map(n=>`<div class="c r"><b style="flex:.4">${DN[S.lg][n]}</b><select onchange="this.value?D().sched[${n}]=this.value:delete D().sched[${n}];save();go()">${["","A","B","C"].map(x=>`<option value="${x}" ${(D().sched[n]||"")==x?"selected":""}>${x?x+" — "+prog()[x].n[li()]:t("recov")}</option>`).join("")}</select></div>`).join("")}
-const AX=["ssq","dsp"];
+// not drawn for a back-sensitive profile: axial loading, hinging, or repeated loaded flexion (cable crunch)
+const AX=["ssq","dsp","hsq","rdl","cc"];
 function lib(){const k=li(),o=(v,l,cur)=>`<option value="${v}" ${cur==v?"selected":""}>${l}</option>`,fu=key=>`U.${key}=this.value;document.getElementById('ll').innerHTML=ll()`;
 return`<h1>${t("lib")}</h1><input id=lq style=width:100% placeholder="${t("search")}" value="${escapeHtml(U.q)}" oninput="U.q=this.value;document.getElementById('ll').innerHTML=ll()">
 <div class=lf><select aria-label="${t("allm")}" onchange="${fu("fm")}">${o("",t("allm"),U.fm)}${Object.keys(GN).map(g=>o(g,GN[g][k],U.fm)).join("")}</select><select aria-label="${t("alle")}" onchange="${fu("fe")}">${o("",t("alle"),U.fe)}${Object.keys(EQ).map(q=>o(q,EQ[q][k],U.fe)).join("")}</select><select aria-label="${t("alll")}" onchange="${fu("fl")}">${o("",t("alll"),U.fl)}${LV.map((l,i)=>o(String(i),l[k],U.fl)).join("")}</select></div>
 <label class=tg2><input type=checkbox ${U.fb?"checked":""} onclick="U.fb=this.checked;document.getElementById('ll').innerHTML=ll()"> ${t("bkf")}</label><p class=mu>${t("txt")}</p><div id=ll>${ll()}</div>`}
 function ll(){const q=String(U.q||"").trim().toLowerCase(),r=Object.keys(E).filter(k=>{const e=E[k];if(U.fm&&GR[k]!=U.fm)return false;if(U.fe&&e[4]!=U.fe)return false;if(U.fl!==""&&U.fl!=null&&String(e[5])!=U.fl)return false;if(U.fb&&AX.includes(k))return false;
  return!q||(e.slice(0,4).join(" ")+" "+EQ[e[4]].join(" ")+" "+LV[e[5]].join(" ")+" "+(GN[GR[k]]||[]).join(" ")).toLowerCase().includes(q)});
- return`<p class=mu>${r.length} ${t("exs")}</p>`+(r.length?r.map(k=>`<div class=c>${card(k)}</div>`).join(""):`<p class=mu>${t("nores")}</p>`)}
+ return`<p class=mu>${r.length} ${t("exs")}</p>`+(r.length?r.map(k=>{const ex=(D().pf.no||[]).includes(k);return`<div class="c ${ex?"exd":""}">${ex?`<span class="xtg nw">🚫 ${t("exclTag")}</span>`:""}${card(k)}<button class="hb" onclick="tgNo('${k}','lib')">${ex?"↩︎ "+t("reallow"):"🚫 "+t("noGymB")}</button></div>`}).join(""):`<p class=mu>${t("nores")}</p>`)}
 function validTracking(row){
   if(dms(row.d)===null||row.d>tday())return false;
   return ["w","st","hr","sl"].every(k=>row[k]==null||(nonnegative(row[k])&&
@@ -634,8 +720,114 @@ function impH(){
   mergeH(rows);save();go();notice(t("ok")+" · "+rows.length);
 }
 
-const GR={ms:"sh",dsp:"sh",clr:"sh",dlr:"sh",rdf:"sh",idp:"ch",lip:"ch",cp:"ch",pd:"ch",lpd:"bk",csr:"bk",scr:"bk",rpd:"ar",oce:"ar",idc:"ar",lp:"lg",slc:"lg",le:"lg",ssq:"lg",hp:"gl",gb:"gl",ckb:"gl",cc:"co",pl:"co"};
+const GR={ms:"sh",dsp:"sh",clr:"sh",dlr:"sh",rdf:"sh",idp:"ch",lip:"ch",cp:"ch",pd:"ch",lpd:"bk",csr:"bk",scr:"bk",rpd:"ar",oce:"ar",idc:"ar",lp:"lg",slc:"lg",le:"lg",ssq:"lg",hp:"gl",gb:"gl",ckb:"gl",cc:"co",pl:"co",fdp:"ch",sip:"ch",cfl:"ch",mlr:"sh",lrr:"sh",cyr:"sh",fpl:"sh",rcf:"sh",lpn:"bk",slp:"bk",tbr:"bk",sdr:"bk",mrw:"bk",ocr:"bk",sap:"bk",
+bcc:"ar",pcm:"ar",hmc:"ar",bcu:"ar",ske:"ar",tdm:"ar",bsq:"lg",ulp:"lg",hsq:"lg",llc:"lg",rdl:"lg",add:"lg",scm:"lg",lpc:"lg",sht:"gl",gkm:"gl",abd:"gl",sp:"co",dbg:"co",pal:"co"};
 const GN={sh:["Shoulders","Épaules"],ch:["Chest","Pectoraux"],bk:["Back","Dos"],ar:["Arms","Bras"],lg:["Legs","Jambes"],gl:["Glutes","Fessiers"],co:["Core","Abdos/gainage"]};
+
+// ===== Variety: each workout is a list of slots (movement pattern + role); the exercise in each slot is drawn =====
+// pools by movement pattern, best first; filtered per profile (back sensitivity, level, "not in my gym")
+const PAT={vpush:["ms","dsp"],ipress:["idp","lip","sip"],hpress:["cp","fdp","lip"],fly:["pd","cfl"],lat:["clr","dlr","mlr","lrr","cyr"],rear:["rdf","rcf","fpl"],
+ tri:["rpd","oce","ske","tdm"],bi:["idc","bcc","pcm","hmc","bcu"],vpull:["lpd","lpn","slp"],rowS:["csr","tbr","sdr","mrw"],row:["scr","csr","mrw","ocr","sdr"],lats:["sap"],
+ quad:["lp","bsq","ulp","hsq"],qiso:["le"],ham:["slc","llc","rdl"],glute:["hp","sht","gb"],gluiso:["ckb","gkm","abd"],uni:["ssq","ulp"],hip:["abd","add"],calf:["scm","lpc"],core:["pl","dbg","pal","sp","cc"]};
+// slots aligned with P[profile][workout].ex: [pattern, role] — m = main lift (kept for a whole block), a = accessory (changes every session)
+const SL={M:{A:[["vpush","m"],["ipress","m"],["lat","a"],["fly","a"],["tri","a"],["core","a"]],
+ B:[["vpull","m"],["rowS","m"],["rear","a"],["bi","a"],["tri","a"],["lat","a"]],
+ C:[["quad","m"],["ham","m"],["qiso","a"],["ipress","a"],["lat","a"],["core","a"]]},
+ F:{A:[["quad","m"],["glute","m"],["ham","a"],["vpull","a"],["core","a"]],
+ B:[["hpress","m"],["row","m"],["vpush","a"],["lat","a"],["core","a"]],
+ C:[["glute","m"],["uni","m"],["gluiso","a"],["qiso","a"],["core","a"]]}};
+// bonus slots, added only when the time budget leaves room (75 min and more)
+const BON={M:{A:[["rear",["rdf",3,12,20,60,1,2.5]]],B:[["lats",["sap",3,12,15,60,1,2.5]]],C:[["calf",["scm",3,10,15,60,1,2.5]]]},
+ F:{A:[["hip",["abd",2,12,15,60,2,2.5]]],B:[["bi",["bcc",2,10,15,60,2,2.5]],["tri",["rpd",2,10,15,60,2,2.5]]],C:[["hip",["abd",2,12,15,60,2,2.5]]]}};
+// rep ranges that belong to the exercise rather than the slot (timed holds, reps per side): [standard, beginner]
+const XR={pl:[[30,60],[20,40]],sp:[[20,45],[15,30]],dbg:[[8,12],[6,10]],pal:[[10,15],[10,12]],cc:[[10,15],[12,15]],scm:[[10,15],[12,15]],lpc:[[10,15],[12,15]]};
+const TM=["pl","sp"],isT=id=>TM.includes(id);
+// warm-up drills: [name EN, name FR, dose EN, dose FR, how EN, how FR, regions: g general, u upper push, p upper pull, l lower, b spine-sparing (McGill)]
+const WU={
+ bike:["Easy bike","Vélo tranquille","","","Easy pace: you can still talk.","Allure facile : tu peux encore parler.","g"],
+ ell:["Elliptical","Elliptique","","","Easy pace: you can still talk.","Allure facile : tu peux encore parler.","g"],
+ walk:["Incline treadmill walk","Marche inclinée sur tapis","","","Incline 8-10 %, brisk walk.","Pente 8-10 %, marche rapide.","g"],
+ row:["Rower","Rameur","","","Easy strokes, back tall.","Coups de rame faciles, dos droit.","g"],
+ bpa:["Band pull-apart","Écartés à l'élastique","×15","×15","Arms straight, squeeze the shoulder blades.","Bras tendus, serrer les omoplates.","up"],
+ wsl:["Wall slides","Glissés au mur","×10","×10","Back and forearms on the wall, slide up and down slowly.","Dos et avant-bras contre le mur, glisser lentement vers le haut puis le bas.","u"],
+ cer:["Cable external rotation","Rotation externe à la poulie","×12 / side","×12 / côté","Very light, elbow against your side, rotate outward.","Très léger, coude collé au corps, tourner vers l'extérieur.","up"],
+ spu:["Scapular push-ups","Pompes scapulaires","×10","×10","Arms straight, move only the shoulder blades.","Bras tendus, bouger seulement les omoplates.","u"],
+ ipu:["Incline push-ups","Pompes inclinées (mains sur un banc)","×10","×10","Hands on a bench, body straight.","Mains sur un banc, corps gainé.","u"],
+ fpw:["Light face pull","Face pull léger","×15","×15","Light weight, elbows high.","Charge légère, coudes hauts.","up"],
+ acr:["Arm circles","Cercles de bras","×10 each way","×10 dans chaque sens","Big, slow circles.","Grands cercles lents.","up"],
+ dh:["Dead hang","Suspension à la barre","2 × 20 s","2 × 20 s","Hang relaxed: it decompresses the spine.","Te laisser pendre, détendu : ça décompresse la colonne.","p"],
+ scp:["Scapular pulldowns","Abaissements d'omoplates (poulie haute)","×10","×10","Arms straight, only pull the shoulders down and back.","Bras tendus, abaisser seulement les épaules vers l'arrière.","p"],
+ obk:["Open book","Rotation thoracique (open book)","×6 / side","×6 / côté","Lying on your side, knees bent, rotate the upper back only.","Couché sur le côté, genoux pliés, tourner seulement le haut du dos.","up"],
+ gbw:["Glute bridge","Pont fessier","×12","×12","Squeeze the glutes at the top, ribs down.","Serrer les fessiers en haut, côtes basses.","l"],
+ bdg:["Bird dog","Bird dog","×6 / side, hold 5 s","×6 / côté, tenir 5 s","On all fours, extend the opposite arm and leg, back flat.","À quatre pattes, tendre bras et jambe opposés, dos plat.","lb"],
+ spw:["Side plank","Gainage latéral","2 × 15 s / side","2 × 15 s / côté","On knees or feet, hips high.","Sur les genoux ou les pieds, bassin haut.","lb"],
+ cup:["McGill curl-up","Curl-up McGill","5 × 8 s","5 × 8 s","One knee bent, hands under the lower back, lift head and shoulders slightly, no neck pull.","Une jambe pliée, mains sous le bas du dos, décoller légèrement tête et épaules, sans tirer la nuque.","lb"],
+ ccm:["Cat-camel","Chat-vache (doux)","×6 slow","×6 lents","Gentle range, no forcing at the ends.","Amplitude douce, sans forcer aux extrémités.","lb"],
+ hfs:["Half-kneeling hip-flexor stretch","Étirement des fléchisseurs de hanche (genou au sol)","30 s / side","30 s / côté","Squeeze the glute of the back leg, do not arch.","Serrer le fessier de la jambe arrière, sans cambrer.","l"],
+ mwk:["Band lateral walk","Marche latérale à l'élastique","2 × 10 steps","2 × 10 pas","Band above the knees, small steps, knees out.","Élastique au-dessus des genoux, petits pas, genoux vers l'extérieur.","l"],
+ bsw:["Bodyweight box squat","Squat au banc sans charge","×10","×10","Sit back to the bench, stand up tall.","T'asseoir sur le banc, te relever bien droit.","l"],
+ lsw:["Leg swings","Balanciers de jambe","×10 / side","×10 / côté","Hold a support, swing front-back then side to side.","Te tenir, balancer d'avant en arrière puis sur le côté.","l"],
+ adr:["Adductor rock-back","Rock-back adducteurs","×8 / side","×8 / côté","On all fours, one leg out to the side, sit back gently.","À quatre pattes, une jambe tendue sur le côté, reculer doucement.","l"]};
+const REG={M:{A:"u",B:"p",C:"l"},F:{A:"l",B:"u",C:"l"}},nmW=x=>WU[x][li()];
+const VARS=["fix","bal","max"],vmode=()=>VARS.includes(D().pf.var)?D().pf.var:"bal";
+const wkNo=ms=>Math.round(wk(ms)/6048e5);
+function blkLen(){return D().pf.lvl=="beg"?6:4}
+// main lifts stay the same for a block of 4 weeks (6 for beginners), counted from the first draw
+function blkInfo(){const pf=D().pf,n=wkNo(Date.now()),r0=pf.r0!=null?pf.r0:n,L=blkLen(),b=Math.max(0,Math.floor((n-r0)/L));
+  return{b,end:wk(Date.now())+(r0+(b+1)*L-n)*6048e5-12*36e5}}
+function allowed(pt,base){const pf=D().pf,no=pf.no||[],a=[...new Set([base,...(PAT[pt]||[])])].filter(id=>known(E,id)&&!(pf.back&&AX.includes(id))&&!(pf.lvl=="beg"&&E[id][5]>0&&id!==base)&&!no.includes(id));return a.length?a:[base]}
+function slotOf(w,o){const s=SL[S.p][w];if(!s)return null;if(o<s.length)return[s[o][0],s[o][1],prog()[w].ex[o][0]];const b=BON[S.p][w][o-s.length];return b?[b[0],"a",b[1][0]]:null}
+// shuffle first so that ties (never done) are broken at random by the stable sort
+const shuf=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+function useMap(){const m={};for(const l of D().logs)for(const id in l.ex)m[id]=l.date;return m}
+function vsig(){const pf=D().pf;return[vmode(),pf.lvl,pf.back?1:0,blkInfo().b].join("|")}
+// the draw is kept until the workout is saved, so the preview on Today is exactly what starts
+function draw(w,again){const d=D(),pf=d.pf;if(!isRecord(d.draw))d.draw={};let dirty=false;if(pf.r0==null){pf.r0=wkNo(Date.now());dirty=true}
+  const mode=vmode(),sg=vsig(),old=d.draw[w],keep=!again&&isRecord(old)&&old.sig===sg,bex=prog()[w].ex,nS=SL[S.p][w].length,um=useMap(),
+    lw=d.logs.filter(l=>l.wk===w).at(-1),prev=new Set(lw?Object.keys(lw.ex):[]),was=new Set(again&&isRecord(old)?[...(old.ids||[]),...(old.bon||[])]:[]),bk=blkInfo().b,used=new Set(),
+    L=[...SL[S.p][w].map((s,i)=>[s[0],s[1],bex[i][0]]),...BON[S.p][w].map(b=>[b[0],"a",b[1][0]])],olds=keep?[...(old.ids||[]),...(old.bon||[])]:[];
+  L.forEach((s,o)=>{const p=d.sub[w+o];if(p&&known(E,p))used.add(p)});
+  const res=L.map(([pt,role,bid],o)=>{const pin=d.sub[w+o];if(pin&&known(E,pin))return pin;
+    const all=allowed(pt,bid);if(mode==="fix")return all.includes(bid)?bid:all[0];
+    const free=all.filter(x=>!used.has(x)),a=free.length?free:all;let id;
+    if(role==="m"&&mode==="bal")id=a[bk%a.length];
+    else if(olds[o]&&a.includes(olds[o]))id=olds[o];
+    else{let c=a.filter(x=>!prev.has(x)&&!was.has(x));if(!c.length)c=a.filter(x=>!was.has(x));if(!c.length)c=a;
+      c=shuf(c).sort((x,y)=>(um[x]||0)-(um[y]||0)).slice(0,Math.max(1,Math.ceil(c.length/2)));id=c[Math.floor(Math.random()*c.length)]}
+    used.add(id);return id});
+  const r=REG[S.p][w],must=pf.back?(r==="l"?["cup","spw","bdg"]:["bdg"]):[];let wu,g;
+  if(keep&&Array.isArray(old.wu)&&old.wu.every(x=>known(WU,x))&&known(WU,old.g)&&must.every(x=>old.wu.includes(x))){wu=old.wu;g=old.g}
+  else{const pool=Object.keys(WU).filter(x=>WU[x][6]!=="g"&&WU[x][6].includes(r)&&!must.includes(x)&&!(again&&isRecord(old)&&(old.wu||[]).includes(x)&&!must.includes(x)));
+    const pool2=pool.length>=3?pool:Object.keys(WU).filter(x=>WU[x][6]!=="g"&&WU[x][6].includes(r)&&!must.includes(x));wu=[...must];
+    while(pool2.length&&wu.length<must.length+5)wu.push(pool2.splice(Math.floor(Math.random()*pool2.length),1)[0]);
+    const gs=Object.keys(WU).filter(x=>WU[x][6]==="g"&&!(pf.back&&x==="row"));g=gs[Math.floor(Math.random()*gs.length)]}
+  const nd={sig:sg,ids:res.slice(0,nS),bon:res.slice(nS),wu,g};
+  if(JSON.stringify(nd)!==JSON.stringify(old)){d.draw[w]=nd;dirty=true}
+  if(dirty&&!draw.pend){draw.pend=1;setTimeout(()=>{draw.pend=0;save()},0)}
+  return d.draw[w]}
+function reroll(w){if(cur()||!known(prog(),w))return;draw(w,true);save();go();notice(t("rerolled"))}
+function tgNo(id,where){if(!known(E,id))return;const pf=D().pf,no=pf.no||[];pf.no=no.includes(id)?no.filter(x=>x!==id):[...no,id];save();
+  if(where==="lib"){const el=$("ll");if(el)el.innerHTML=ll()}else go()}
+function unpin(key){const d=D();if(!known(d.sub,key))return;delete d.sub[key];if(isRecord(d.draw))delete d.draw[key[0]];save();go()}
+function pinCur(i){const c=cur();if(!c)return;const o=oix(i),id=sid(i),d=D();
+  if(d.sub[c.wk+o]===id){delete d.sub[c.wk+o];U.sw=null;save();go();notice(t("unpinN"))}
+  else{d.sub[c.wk+o]=id;if(c.swp)delete c.swp[o];U.sw=null;save();go();notice(t("pinN")(nm(id)))}}
+function noGym(i){const c=cur();if(!c)return;const o=oix(i),id=sid(i),s=slotOf(c.wk,o),pf=D().pf;
+  pf.no=[...new Set([...(pf.no||[]),id])];if(D().sub[c.wk+o]===id)delete D().sub[c.wk+o];
+  const inUse=x=>Object.keys(c.ex).some(k=>+k!==i&&sid(+k)===x),nx=[...(s?allowed(s[0],s[2]):[]),...E[id][10]].find(x=>x!==id&&known(E,x)&&!pf.no.includes(x)&&!inUse(x));
+  save();if(nx)swapTo(i,nx,0);else{U.sw=null;go()}notice(t("noGymN")(nm(id),nx?nm(nx):""))}
+// warm-up general part: minutes of easy cardio and number of drills, by time budget
+const wGen=tm=>tm<=45?3:tm<75?4:5;
+function wDrills(tm,w){const pf=D().pf,must=pf.back?(REG[S.p][w]==="l"?3:1):0;return Math.max(tm<=45?2:tm<75?3:4,must+(tm>45?1:0))}
+function wuCard(){const c=cur(),w=c.wd;if(!isRecord(w)||!Array.isArray(w.d)||!known(WU,w.g))return"";const k=li();w.ok=Array.isArray(w.ok)?w.ok:[];
+  const its=[[w.g,w.gm+" min",WU[w.g][4+k]],...w.d.map(x=>[x,WU[x][2+k],WU[x][4+k]])],n=its.filter((_,j)=>w.ok[j]).length,started=Object.values(c.ex).flat().some(s=>s.ok);
+  if(w.x||(started&&!U.wuo))return`<button class="w wub" onclick="U.wuo=1;cur().wd.x=0;save();go()">🔥 ${t("wuT")} · ${n}/${its.length} ✓ — ${t("wuShow")}</button>`;
+  return`<div class="c wuc"><div class="r wuh"><h2>🔥 ${t("wuT")}</h2><span class=mu>≈ ${w.m||""} min</span></div>${its.map(([x,dose,how],j)=>`<button class="wur ${w.ok[j]?"ok":""}" aria-pressed="${!!w.ok[j]}" onclick="wdT(${j})"><span class=wck>${w.ok[j]?"✓":""}</span><span class=wtx><b>${nmW(x)}</b>${dose?` <span class=wds>${dose}</span>`:""}<br><span class=mu>${how}</span></span></button>`).join("")}<p class=mu>${t("wuThen")}</p><button class=w onclick="cur().wd.x=1;U.wuo=0;save();go()">${t("wuClose")}</button></div>`}
+function wdT(j){const c=cur();if(!c||!isRecord(c.wd))return;const w=c.wd;w.ok=Array.isArray(w.ok)?w.ok:[];w.ok[j]=!w.ok[j];if(w.ok.filter(Boolean).length>=w.d.length+1){w.x=1;U.wuo=0}save();go()}
+function varCard(){const pf=D().pf,m=vmode(),no=(pf.no||[]).filter(x=>known(E,x)),pins=Object.entries(D().sub).filter(([,v])=>known(E,v));
+  return`<div class=c id=varc><b>🎲 ${t("varT")}</b>${seg("var",[["fix",t("var_fix")],["bal",t("var_bal")],["max",t("var_max")]])}<p class=mu>${t("varX_"+m)(blkLen())}</p>${m==="bal"?`<p class=ts>${t("blkL")(fd(blkInfo().end))}</p>`:""}
+  <p class=lb>${t("exclT")}</p>${no.length?`<div class=chips>${no.map(x=>`<button class=chip aria-label="${t("reallow")} · ${nm(x)}" onclick="tgNo('${x}')">${nm(x)} ✕</button>`).join("")}</div>`:`<p class=mu>${t("exclNone")}</p>`}
+  <p class=lb>${t("pinT")}</p>${pins.length?`<div class=chips>${pins.map(([key,v])=>`<button class=chip aria-label="${t("unpinB")} · ${nm(v)}" onclick="unpin('${key}')">${key[0]} · ${nm(v)} ✕</button>`).join("")}</div>`:`<p class=mu>${t("pinNone")}</p>`}</div>`}
 let CH=[];
 const fd=ms=>new Date(ms).toLocaleDateString(S.lg,{day:"numeric",month:"short"}),f1=v=>(Math.round(v*10)/10).toLocaleString(S.lg),
 e1=(w,r)=>w>0&&r>0?w*(1+Math.min(r,15)/30):0,inP=ms=>!U.per||ms>=Date.now()-U.per*6048e5,
@@ -713,7 +905,7 @@ function historyEditor(log){
   const rows=Object.entries(log.ex).map(([id,sets])=>`<div style="margin-top:8px"><b>${nm(id)}</b>`+
     sets.map((set,i)=>`<div class=s><span class=mu>${i+1}</span>
       <input type=text inputmode=decimal data-k=w data-e="${id}" data-j="${i}" aria-label="${nm(id)} · ${t("series")} ${i+1} · ${t("load")}" value="${set.w}">
-      <input type=text inputmode=numeric data-k=r data-e="${id}" data-j="${i}" aria-label="${nm(id)} · ${t("series")} ${i+1} · ${id==="pl"?t("seconds"):t("reps")}" value="${set.r}"><span></span></div>`).join("")+"</div>").join("");
+      <input type=text inputmode=numeric data-k=r data-e="${id}" data-j="${i}" aria-label="${nm(id)} · ${t("series")} ${i+1} · ${isT(id)?t("seconds"):t("reps")}" value="${set.r}"><span></span></div>`).join("")+"</div>").join("");
   const profileCardio=log.cardio!=null;
   return `<h1>${t("edit")}</h1><div class=c><b>${prog()[log.wk].n[li()]}</b> · ${durationText(log)}
     <label class=fl>${t("date")}<input id=edd type=date value="${tday(log.date)}" max="${tday()}"></label>
@@ -804,7 +996,7 @@ async function exp(){
 }
 
 // ===== Profile, body, nutrition, adaptive plan =====
-const PFD={M:{sex:"m",age:27,h:188,w:80,lvl:"int",act:"auto",time:60,goal:"gain",tw:null,kadj:0,kat:0,back:true,inc:{DB:2,M:5,C:2.5,SM:2.5}},F:{sex:"f",age:null,h:null,w:null,lvl:"beg",act:"auto",time:60,goal:"loss",tw:null,kadj:0,kat:0,back:false,inc:{DB:2,M:5,C:2.5,SM:2.5}}};
+const PFD={M:{sex:"m",age:27,h:188,w:80,lvl:"int",act:"auto",time:60,goal:"gain",tw:null,kadj:0,kat:0,back:true,inc:{DB:2,M:5,C:2.5,SM:2.5},var:"bal",no:[],r0:null},F:{sex:"f",age:null,h:null,w:null,lvl:"beg",act:"auto",time:60,goal:"loss",tw:null,kadj:0,kat:0,back:false,inc:{DB:2,M:5,C:2.5,SM:2.5},var:"bal",no:[],r0:null}};
 const MK=["wa","hi","ch","sh","ar","th","bf"];
 function lastWE(){const h=D().hd.filter(x=>x.w!=null&&dms(x.d));return h.length?h[h.length-1]:null}
 function curW(){const e=lastWE();return e?e.w:D().pf.w}
@@ -843,11 +1035,21 @@ function spf(k,v,live){
 function seg(key,opts){const pf=D().pf;return`<div class=sg>${opts.map(([v,l])=>`<button class="${pf[key]==v?"on":""}" onclick="spf('${key}','${v}')">${l}</button>`).join("")}</div>`}
 function fld(key,label,ph){const v=D().pf[key];return`<label class=fl><span>${label}</span><input type=text inputmode=decimal value="${v==null?"":String(v).replace(".",S.lg=="fr"?",":".")}" placeholder="${ph||""}" oninput="spf('${key}',this.value,1)" onchange="spf('${key}',this.value)"></label>`}
 // effective workout for this profile: level, time, goal
-function est(ex,cm){return 5+ex.reduce((s,e)=>s+(e[1]*(40+e[4])+90)/60,0)+(cm||0)}
-function eff(wk){const pf=D().pf,tm=+pf.time||60,b=prog()[wk].ex.map((e,i)=>[...e.slice(0,7),i]);let add=0;
- b.forEach((e,i)=>{if(pf.lvl=="beg")e[5]=Math.min(4,e[5]+1);if((pf.lvl=="adv"||tm>=75)&&i<2){e[1]+=1;add=1}});
- let cm={loss:15,recomp:10}[pf.goal]||0,cut=0;while(est(b,cm)>tm+2&&cm>0)cm=cm>10?10:0;while(b.length>3&&est(b,cm)>tm+2){b.pop();cut++}
- return{ex:b,cm,cut,add,dur:Math.round(est(b,cm)/5)*5}}
+function est(ex,cm,wm){return(wm??5)+ex.reduce((s,e)=>s+(e[1]*(40+e[4])+90)/60,0)+(cm||0)}
+// workout for this profile and day: drawn exercises, level, goal and time budget
+// fitting order when time is short: less cardio → accessories down to 2 sets → drop accessories (from the end) → main lifts down to 2 sets
+function eff(w){const d=D(),pf=d.pf,tm=+pf.time||60,dr=draw(w),beg=pf.lvl=="beg",sl=SL[S.p][w],nS=sl.length,role=o=>o<nS?sl[o][1]:"a";
+ const mk1=(e,o,id)=>{const x=[...e.slice(0,7),o];x[0]=id;const f=d.sub[w+o]||id;if(f!==e[0]&&XR[f])[x[2],x[3]]=XR[f][beg?1:0];if(beg)x[5]=Math.min(4,x[5]+1);return x};
+ const b=prog()[w].ex.map((e,i)=>mk1(e,i,dr.ids[i]||e[0])),bonus=BON[S.p][w].map(([,e],k)=>mk1(e,nS+k,dr.bon[k]||e[0]));
+ const nWu=wDrills(tm,w),wm=wGen(tm)+nWu;let add=0,bon=0,red=0,cut=0,cm={loss:15,recomp:10}[pf.goal]||0;const over=()=>est(b,cm,wm)>tm+2;
+ if(pf.lvl=="adv"||tm>=75)b.forEach(x=>{if(role(x[7])==="m"){x[1]+=1;add=1}});
+ if(tm>=75)for(const x of bonus){b.push(x);if(over()){b.pop();break}bon++}
+ if(tm>=90)b.forEach(x=>{if(role(x[7])==="a"&&x[1]<3){x[1]++;if(over())x[1]--}});
+ while(over()&&cm>0)cm=cm>10?10:0;
+ for(let i=b.length-1;i>=0&&over();i--)if(role(b[i][7])==="a"&&b[i][1]>2){while(b[i][1]>2&&over())b[i][1]--;red++}
+ while(b.length>3&&over()&&role(b[b.length-1][7])==="a"){b.pop();cut++}
+ for(const x of b)if(over()&&x[1]>2){x[1]--;red++}
+ return{ex:b,cm,cut,add,bon,red,wm,wu:dr.wu.slice(0,nWu),g:dr.g,gm:wGen(tm),dur:Math.round(est(b,cm,wm)/5)*5}}
 const cx=()=>cur().pl||prog()[cur().wk].ex;
 
 // measurements
@@ -880,7 +1082,7 @@ function profileCards(){const pf=D().pf,k=li(),n=nut(),we=lastWE();let h="";
  // my info
  h+=`<div class=c><b>${t("me")} — ${t(S.p=="M"?"him":"her")}</b>${seg("sex",[["m",t("male")],["f",t("female")]])}${fld("age",t("age"),"ans")}${fld("h",t("hgt"),"cm")}${we?`<p class=mu style=margin:4px_0>${t("lastw")(f1(we.w),fd(dms(we.d)))}</p>`.replace("margin:4px_0","margin:4px 0"):fld("w",t("wgt"),"kg")}
  <p class=lb>${t("lvl")}</p>${seg("lvl",[["beg",t("beg")],["int",t("int")],["adv",t("adv")]])}
- <p class=lb>${t("tim")}</p>${seg("time",[[45,"45 min"],[60,"60 min"],[75,"75 min"]])}
+ <p class=lb>${t("tim")}</p>${seg("time",[[30,"30 min"],[45,"45 min"],[60,"60 min"],[75,"75 min"],[90,"90 min"]])}<p class=mu>${t("timX")}</p>
  <p class=lb>${t("act")}</p>${seg("act",[["auto",t("aauto")],["sed",t("sed")],["light",t("light")],["acti",t("acti")],["very",t("very")]])}${pf.act=="auto"?`<p class=mu>${(()=>{const A=actF();return A.sa==null?t("autoN"):t("autoS")((Math.round(A.sa/100)*100).toLocaleString(S.lg),t(A.a))})()}</p>`:""}</div>`;
  // goal
  h+=`<div class=c><b>${t("goalT")}</b>${seg("goal",[["loss",t("loss")],["recomp",t("recomp")],["maint",t("maint")],["gain",t("gain")]])}<p class=mu>${t("gx_"+pf.goal)}</p>${fld("tw",t("tw"),"kg")}<div id=pjx>${pjH()}</div></div>`;
@@ -896,13 +1098,13 @@ function msCard(){const d=D(),ms=d.ms.map(m=>({...m,x:dms(m.d)})).filter(m=>m.x&
  let rt="";const lv=k=>{const m=[...d.ms].reverse().find(m=>m[k]!=null);return m?m[k]:null},lsh=lv("sh"),lwa=lv("wa");if(S.p=="M"&&lsh&&lwa)rt=`<p class=ts>${t("ratio")} : <b>${(lsh/lwa).toFixed(2).replace(".",S.lg=="fr"?",":".")}</b> — ${t("ratx")}</p>`;
  return`<div class=c><b>${t("msT")}</b><select style="width:100%;margin:6px 0" onchange="U.mm=this.value;go()">${av.map(k=>`<option value=${k} ${k==U.mm?"selected":""}>${t("m_"+k)}</option>`).join("")}</select>${sub}${lc(pts)}${rt}</div>`}
 
-function set(){return`<h1>${t("pfT")}</h1>${profileCards()}${gymCard()}<div class=c><b>${t("theme")}</b><div class=r>${["","dark","light"].map(x=>`<button class="${S.th==x?"p":""}" onclick="S.th='${x}';th();save();go()">${x?(x=="dark"?"🌙":"☀️"):t("auto")}</button>`).join("")}</div></div><div class=c><b>${t("bk")}</b><p class=mu>${t("bkn")}</p><textarea id=jx></textarea><div class=r><button onclick="exp()">${t("exp")}</button><button onclick="restoreBackup()">${t("imp")}</button></div></div><div class=c><b>${t("rst")}</b><p class=mu>${t("rstx")}</p><button class=w style="color:#e5484d" onclick="eraseProfile()">${t("rst")} (${t(S.p=='M'?'him':'her')})</button></div><p class=mu style=text-align:center>v ${VER}</p>`}
+function set(){return`<h1>${t("pfT")}</h1>${profileCards()}${varCard()}${gymCard()}<div class=c><b>${t("theme")}</b><div class=r>${["","dark","light"].map(x=>`<button class="${S.th==x?"p":""}" onclick="S.th='${x}';th();save();go()">${x?(x=="dark"?"🌙":"☀️"):t("auto")}</button>`).join("")}</div></div><div class=c><b>${t("bk")}</b><p class=mu>${t("bkn")}</p><textarea id=jx></textarea><div class=r><button onclick="exp()">${t("exp")}</button><button onclick="restoreBackup()">${t("imp")}</button></div></div><div class=c><b>${t("rst")}</b><p class=mu>${t("rstx")}</p><button class=w style="color:#e5484d" onclick="eraseProfile()">${t("rst")} (${t(S.p=='M'?'him':'her')})</button></div><p class=mu style=text-align:center>v ${VER}</p>`}
 
 function th(){const r=document.documentElement;S.th?r.setAttribute("data-theme",S.th):r.removeAttribute("data-theme");r.lang=S.lg}
 function go(){th();CH=[];const ids=["today","plan","lib","prg","hist","set"],f={today,plan,lib,prg,hist,set}[U.tab];
 document.getElementById("v").innerHTML=`<div class=pf><div><button class="${S.p=="M"?"on":""}" onclick="switchProfile('M')">${t("him")}</button><button class="${S.p=="F"?"on":""}" onclick="switchProfile('F')">${t("her")}</button></div><div><button class="${S.lg=="fr"?"on":""}" onclick="S.lg='fr';save();go()">FR</button><button class="${S.lg=="en"?"on":""}" onclick="S.lg='en';save();go()">EN</button></div></div>`+f();
 document.getElementById("nv").innerHTML=ids.map((x,i)=>`<button class="${U.tab==x?"on":""}" onclick="navigate('${x}')">${t("tab")[i]}</button>`).join("");renderRest();hook()}
-const VER="2026-11-14c";
+const VER="2026-11-14d";
 function upd(){if(!/^https?:/.test(location.protocol))return;fetch(location.pathname+"?nocache="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(h=>{const m=/const VER="([^"]+)"/.exec(h);if(!m||m[1]==VER)return;
 if(!S.d.M.cur&&!S.d.F.cur&&!$("action-dialog").open&&U.ed==null){location.replace(location.pathname+"?v="+m[1]);return}
 const b=document.getElementById("upb");b.style.display="block";b.textContent=t("upd");b.onclick=()=>location.replace(location.pathname+"?v="+m[1])}).catch(()=>{})}

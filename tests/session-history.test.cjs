@@ -109,7 +109,7 @@ test("daily tracking validates dates, decimal CSV and duplicates, keeping existi
   }
 });
 test("bodyweight, checked cardio, swapped exercises and time formatting",()=>{
-  const h=harness();h.run("switchProfile('F');start('C');setv(4,0,'r','32');done(4,0);cdo();fin()");accept(h);
+  const h=harness();h.run("S.d.F.pf.var='fix';switchProfile('F');start('C');setv(4,0,'r','32');done(4,0);cdo();fin()");accept(h);
   const log=h.state().d.F.logs[0];assert.deepEqual(log.ex.pl,[{w:0,r:32}]);assert.ok(log.cardio>0);
   h.run("navigate('today');start('C');swap(0);setv(0,0,'r','8');done(0,0);fin()");accept(h);
   assert.ok(h.state().d.F.logs[1].ex.gb);assert.equal(h.run("timeText(3605)"),"1:00:05");

@@ -7,7 +7,7 @@ const mkctx=async(dev='iPhone 13',extra={})=>{const c=await b.newContext({...dev
 const ctx=await mkctx();const p=await ctx.newPage();p.setDefaultTimeout(6000);const errs=[];p.on('pageerror',e=>errs.push(e.message));
 await p.clock.install({time:new Date(2026,10,16,18,0,0)}); // Monday
 await p.goto(URL);
-await p.evaluate(()=>{S.gm=false;for(const k of ['M','F']){S.d[k].pf.back=false;S.d[k].pf.inc={DB:2,M:2.5,C:1.25,SM:2.5}}save();go()}); // legacy list mode for this suite (V2 has its own tests)
+await p.evaluate(()=>{S.gm=false;for(const k of ['M','F']){S.d[k].pf.back=false;S.d[k].pf.inc={DB:2,M:2.5,C:1.25,SM:2.5};S.d[k].pf.var='fix'}save();go()}); // legacy list mode for this suite (V2 has its own tests)
 const E=(f,a)=>p.evaluate(f,a),txt=async()=>(await p.textContent('#v')).replace(/[  ]/g,' ');
 const typ=(loc,v)=>loc.evaluate((el,v)=>{el.focus();el.value='';for(const ch of String(v)){el.value+=ch;el.dispatchEvent(new Event('input',{bubbles:true}))}if(String(v)==='')el.dispatchEvent(new Event('input',{bubbles:true}))},v);
 const tap=loc=>loc.evaluate(el=>el.click());
@@ -37,16 +37,16 @@ ok('Him has 3 sessions, Her has 3 sessions',await E(()=>S.d.M.logs.length==3&&S.
 // ===== 2. Guide + Swap on every exercise of every workout =====
 let swapIssues=[],guideIssues=[];
 for(const pf of ['M','F']){await E(pf=>{S.p=pf;go()},pf);
- for(const w of ['A','B','C']){await pickW(w);await tap(p.locator('text=Commencer la séance'));const n=await p.locator('#v .c h2').count();
-  for(let i=0;i<n;i++){const card=p.locator('#v .c').filter({has:p.locator('h2')}).nth(i);const name=(await card.locator('h2').textContent()).trim();
+ for(const w of ['A','B','C']){await pickW(w);await tap(p.locator('text=Commencer la séance'));const n=await p.locator('#v .c:not(.wuc) h2').count();
+  for(let i=0;i<n;i++){const card=p.locator('#v .c:not(.wuc)').filter({has:p.locator('h2')}).nth(i);const name=(await card.locator('h2').textContent()).trim();
    if(name.startsWith('🚶'))continue;
-   await tap(card.locator('.hb >> text=Guide'));const g=await p.locator('#v .c').filter({has:p.locator('h2')}).nth(i).textContent();if(!g.includes('Exécution')||!g.includes('À éviter'))guideIssues.push(pf+w+i);
-   await tap(p.locator('#v .c').filter({has:p.locator('h2')}).nth(i).locator('.hb >> text=Guide'));
-   const alts=await E(i=>E[sid(i)][10].length,i);
-   const sb=p.locator('#v .c').filter({has:p.locator('h2')}).nth(i).locator('.hb >> text=⇄');if(!alts){if(await sb.count())swapIssues.push(`${pf}${w}${i} shows swap without alternative`);continue}
-   await tap(sb);await tap(p.locator('#v .c').filter({has:p.locator('h2')}).nth(i).locator('.swr button:has-text("Toujours")').first());const n2=(await p.locator('#v .c').filter({has:p.locator('h2')}).nth(i).locator('h2').textContent()).trim();
+   await tap(card.locator('.hb >> text=Guide'));const g=await p.locator('#v .c:not(.wuc)').filter({has:p.locator('h2')}).nth(i).textContent();if(!g.includes('Exécution')||!g.includes('À éviter'))guideIssues.push(pf+w+i);
+   await tap(p.locator('#v .c:not(.wuc)').filter({has:p.locator('h2')}).nth(i).locator('.hb >> text=Guide'));
+   const sb=p.locator('#v .c:not(.wuc)').filter({has:p.locator('h2')}).nth(i).locator('.hb >> text=⇄');if(!(await sb.count())){swapIssues.push(`${pf}${w}${i} no ⇄ button`);continue}
+   await tap(sb);const alts=await p.locator('#v .c:not(.wuc)').filter({has:p.locator('h2')}).nth(i).locator('.swr').count();if(!alts){if(!(await p.locator('#v .swp >> text=Garder à chaque fois').count()))swapIssues.push(`${pf}${w}${i} panel without pin`);await tap(p.locator('#v .swp button:has-text("Annuler")'));continue}
+   await tap(p.locator('#v .c:not(.wuc)').filter({has:p.locator('h2')}).nth(i).locator('.swr button:has-text("Toujours")').first());const n2=(await p.locator('#v .c:not(.wuc)').filter({has:p.locator('h2')}).nth(i).locator('h2').textContent()).trim();
    if(n2==name)swapIssues.push(`${pf}${w}${i} ${name} did not swap`);
-   if(alts){await tap(p.locator('#v .c').filter({has:p.locator('h2')}).nth(i).locator('.hb >> text=⇄'));await tap(p.locator('#v .c').filter({has:p.locator('h2')}).nth(i).locator('.swr').filter({hasText:name}).locator('button:has-text("Toujours")').first());const n3=(await p.locator('#v .c').filter({has:p.locator('h2')}).nth(i).locator('h2').textContent()).trim();if(n3!=name)swapIssues.push(`${pf}${w}${i} swap back gave ${n3}`)}}
+   if(alts){await tap(p.locator('#v .c:not(.wuc)').filter({has:p.locator('h2')}).nth(i).locator('.hb >> text=⇄'));await tap(p.locator('#v .c:not(.wuc)').filter({has:p.locator('h2')}).nth(i).locator('.swr').filter({hasText:name}).locator('button:has-text("Toujours")').first());const n3=(await p.locator('#v .c:not(.wuc)').filter({has:p.locator('h2')}).nth(i).locator('h2').textContent()).trim();if(n3!=name)swapIssues.push(`${pf}${w}${i} swap back gave ${n3}`)}}
   await tap(p.locator('#v >> text=Abandonner'));await tap(p.locator('#action-accept'))}}
 ok('Guide opens/closes on every exercise (both profiles, all workouts)',!guideIssues.length,guideIssues.join(','));
 ok('Swap → alternative and back on every exercise',!swapIssues.length,swapIssues.join(' | '));
@@ -68,15 +68,15 @@ await tap(p.locator('#r0_0').locator('xpath=..').locator('button'));await p.cloc
 await tap(p.locator('#v >> text=Abandonner'));await tap(p.locator('#action-accept'));ok('Abandon hides end message too',!(await p.isVisible('#tm')));
 
 // ===== 5. Library =====
-await nav(2);const all=await p.locator('#ll .c').count();ok('Library lists all 24 exercises',all==24,String(all));
+await nav(2);const all=await p.locator('#ll .c').count();const NE=await E(()=>Object.keys(E).length);ok('Library lists all '+NE+' exercises',all==NE&&NE>=59,String(all));
 for(const [q,min] of [['fessiers',3],['poulie',7],['machine',8],['haltères',3],['débutant',1],['zzz',0]]){await typ(p.locator('#lq'),q);const n=await p.locator('#ll .c').count();ok(`Library search "${q}" → ${n}`,q=='zzz'?n==0:n>=min)}
 ok('Empty search shows a message',(await p.textContent('#ll')).includes('Aucun'),(await p.textContent('#ll')).slice(0,40));
 await typ(p.locator('#lq'),'');
 const lsel=p.locator('.lf select');
-await lsel.nth(0).selectOption('gl');ok('Filter muscle = Fessiers → 3',(await p.locator('#ll .c').count())==3);
+await lsel.nth(0).selectOption('gl');{const want=await E(()=>Object.keys(E).filter(k=>GR[k]=='gl').length);ok('Filter muscle = Fessiers → '+want,(await p.locator('#ll .c').count())==want&&want==6)}
 await lsel.nth(1).selectOption('C');ok('+ equipment = Poulie → 1 (kickback)',(await p.locator('#ll .c').count())==1&&(await p.textContent('#ll')).includes('Kickback'));
-await lsel.nth(0).selectOption('');await lsel.nth(1).selectOption('');await lsel.nth(2).selectOption('1');ok('Filter level = Intermédiaire → 5',(await p.locator('#ll .c').count())==5,String(await p.locator('#ll .c').count()));
-await lsel.nth(2).selectOption('');await tap(p.locator('.tg2 input'));ok('Back-friendly toggle hides 2 exercises (22)',(await p.locator('#ll .c').count())==22);await tap(p.locator('.tg2 input'));
+await lsel.nth(0).selectOption('');await lsel.nth(1).selectOption('');await lsel.nth(2).selectOption('1');{const want=await E(()=>Object.values(E).filter(e=>e[5]==1).length);ok('Filter level = Intermédiaire → '+want,(await p.locator('#ll .c').count())==want,String(await p.locator('#ll .c').count()))}
+await lsel.nth(2).selectOption('');await tap(p.locator('.tg2 input'));{const want=await E(()=>Object.keys(E).length-AX.length);ok('Back-friendly toggle hides '+(await E(()=>AX.length))+' exercises ('+want+')',(await p.locator('#ll .c').count())==want)}await tap(p.locator('.tg2 input'));
 
 // ===== 6. Planner: every weekday shown correctly on home =====
 await nav(1);const sel=p.locator('select');
