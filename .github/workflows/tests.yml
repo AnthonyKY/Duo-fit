@@ -56,3 +56,11 @@ jobs:
           for attempt in {1..50}; do curl -fsS http://localhost:8766/index.html -o /dev/null && break; sleep .2; done
           node "tests/$SUITE" | tee /tmp/results
           if grep -Eq '^FAIL |^CRASH' /tmp/results; then exit 1; fi
+  # one check to require before anything reaches main: green only if every suite above passed
+  all-tests:
+    needs: test
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Every suite passed (Chromium + WebKit)
+        run: test "${{ needs.test.result }}" = "success"

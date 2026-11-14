@@ -4,14 +4,14 @@ const R=[];let fails=0;const ok=(n,c,x='')=>{const l=(c?'PASS ':'FAIL ')+n+(x?' 
 const errs=[];p.on('pageerror',e=>errs.push(e.message));p.on('dialog',d=>d.accept());
 await p.clock.setFixedTime(new Date(2026,10,16,9).getTime()); // Mon 16 Nov
 await p.goto('http://localhost:8766/index.html');
-await p.evaluate(()=>{S.gm=false;for(const k of ['M','F']){S.d[k].pf.back=false;S.d[k].pf.inc={DB:2,M:2.5,C:1.25,SM:2.5};S.d[k].pf.var='fix';S.d[k].pf.noOverhead=false}save();go()}); // legacy list mode for this suite (V2 has its own tests)
+await p.evaluate(()=>{S.gm=false;for(const k of ['M','F']){S.d[k].pf.back=false;S.d[k].pf.inc={DB:2,M:2.5,C:1.25,SM:2.5};S.d[k].pf.var='fix';S.d[k].pf.noOverhead=false}Object.assign(S.d.M.pf,{age:30,h:180,w:80});save();go()}); // fixture: a made-up adult profile (the app no longer prefills anyone's); legacy list mode for this suite (V2 has its own tests)
 
 const E=(f,a)=>p.evaluate(f,a);const txt=async()=>(await p.textContent('#v')).replace(/[\u202f\u00a0]/g,' ');
 // --- Him defaults
 await p.click('nav >> text=Profil');
 let n=await E(()=>nut());
-ok('Him default: 2 900 kcal, 145 g prot, 80 g fat, 400 g carbs',n.kc==2900&&n.P==145&&n.F==80&&n.C==400,JSON.stringify(n));
-ok('Him maintenance shown ≈ 2 700',(await txt()).includes('Maintien ≈ 2 700 kcal'),'');
+ok('Him (made-up 30 y, 180 cm, 80 kg): 2 800 kcal, 145 g prot, 80 g fat, 375 g carbs',n.kc==2800&&n.P==145&&n.F==80&&n.C==375,JSON.stringify(n));
+ok('Him maintenance shown ≈ 2 600',(await txt()).includes('Maintien ≈ 2 600 kcal'),'');
 ok('Profile page shows meal plan with grams',(await txt()).includes('Blanc de poulet (poids cru)')&&(await txt()).includes('Exemple de journée'));
 // --- Her profile: fill fields via UI
 await p.click('.pf >> text=Elle');await p.click('nav >> text=Profil');
@@ -84,7 +84,7 @@ ok('Progress: waist chart −1 cm',tx.includes('▼ -1 cm'),tx.match(/[▲▼=][
 ok('Shoulder/waist ratio 1,48 shown for him',tx.includes('Ratio épaules / taille : 1,48'));
 await p.click('nav >> text=Profil');await p.locator('tr',{hasText:'15 nov.'}).locator('button').click();await p.click('#action-accept');ok('Delete measurement',await E(()=>D().ms.length==1));
 // --- persistence + profile separation
-await p.reload();ok('Profiles persist & stay separate',await E(()=>S.d.M.pf.time==45&&S.d.F.pf.age==26&&S.d.F.pf.time==45&&S.d.M.pf.age==27));
+await p.reload();ok('Profiles persist & stay separate',await E(()=>S.d.M.pf.time==45&&S.d.F.pf.age==26&&S.d.F.pf.time==45&&S.d.M.pf.age==30));
 // --- EN sweep for undefined
 let bad=[];for(const lg of ['FR','EN'])for(const pf of ['M','F']){await p.click(`.pf >> text=${lg}`);await E(pf=>{S.p=pf;go()},pf);for(let i=0;i<6;i++){await p.locator('nav button').nth(i).click();const t=(await txt())+(await p.textContent('nav'));if(/undefined|NaN|Infinity|\[object|null kg/.test(t))bad.push(lg+pf+i+': '+t.match(/.{0,40}(undefined|NaN|Infinity|\[object|null kg).{0,20}/)[0])}}
 ok('No undefined/NaN in any tab (2 langs × 2 profiles)',!bad.length,bad.join(' | '));

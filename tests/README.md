@@ -48,3 +48,7 @@ BROWSER=webkit DEVICE="iPhone 16 Plus" node tests/tanita.js   # WebKit = Safari'
 
 GitHub Actions (`.github/workflows/tests.yml`) runs every suite on each push to main, claude/** and astra/**: once in Chromium,
 and every browser suite again in WebKit on an iPhone 16 Plus.
+
+Security: the page carries a Content-Security-Policy (it may only contact its own address; no outside scripts, images or
+fonts). `iosinit.js` records any blocked request as a failure, so every suite proves the policy breaks nothing, and
+`pages.js` checks that sending data to another site is blocked. `main` only accepts commits whose `all-tests` check is green.

