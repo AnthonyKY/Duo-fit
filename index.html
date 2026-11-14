@@ -39,7 +39,7 @@ dialog::backdrop{background:rgb(0 0 0 / .58)}dialog .r{margin-top:18px}
 .wtx{min-width:0;overflow-wrap:break-word}.wds{color:var(--ac);font-weight:700;font-size:13px}
 .wub{margin:6px 0;text-align:left}
 .ssl{margin:4px 0;font-size:13px;color:var(--ac);font-weight:600}
-.xrow{display:flex;flex-wrap:wrap;align-items:center;gap:6px}.xt{font-size:13px;padding:3px 9px;border-radius:99px;font-variant-numeric:tabular-nums;white-space:nowrap;border:1px solid var(--bd)}
+.xline{margin:4px 0;line-height:1}.xt{display:inline-block;min-width:8.6em;text-align:center;font-size:13px;padding:3px 9px;border-radius:99px;font-variant-numeric:tabular-nums;white-space:nowrap;border:1px solid var(--bd)}
 .xt.xok{background:var(--ac);color:var(--on);border-color:var(--ac)}.xt.xwarn{background:#f5a524;color:#1b1300;border-color:#f5a524}.xt.xover{background:#e5484d;color:#fff;border-color:#e5484d}.xt.x0{background:none;color:var(--ac);border-color:var(--ac)}
 .coach{margin:10px 0 4px;padding:8px 10px;border-radius:10px;background:var(--c2);font-size:13px}.coach b{display:block;margin-bottom:4px}.cl{margin:3px 0}.cl.warn{color:var(--tx)}
 .aiw{margin:12px 0}.aiw>b{display:block}.aiq{white-space:pre-wrap;font-size:12px;background:var(--c2);padding:8px;border-radius:8px;overflow-wrap:anywhere}.aib{text-decoration:none}
@@ -670,7 +670,7 @@ function guidedWorkout(){
   const c=cur(),plan=cx(),sets=Object.values(c.ex).flat(),count=sets.filter(s=>s.ok).length,pos=curPos(),k=li();
   let main="";
   if(pos){const [i,j]=pos,e=plan[i],id=sid(i),s=c.ex[i][j],prev=last(id,0,c.wk),bw=isBW(id),g=sug(id,e,c.wk),ps=prev?prev.ex[id][j]||prev.ex[id][prev.ex[id].length-1]:null;
-    main=`<div class="c gd"><div class="mu xrow">${xChip(i)}<span>${t("exN")} ${i+1}/${plan.length} · ${t("series")} ${j+1}/${c.ex[i].length}</span></div>
+    main=`<div class="c gd"><div class=mu>${t("exN")} ${i+1}/${plan.length} · ${t("series")} ${j+1}/${c.ex[i].length}</div>${c.xt?`<div class=xline>${xChip(i)}</div>`:""}
     <h2 class=gx>${nm(id)}</h2>
     <div class=mu>${e[2]}–${e[3]}${isT(id)?" s":" reps"} · RIR ${e[5]} · <button class=rest-link onclick="manualRest(${i})">${t("rest")} ${e[4]} s</button></div>
     ${ssLine(i)}<div class=mu>${t("last")} : ${ps?fs(id,ps)+" ("+fd(prev.date)+")":"—"}</div><div class=tip-text>${g.t}</div>
@@ -801,7 +801,7 @@ function exerciseCard(entry,i){
     </div>`;
   }).join("");
   return `<div class=c><div class=r><h2 style="flex:3">${nm(id)}</h2><button class=hb onclick="U.open=U.open===${i}?-1:${i};go()">${t("guide")}</button>${canSwap?`<button class=hb aria-label="${t("swap")} · ${nm(id)}" onclick="U.sw=U.sw===${i}?null:${i};go()">⇄</button>`:""}<button class=hb aria-label="${t("busyB")} · ${nm(id)}" onclick="busy(${i})">⏭</button></div>
-    <div class="mu xrow">${xChip(i)}<span>${entry[1]}×${entry[2]}–${entry[3]}${isT(id)?" s":""} · <button class=rest-link aria-label="${t("startRest")} · ${entry[4]} s" onclick="manualRest(${i})">${t("rest")} ${entry[4]} s</button> · RIR ${entry[5]}</span></div>
+    ${c.xt?`<div class=xline>${xChip(i)}</div>`:""}<div class=mu>${entry[1]}×${entry[2]}–${entry[3]}${isT(id)?" s":""} · <button class=rest-link aria-label="${t("startRest")} · ${entry[4]} s" onclick="manualRest(${i})">${t("rest")} ${entry[4]} s</button> · RIR ${entry[5]}</div>
     ${ssLine(i)}<div class=mu>${t("last")}: ${previous?fd(previous.date)+" — "+previous.ex[id].map(s=>fs(id,s)).join(", "):"—"}</div>
     <div class=tip-text>${sug(id,entry,c.wk).t}</div>${U.sw===i?swapPanel(i):""}${U.open===i?card(id):""}${noteLine(id)}<div id="ramp-${i}">${wuHtml(i)}</div>${rows}${c.ex[i].length&&c.ex[i].every(s=>s.ok)?coachBox(nm(id),coach(id,c.ex[i].map(s=>({w:num(s.w)||0,r:num(s.r)})),entry,last(id,0,c.wk)?.ex[id],xFor(i))):""}${(entry[7]??0)>=200&&!c.ex[i].some(s=>s.ok||s.touchedR||s.touchedW)?`<button class="hb rmx" onclick="removeEx(${i})">🗑 ${t("remB")}</button>`:""}</div>`;
 }
