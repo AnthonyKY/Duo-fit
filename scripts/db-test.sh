@@ -19,10 +19,13 @@ PSQL=(psql -h "$WORK" -p "$PORT" -U postgres -d postgres -X -q -t -A -v ON_ERROR
 for m in supabase/migrations/*.sql; do "${PSQL[@]}" -f "$m" >/dev/null; echo "applied $(basename "$m")"; done
 
 fails=0
-if out=$("${PSQL[@]}" -f supabase/tests/10_security.sql 2>&1); then :; else fails=1; fi
-printf '%s\n' "$out" | sed -n 's/^.*NOTICE:  \(PASS .*\)$/\1/p'
-printf '%s\n' "$out" | grep -E 'FAIL|ERROR' | sed 's/^psql:[^ ]* //' || true
-printf '%s\n' "$out" | grep -q SECURITY-SUITE-DONE || fails=1
+# every test file supabase/tests/[1-9]*.sql, in order (10_security.sql, then e.g. 20_review.sql); a FAIL stops that file
+for f in supabase/tests/[1-9]*.sql; do
+  echo "--- $(basename "$f")"
+  if out=$("${PSQL[@]}" -f "$f" 2>&1); then :; else fails=1; fi
+  printf '%s\n' "$out" | sed -n 's/^.*NOTICE:  \(PASS .*\)$/\1/p'
+  printf '%s\n' "$out" | grep -E 'FAIL|ERROR' | sed 's/^psql:[^ ]* //' || true
+done
 
 # ---- simultaneous joins
 as() { "${PSQL[@]}" -c "set role authenticated" -c "select set_config('request.jwt.claim.sub','$1',false)" -c "$2" | tail -1; }
