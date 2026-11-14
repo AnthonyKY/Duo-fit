@@ -28,6 +28,9 @@ node tests/erase.js                        # erasing a profile: what goes, type 
 node tests/coach.js                        # the requested scenarios: 'Lancer l'exercice' starts the timer, 5:00 target amber after 5:00 / red after
                                            # 5:30, 2 min + 3 min wait + 4 min = 06:00 in summary and History (also offline), next-target advice
                                            # (all sets done, interrupted, load changed) = next pre-fill, add an exercise (equipment, time, today only)
+node tests/tanita.js                        # body composition · Tanita: partial + complete readings, measurement conditions kept in the history,
+                                           # same-condition comparison, kJ / kg-% typo checks, edit, delete, unfinished form kept across an iOS reload,
+                                           # offline relaunch, Him / Her separation, backup restore, old and damaged backups, exercise timers still work
 node tests/pages.js                        # as GitHub Pages serves it: /Duo-fit/ sub-path, icons, offline cold start, auto-update keeps the workout
 node tests/budget-iphone.js                # 20-minute cable-only plan on iPhone SE, input-only ramp up, offline resume, history and EN
 node --test tests/budget.test.cjs          # 324 plan combinations, equipment, exclusions, time allocation, migration and session snapshots

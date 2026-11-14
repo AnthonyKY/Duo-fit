@@ -51,6 +51,7 @@ dialog::backdrop{background:rgb(0 0 0 / .58)}dialog .r{margin-top:18px}
 .bkm{margin-top:10px}.bkm summary{color:var(--mu);font-size:13px;cursor:pointer}
 .swr{grid-template-columns:1fr 1fr;padding:6px 0;border-bottom:1px solid var(--bd)}.swr span{grid-column:1/-1;font-weight:600}
 .budget{margin:10px 0;border:1px solid var(--bd);border-radius:10px;padding:9px 12px}.budget summary{cursor:pointer;font-weight:600}.budget dl{margin:8px 0}.budget dl>div{display:flex;justify-content:space-between;gap:8px}.budget dd,.budget dt{margin:3px 0}.budget dd{white-space:nowrap;font-variant-numeric:tabular-nums}.gear{min-width:0;margin:12px 0;padding:8px 10px;border:1px solid var(--bd);border-radius:10px}.gear label{display:inline-flex;align-items:center;margin:4px 10px 4px 0}.gear input{width:auto}#varc{scroll-margin-top:70px}
+.bdc .bwc button{flex:1 1 40%}.bgr{display:grid;grid-template-columns:minmax(0,1fr) 82px 82px;gap:6px;align-items:center;margin:6px 0}.bgr>span:first-child{font-size:14px;min-width:0}.bgh span{font-size:12px;color:var(--mu);text-align:center}.bgh span:first-child{text-align:left}.bu{position:relative;display:block;min-width:0}.bu input{width:100%;box-sizing:border-box;padding:8px 26px 8px 6px;text-align:right}.bu i{position:absolute;right:7px;top:50%;transform:translateY(-50%);font-style:normal;font-size:12px;color:var(--mu);pointer-events:none}.bu2{grid-column:2/4}.bu2.bk input{padding-right:72px}.bu input[aria-invalid=true]{border-color:#e5484d}.bseg{margin:8px 0;border:1px solid var(--bd);border-radius:10px;padding:8px 10px}.bseg summary{cursor:pointer;font-weight:600;font-size:14px}.bnt{display:block;margin:8px 0}.bnt input{width:100%;box-sizing:border-box;text-align:left;margin-top:4px}.bdr{border-top:1px solid var(--bd);padding:8px 0}.bdr summary{cursor:pointer;display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;font-size:14px}.bdr summary{list-style:none;position:relative;padding-right:22px}.bdr summary::-webkit-details-marker{display:none}.bdr summary::after{content:"▾";position:absolute;right:2px;top:2px;color:var(--mu);transition:transform .15s}.bdr[open] summary::after{transform:rotate(180deg)}.bdr summary b{font-weight:700}.bdv{font-variant-numeric:tabular-nums}.bw{display:inline-block;border-radius:99px;padding:2px 9px;font-size:12px;font-weight:700;background:var(--c2);white-space:nowrap}.bw-fast{background:var(--ac);color:var(--on)}.bw-after{background:#f5a524;color:#1a1a1a}.bdl{margin:6px 0 0;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 10px;font-size:14px}.bdl dt{color:var(--mu);min-width:0}.bdl dd{margin:0;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}.bcm{margin:8px 0 4px;font-size:13px}.bdr .r{margin-top:6px}#action-detail{white-space:pre-line}
 </style></head><body><div id="upb" style="display:none;position:fixed;top:calc(8px + env(safe-area-inset-top,0px));left:12px;right:12px;z-index:9;background:var(--ac);color:var(--on);font-weight:700;text-align:center;padding:12px;border-radius:12px;cursor:pointer"></div><div id="storage-warning" role="alert" hidden></div><main id="v"></main><div id="notice" role="status" hidden></div><div id="tm" hidden></div><nav id="nv"></nav>
 <dialog id="action-dialog" aria-labelledby="action-title" aria-describedby="action-detail">
   <h2 id="action-title"></h2><p id="action-detail"></p><input id="action-word" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" hidden><div class="r">
@@ -142,7 +143,7 @@ B:{n:["Upper Body & Core","Haut du corps & Gainage"],y:["Upper-body muscle helps
 C:{n:["Glutes & Legs","Fessiers & Jambes"],y:["2nd weekly lower session for glutes. Optional: 10-15 min incline walk.","2e séance bas du corps pour les fessiers. Option : 10-15 min de marche inclinée."],ex:[["hp",3,8,12,90,3,5],["ssq",3,8,10,90,3,2.5],["ckb",3,12,15,60,2,1.25],["le",2,12,15,60,2,2.5],["pl",3,20,40,45,2,5]]}}};
 const L={en:{hi:"Hi 👋",tod:"Today",recday:"Recovery day: walk or mobility, or pick a workout:",start:"Start workout",est:"~55-60 min incl. 5 min warm-up (light sets of the 1st exercise).",wk7:"sessions in the last 7 days",streak:"week streak",fin:"Finish session",disc:"Discard",discq:"Discard session?",notes:"Session notes",last:"Last",rest:"Rest",guide:"Guide",swap:"Swap",sets:"sets",min:"min",done:"Session done 🎉",close:"Close",prev:"Previous",first:"First time doing this workout.",prs:"🏆 PRs",nopr:"No new weight PR.",plan:"Weekly planner",recov:"Recovery / light activity",lib:"Exercise library",search:"Search name, muscle, equipment",txt:"Text guides only (no demo photos/videos).",setup:"How",avoid:"Avoid",alts:"Alternatives",none:"none",prog:"Progress",vol:"Volume per session (kg)",topw:"Top weight",nod:"No data yet.",two:"Log at least 2 points for a chart.",hd:"Daily tracking & watch",hdn:"Enter manually, or paste data (see help below). Fields: weight kg, steps, resting HR, sleep h.",add:"Save",paste:"Paste CSV: date,weight,steps,rhr,sleep",imp:"Import",hist:"History",nos:"No sessions yet.",del:"Delete",delq:"Delete?",set:"Settings",theme:"Theme",auto:"Auto",bk:"Backup / restore",bkn:"Data stays on this phone only (no cloud sync). Export copies everything; paste it into a note weekly. To restore: paste here and Import.",exp:"Export",ok:"Imported",bad:"Invalid data",nut:"Nutrition",nutt:"Him (~80 kg, muscle gain): about 140-160 g protein/day, e.g. 200 g chicken breast (≈45 g) + 250 g skyr (≈25 g) + 3 eggs (≈18 g) + protein in other meals. Her (fat loss): about 100-120 g/day, same foods in smaller portions, at a mild deficit — no crash diet.",lang:"Language",s5:(w,r)=>`Next step ${w} kg is a jump of more than 10%: keep this weight and aim for ${r} reps on every set, then go up.`,noteph:"Machine settings (e.g. seat 4, back 2)",noteadd:"Add machine settings",wuT:"Warm-up",wuNeed:"enter your working weight to compute it",wuX:"not counted",back1b:"😐 Back: mild discomfort — loads −10% and 1 extra rep in reserve. Stop any exercise that hurts.",back2b:"😣 Back pain — loads −20%, safest variants, no cardio. Stop and see a doctor if the pain spreads into the leg, tingles or gets worse.",bkT:"Back check",bkQ:"Before you start: how is your back today?",bk0:"Fine",bk1:"Mild discomfort",bk2:"Pain",bkx:"This only adapts today's loads. It is not medical advice.",bkL:"Back",noalt:"No alternative for this exercise.",swapBy:"Replace with",today1:"Today",always:"Always",swAlways:n=>`${n} now replaces it in this workout.`,swToday:n=>`${n} for today only.`,busyLast:"It is already the last exercise.",busyDone:n=>`${n} moved to the end.`,busyB:"Machine busy",swapB2:"Replace",fits:m=>`It fits: about ${m} min left.`,fitDone:(n,rm,rs,cd,m)=>`Adapted to ${n} min: ${rm} exercise(s) removed, ${rs} set(s) less${cd?", cardio skipped":""} (about ${m} min).`,tlQ:"How much time do you have left?",tlB:"I only have… left",gmOn:"Guided mode",gmOff:"List",exN:"Exercise",valid:"Log set",allDone:"All sets done",allDoneX:"Finish with cardio if planned, then tap Finish.",planT:"Today's plan",firstEx:"first time",repsW:"reps",same:"same as last time",nxT:"Next time",gymT:"Your gym & your back",backOpt:"Back check before back workouts",backOptX:"Asked only before back workouts (e.g. Back & Arms). On any other day, tap “Back sensitive today?” during the workout to adapt the loads.",bkAsk:"Back sensitive today?",bkQ2:"How is your back?",incT:"Smallest weight step available",incX:"Suggested weights always land on a weight your gym has.",allm:"All muscles",alle:"All equipment",alll:"All levels",bkf:"Back-friendly (no spinal loading)",nores:"No exercise found — change the search or filters.",pfT:"Profile & settings",me:"My info",male:"Man",female:"Woman",age:"Age",hgt:"Height (cm)",wgt:"Weight (kg)",lastw:(w,d)=>`Weight: ${w} kg (last weigh-in, ${d}) — log new weigh-ins in Progress.`,lvl:"Level",beg:"Beginner",int:"Intermediate",adv:"Advanced",tim:"Time per session",act:"Activity outside the gym",aauto:"Auto (steps)",sed:"Sedentary",light:"Light",acti:"Active",very:"Very active",autoS:(s,l)=>`Auto: ~${s} steps/day over 14 days → ${l}`,autoN:"Auto: no steps logged yet → Light (add steps in Progress).",goalT:"Goal",loss:"Fat loss",recomp:"Recomp",maint:"Maintain",gain:"Muscle gain",gx_loss:"Lose fat while keeping muscle: moderate deficit, high protein; strength training stays the priority, cardio is a bonus.",gx_recomp:"Lose a bit of fat and build muscle at near-stable weight. Slower, ideal for beginners.",gx_maint:"Keep your weight, get stronger and fitter.",gx_gain:"Build muscle with a small surplus to limit fat gain (lean bulk).",tw:"Target weight (kg, optional)",proj:(w,d)=>`At your current pace: ${w} kg around ${d}.`,projR:(w,n)=>`At the recommended pace: ${w} kg in about ${n} weeks.`,projX:"Your target is in the opposite direction of this goal — check the goal.",projOk:"You're at your target weight 🎯",nutT:"Nutrition — your numbers",nutNo:"Fill in age, height and weight above to get your numbers.",nutNo2:"🍽 Fill in your profile to get your calories and protein.",more:"See →",kcal:"kcal / day",prot:"Protein / day",carb:"Carbs / day",fat:"Fat / day",wat:"Water",watx:"per day (+0.5 L on training days)",mnt:(a,b)=>`Maintenance ≈ ${a} kcal/day (activity: ${b}).`,flr:"Safety floor applied (never below your resting needs).",adjNow:k=>`Includes your adjustment of ${k>0?"+":""}${k} kcal.`,day:"Example day",bf:"Breakfast",lu:"Lunch",sn:"Snack",di:"Dinner",tot:(k,p)=>`Total ≈ ${k} kcal · ${p} g protein`,swapx:"Swap freely: chicken ↔ turkey; fish ↔ lean beef 5% ↔ tofu; rice ↔ pasta, or potatoes (×1.5 the weight).",advT:"Auto-adjustment from your weight curve",adv0:"Weigh yourself 3-4×/week, morning, before breakfast (Progress tab). After 2 weeks the app compares your trend with your goal and suggests an adjustment.",advR:(r,lo,hi)=>`Your trend: ${r} kg/week (7-day averages). Target for your goal: ${lo} to ${hi} kg/week.`,advOk:"✅ On track — change nothing.",advUpL:"⚠️ Losing too fast (risk of losing muscle): +150 kcal/day, e.g. 1 banana + 1 plain yogurt.",advDnL:"⚠️ Losing too slowly: −150 kcal/day, e.g. 1 tbsp oil less + 1 fruit less.",advUpG:"⚠️ Not gaining enough: +150 kcal/day, e.g. 25 g almonds or 100 g more cooked rice.",advDnG:"⚠️ Gaining too fast (mostly fat): −150 kcal/day, e.g. 1 tbsp oil less + 1 fruit less.",advUp:"⚠️ Weight dropping: +150 kcal/day, e.g. 1 banana + 1 plain yogurt.",advDn:"⚠️ Weight rising: −150 kcal/day, e.g. 1 tbsp oil less + 1 fruit less.",apply:d=>`Apply ${d>0?"+":""}${d} kcal/day`,wait:n=>`Recent adjustment: wait ${n} more day(s) before judging again.`,adjRst:"Reset adjustment to 0",ndisc:"Estimates, not medical advice. The scale over 2-3 weeks has the final word.",msT:"Body measurements",msx:"Every 2-4 weeks, same time of day, tape snug but not tight. Waist at the navel.",msNo:"Add your measurements in the Profile tab.",need2:"Enter at least one measurement",m_wa:"Waist",m_hi:"Hips",m_ch:"Chest",m_sh:"Shoulders",m_ar:"Arm",m_th:"Thigh",m_bf:"Body fat %",s_wa:"Waist",s_hi:"Hips",s_ch:"Chest",s_sh:"Shoul.",s_ar:"Arm",s_th:"Thigh",s_bf:"% fat",ratio:"Shoulder / waist ratio",ratx:"classic physique aesthetic target ≈ 1.6",cdT:"Cardio (optional)",cdx:"Incline walk or bike, moderate effort (you can still talk). Fat loss comes mostly from food; this helps a bit. Log the minutes and tap ✓.",cdl:"Cardio",trim:(n,m)=>`Adapted to ${m} min: ${n} accessory exercise(s) removed.`,addS:"+1 set on the first 2 exercises (75 min / advanced).",begx:"Beginner: 1 extra rep in reserve to learn the moves.",durE:m=>`≈ ${m} min including 5 min warm-up (light sets of the 1st exercise).`,todN:(k,p)=>`🍽 Today: ~${k} kcal · ${p} g protein`,s1b:"Bodyweight: log your reps (or seconds); weight is optional.",s2b:"Top of range on all sets: add a little load or a harder variation.",s3b:h=>`Beat your reps (goal ${h} on every set).`,opt:"kg (opt.)",one2:"1st data point — the curve appears from the 2nd one.",edit:"Edit",edh:"Change weight/reps; clear the reps to delete a set.",save:"Save",cancel:"Cancel",date:"Date",exs:"exercises",rst:"Erase this profile's data",rstx:"Deletes all sessions, tracking and settings of the selected profile only (e.g. to remove test data). Export first if unsure.",rq1:"Erase ALL data of this profile?",rq2:"Really? This cannot be undone.",upd:"New version available — tap to update (your session is kept)",p4:"4 wk",p12:"3 mo",pall:"All",sess:"Sessions",perw:"/ week avg",vol2:"Volume lifted",dw:"Weight change",str:"Strength",e1:"Est. 1-rep max",e1x:"Est. 1-rep max = the heaviest single rep you could do, estimated from your best set. Best way to compare 8 reps vs 12 reps.",top:"Top weight",rec:"Progress per exercise",exn:"Exercise",start2:"First",best:"Best",vw:"Weekly volume (kg)",fw:"Sessions per week",wof:"Week of",goal:"Goal",mus:"Sets per muscle — last 7 days",musM:"Priority muscles (shoulders, back, chest): aim for ~10-20 hard sets/week.",musF:"Glutes & legs: aim for ~8-15 sets/week; the rest ~6-10.",raw:"Weigh-in",avg7:"7-day avg",go:"Rest over — next set! 💪",swq:"Swapping resets this exercise's logged sets. Continue?",cp:"Copied to clipboard — paste it into a note.",need:"Enter weight and reps first",nolog:"No sets logged. Discard session?",wt:"Weight",st:"Steps",hr:"Resting HR",sl:"Sleep h",tab:["Workout","Plan","Library","Progress","History","Profile"],him:"Him",her:"Her",s1:r=>`First time: choose a weight leaving ${r} reps in reserve.`,s2:i=>`Top of range on all sets: +${i} kg if form was clean.`,s3:(w,h)=>`Keep ${w} kg, beat your reps (goal ${h} on every set).`,s4:"Missed the range twice: deload ~10%."},
 fr:{hi:"Salut 👋",tod:"Aujourd'hui",recday:"Jour de récupération : marche ou mobilité, ou choisis une séance :",start:"Commencer la séance",est:"~55-60 min avec 5 min d'échauffement (séries légères du 1er exercice).",wk7:"séances sur les 7 derniers jours",streak:"semaines d'affilée",fin:"Terminer la séance",disc:"Abandonner",discq:"Abandonner la séance ?",notes:"Notes de séance",last:"Dernière fois ",rest:"Repos",guide:"Guide",swap:"Remplacer",sets:"séries",min:"min",done:"Séance terminée 🎉",close:"Fermer",prev:"Précédente",first:"Première fois sur cette séance.",prs:"🏆 Records",nopr:"Pas de nouveau record de charge.",plan:"Planning de la semaine",recov:"Récupération / activité légère",lib:"Bibliothèque d'exercices",search:"Chercher nom, muscle, matériel",txt:"Guides texte uniquement (pas de photos/vidéos).",setup:"Exécution",avoid:"À éviter",alts:"Alternatives",none:"aucune",prog:"Progression",vol:"Volume par séance (kg)",topw:"Charge max",nod:"Pas encore de données.",two:"Il faut au moins 2 points pour un graphique.",hd:"Suivi quotidien & montre",hdn:"Saisie manuelle, ou colle tes données (voir l'aide plus bas). Champs : poids kg, pas, FC repos, sommeil h.",add:"Enregistrer",paste:"Coller un CSV : date,poids,pas,fc,sommeil",imp:"Importer",hist:"Historique",nos:"Aucune séance pour l'instant.",del:"Supprimer",delq:"Supprimer ?",set:"Réglages",theme:"Thème",auto:"Auto",bk:"Sauvegarde / restauration",bkn:"Les données restent sur ce téléphone (pas de synchro cloud). Exporter copie tout ; colle-le dans une note chaque semaine. Pour restaurer : colle ici puis Importer.",exp:"Exporter",ok:"Importé",bad:"Données invalides",nut:"Nutrition",nutt:"Lui (~80 kg, prise de muscle) : environ 140-160 g de protéines/jour, par ex. 200 g de blanc de poulet (≈45 g) + 250 g de skyr (≈25 g) + 3 œufs (≈18 g) + les protéines des autres repas. Elle (perte de gras) : environ 100-120 g/jour, mêmes aliments en plus petites portions, avec un léger déficit — pas de régime extrême.",lang:"Langue",s5:(w,r)=>`Le palier suivant (${w} kg) est un saut de plus de 10 % : garde cette charge et vise ${r} reps sur chaque série, puis monte.`,noteph:"Réglages machine (ex. siège 4, dossier 2)",noteadd:"Ajouter les réglages machine",wuT:"Échauffement",wuNeed:"entre ta charge de travail pour le calculer",wuX:"non compté",back1b:"😐 Dos : gêne légère — charges −10 % et 1 rep de plus en réserve. Arrête tout exercice qui fait mal.",back2b:"😣 Douleur au dos — charges −20 %, variantes les plus sûres, pas de cardio. Arrête et consulte si la douleur descend dans la jambe, fourmille ou s'aggrave.",bkT:"Bilan dos",bkQ:"Avant de commencer : comment va ton dos aujourd'hui ?",bk0:"Ça va",bk1:"Gêne légère",bk2:"Douleur",bkx:"Ça adapte seulement les charges du jour. Ce n'est pas un avis médical.",bkL:"Dos",noalt:"Pas d'alternative pour cet exercice.",swapBy:"Remplacer par",today1:"Aujourd'hui",always:"Toujours",swAlways:n=>`${n} le remplace désormais dans cette séance.`,swToday:n=>`${n} pour aujourd'hui seulement.`,busyLast:"C'est déjà le dernier exercice.",busyDone:n=>`${n} déplacé à la fin.`,busyB:"Machine occupée",swapB2:"Remplacer",fits:m=>`Ça rentre : environ ${m} min restantes.`,fitDone:(n,rm,rs,cd,m)=>`Adapté à ${n} min : ${rm} exercice(s) retiré(s), ${rs} série(s) en moins${cd?", cardio retiré":""} (≈ ${m} min).`,tlQ:"Combien de temps te reste-t-il ?",tlB:"Il me reste…",gmOn:"Mode guidé",gmOff:"Liste",exN:"Exercice",valid:"Valider la série",allDone:"Toutes les séries sont faites",allDoneX:"Termine par le cardio s'il est prévu, puis touche Terminer.",planT:"Plan du jour",firstEx:"première fois",repsW:"reps",same:"comme la dernière fois",nxT:"La prochaine fois",gymT:"Ta salle & ton dos",backOpt:"Bilan dos avant les séances dos",backOptX:"Demandé seulement avant les séances dos (ex. Dos & Bras). Les autres jours, touche « Dos sensible aujourd'hui ? » pendant la séance pour adapter les charges.",bkAsk:"Dos sensible aujourd'hui ?",bkQ2:"Comment va ton dos ?",incT:"Plus petit saut de charge disponible",incX:"Les charges proposées tombent toujours sur un poids qui existe dans ta salle.",allm:"Tous muscles",alle:"Tout matériel",alll:"Tous niveaux",bkf:"Ménage le dos (sans charge sur la colonne)",nores:"Aucun exercice trouvé — change la recherche ou les filtres.",pfT:"Profil & réglages",me:"Mes infos",male:"Homme",female:"Femme",age:"Âge",hgt:"Taille (cm)",wgt:"Poids (kg)",lastw:(w,d)=>`Poids : ${w} kg (dernière pesée, ${d}) — ajoute tes pesées dans Progrès.`,lvl:"Niveau",beg:"Débutant",int:"Intermédiaire",adv:"Avancé",tim:"Temps par séance",act:"Activité hors salle",aauto:"Auto (pas)",sed:"Sédentaire",light:"Légère",acti:"Active",very:"Très active",autoS:(s,l)=>`Auto : ~${s} pas/jour sur 14 jours → ${l}`,autoN:"Auto : pas encore de pas enregistrés → Légère (ajoute tes pas dans Progrès).",goalT:"Objectif",loss:"Perte de gras",recomp:"Recompo",maint:"Maintien",gain:"Prise de muscle",gx_loss:"Perdre du gras en gardant le muscle : déficit modéré, beaucoup de protéines ; la muscu reste la priorité, le cardio est un bonus.",gx_recomp:"Perdre un peu de gras et prendre du muscle à poids quasi stable. Plus lent, idéal en débutant.",gx_maint:"Garder ton poids, gagner en force et en forme.",gx_gain:"Prendre du muscle avec un léger surplus pour limiter le gras (prise sèche).",tw:"Poids cible (kg, optionnel)",proj:(w,d)=>`À ton rythme actuel : ${w} kg vers ${d}.`,projR:(w,n)=>`Au rythme conseillé : ${w} kg dans ~${n} semaines.`,projX:"Ton poids cible va dans le sens inverse de cet objectif — vérifie l'objectif.",projOk:"Tu es à ton poids cible 🎯",nutT:"Nutrition — tes chiffres",nutNo:"Complète âge, taille et poids ci-dessus pour obtenir tes chiffres.",nutNo2:"🍽 Complète ton profil pour avoir tes calories et protéines.",more:"Voir →",kcal:"kcal / jour",prot:"Protéines / jour",carb:"Glucides / jour",fat:"Lipides / jour",wat:"Eau",watx:"par jour (+0,5 L les jours de séance)",mnt:(a,b)=>`Maintien ≈ ${a} kcal/jour (activité : ${b}).`,flr:"Plancher de sécurité appliqué (jamais sous tes besoins au repos).",adjNow:k=>`Inclut ton ajustement de ${k>0?"+":""}${k} kcal.`,day:"Exemple de journée",bf:"Petit-déj",lu:"Déjeuner",sn:"Collation",di:"Dîner",tot:(k,p)=>`Total ≈ ${k} kcal · ${p} g de protéines`,swapx:"Remplace librement : poulet ↔ dinde ; poisson ↔ bœuf 5 % ↔ tofu ; riz ↔ pâtes, ou pommes de terre (×1,5 en poids).",advT:"Ajustement auto selon ta courbe de poids",adv0:"Pèse-toi 3-4×/semaine, le matin à jeun (onglet Progrès). Après 2 semaines, l'app compare ta tendance à ton objectif et propose un ajustement.",advR:(r,lo,hi)=>`Ta tendance : ${r} kg/semaine (moyennes sur 7 jours). Cible pour ton objectif : entre ${lo} et ${hi} kg/semaine.`,advOk:"✅ Dans la cible — ne change rien.",advUpL:"⚠️ Tu perds trop vite (risque de perdre du muscle) : +150 kcal/jour, ex. 1 banane + 1 yaourt nature.",advDnL:"⚠️ Perte trop lente : −150 kcal/jour, ex. 1 c. à soupe d'huile en moins + 1 fruit en moins.",advUpG:"⚠️ Tu ne prends pas assez : +150 kcal/jour, ex. 25 g d'amandes ou 100 g de riz cuit en plus.",advDnG:"⚠️ Prise trop rapide (surtout du gras) : −150 kcal/jour, ex. 1 c. à soupe d'huile en moins + 1 fruit en moins.",advUp:"⚠️ Ton poids baisse : +150 kcal/jour, ex. 1 banane + 1 yaourt nature.",advDn:"⚠️ Ton poids monte : −150 kcal/jour, ex. 1 c. à soupe d'huile en moins + 1 fruit en moins.",apply:d=>`Appliquer ${d>0?"+":""}${d} kcal/jour`,wait:n=>`Ajustement récent : attends encore ${n} jour(s) avant de rejuger.`,adjRst:"Remettre l'ajustement à 0",ndisc:"Estimations, pas un avis médical. La balance sur 2-3 semaines a le dernier mot.",msT:"Mensurations",msx:"Toutes les 2-4 semaines, même moment de la journée, mètre ruban ajusté sans serrer. Taille au niveau du nombril.",msNo:"Ajoute tes mensurations dans l'onglet Profil.",need2:"Entre au moins une mesure",m_wa:"Tour de taille",m_hi:"Hanches",m_ch:"Poitrine",m_sh:"Épaules",m_ar:"Bras",m_th:"Cuisse",m_bf:"% de gras",s_wa:"Taille",s_hi:"Hanch.",s_ch:"Poitr.",s_sh:"Épaul.",s_ar:"Bras",s_th:"Cuisse",s_bf:"% gras",ratio:"Ratio épaules / taille",ratx:"cible esthétique « classic physique » ≈ 1,6",cdT:"Cardio (optionnel)",cdx:"Marche inclinée ou vélo, effort modéré (tu peux encore parler). La perte de gras vient surtout de l'alimentation ; ça aide un peu. Note les minutes puis ✓.",cdl:"Cardio",trim:(n,m)=>`Adapté à ${m} min : ${n} exercice(s) d'appoint retiré(s).`,addS:"+1 série sur les 2 premiers exercices (75 min / avancé).",begx:"Débutant : 1 rep de plus en réserve pour apprendre les mouvements.",durE:m=>`≈ ${m} min avec 5 min d'échauffement (séries légères du 1er exercice).`,todN:(k,p)=>`🍽 Aujourd'hui : ~${k} kcal · ${p} g de protéines`,s1b:"Poids du corps : note tes reps (ou secondes) ; le poids est facultatif.",s2b:"Haut de la fourchette sur toutes les séries : ajoute un peu de charge ou une variante plus dure.",s3b:h=>`Bats tes reps (objectif ${h} sur chaque série).`,opt:"kg (option)",one2:"1re mesure — la courbe apparaît dès la 2e.",edit:"Modifier",edh:"Corrige charge/reps ; vide les reps pour supprimer une série.",save:"Enregistrer",cancel:"Annuler",date:"Date",exs:"exercices",rst:"Effacer les données de ce profil",rstx:"Supprime toutes les séances, le suivi et les réglages du profil sélectionné uniquement (ex. pour retirer les données de test). Exporte d'abord en cas de doute.",rq1:"Effacer TOUTES les données de ce profil ?",rq2:"Vraiment ? C'est irréversible.",upd:"Nouvelle version dispo — touche pour mettre à jour (ta séance est conservée)",p4:"4 sem",p12:"3 mois",pall:"Tout",sess:"Séances",perw:"/ sem en moy.",vol2:"Volume soulevé",dw:"Évolution poids",str:"Force",e1:"1RM estimé",e1x:"1RM estimé = la charge max que tu pourrais soulever 1 fois, calculée depuis ta meilleure série. Permet de comparer 8 reps et 12 reps.",top:"Charge max",rec:"Progrès par exercice",exn:"Exercice",start2:"Début",best:"Record",vw:"Volume par semaine (kg)",fw:"Séances par semaine",wof:"Semaine du",goal:"Objectif",mus:"Séries par muscle — 7 derniers jours",musM:"Muscles prioritaires (épaules, dos, pecs) : vise ~10-20 séries dures/semaine.",musF:"Fessiers & jambes : vise ~8-15 séries/semaine ; le reste ~6-10.",raw:"Pesée",avg7:"Moy. 7 j",go:"Repos terminé — série suivante ! 💪",swq:"Remplacer efface les séries déjà notées pour cet exercice. Continuer ?",cp:"Copié — colle-le dans une note.",need:"Entre d'abord la charge et les reps",nolog:"Aucune série notée. Abandonner ?",wt:"Poids",st:"Pas",hr:"FC repos",sl:"Sommeil h",tab:["Séance","Planning","Exercices","Progrès","Historique","Profil"],him:"Lui",her:"Elle",s1:r=>`Première fois : choisis une charge en gardant ${r} reps en réserve.`,s2:i=>`Haut de la fourchette sur toutes les séries : +${i} kg si la technique était propre.`,s3:(w,h)=>`Garde ${w} kg, bats tes reps (objectif ${h} sur chaque série).`,s4:"Fourchette ratée 2 fois : baisse de ~10 % (décharge)."}};
-const mk=()=>({logs:[],sched:{1:"A",3:"B",5:"C"},hd:[],ms:[],sub:{},notes:{},draw:{},cur:null});
+const mk=()=>({logs:[],sched:{1:"A",3:"B",5:"C"},hd:[],ms:[],body:[],sub:{},notes:{},draw:{},cur:null});
 const defaultLanguage=(navigator.language||"fr").startsWith("fr")?"fr":"en";
 const freshState=()=>({p:"M",th:"",lg:defaultLanguage,bk:{at:null,snz:null},d:{M:mk(),F:mk()}});
 let S=freshState(), lastStored=null, unreadable=false;
@@ -184,6 +185,56 @@ Object.assign(L.en,{
   restoreQ:"Restore this backup?",restoreDetail:"Both profiles will be replaced by the ones in this backup.",
   validDate:"Enter a valid date no later than today.",invalidValues:"Check the values you entered.",needTracking:"Enter at least one value.",
   totalLogs:"in total",copymanual:"The backup is selected. Copy it to keep it."
+});
+Object.assign(L.fr,{
+  bT:"Composition corporelle · Tanita",bX:"Note les valeurs de ta balance, même partielles. Ne compare que des relevés pris dans les mêmes conditions — le plus fiable : le matin à jeun, avant de boire et de t’entraîner.",
+  bAdd:"Ajouter un relevé",bEditT:"Modifier le relevé",bWhenT:"Conditions de mesure",
+  bw_fast:"Matin à jeun",bw_before:"Avant séance",bw_after:"Après séance",bw_other:"Autre moment",
+  bwx_fast:"La référence : la mesure la plus fiable pour suivre ton évolution.",bwx_before:"Comparable aux autres relevés « avant séance », idéalement à la même heure.",
+  bwx_after:"Moins fiable : sueur, chaleur du corps et eau bue faussent la mesure. Compare-le seulement à d’autres relevés « après séance ».",
+  bwx_other:"Précise le contexte dans la note (ex. soir, après un repas).",bwx_none:"Choisis le moment de la mesure : il reste affiché dans l’historique.",
+  bMainT:"Remplis seulement ce que tu as",bWeight:"Poids",bFat:"Masse grasse",bMus:"Masse musculaire",bBmr:"Métabolisme de base",bKcal:"kcal/jour",
+  bHelp:"Métabolisme de base : la Tanita l’affiche en kJ et en kcal, saisis les kcal. Sa « masse musculaire » compte tout ce qui n’est ni gras ni os (muscles, organes, eau) : suis son évolution plutôt que sa valeur.",
+  bSegT:"Tronc, bras et jambes (facultatif)",bSegM:"Muscle",bSegF:"Graisse",
+  seg_trunk:"Tronc",seg_leftArm:"Bras gauche",seg_rightArm:"Bras droit",seg_leftLeg:"Jambe gauche",seg_rightLeg:"Jambe droite",
+  bNote:"Note (facultatif)",bNoteP:"ex. après 1 L d’eau",
+  bNeedWhen:"Choisis les conditions de mesure (ex. Après séance).",bNeedOne:"Saisis au moins une valeur.",
+  bNaN:(l,v)=>`${l} : « ${v} » n’est pas un nombre.`,bRange:(l,a,b)=>`${l} : valeur hors plage (de ${a} à ${b}).`,
+  bOver:(l,v,w)=>`${l} : ${v} kg, c’est plus que le poids (${w} kg).`,bKj:(v,k)=>`Métabolisme de base : ${v} ressemble à des kJ. Saisis la valeur en kcal (≈ ${k} kcal).`,
+  bChkQ:"Ces valeurs ne collent pas",bChkKg:(l,p,w,e,s)=>`${l} : ${p} % de ${w} kg = ${e} kg, or tu as saisi ${s} kg.`,
+  bChk100:(a,b)=>`Masse grasse ${a} % + masse musculaire ${b} % dépassent 100 %.`,bChkSeg:(s,m)=>`Tronc + bras + jambes = ${s} kg de muscle, mais le total saisi est ${m} kg.`,
+  bChkX:"Une faute de frappe ? (ex. kg et % inversés)",bSaveAny:"Enregistrer quand même",bFix:"Corriger",
+  bSaved:"Relevé enregistré.",bUpd:"Relevé modifié.",bDeleted:"Relevé supprimé.",bDelQ:"Supprimer ce relevé ?",
+  bHist:n=>`Historique · ${n} relevé${n>1?"s":""}`,bAll:n=>`Tout afficher (${n})`,
+  bS_fat:"gras",bS_mus:"muscle",bWs:"poids",bFs:"gras",bPs:"% gras",bMs:"muscle",bPt:"pt",
+  bCmp:(d,s)=>`Depuis le ${d}, mêmes conditions : ${s}`,bCmp0:d=>`Relevé précédent dans les mêmes conditions : ${d} (aucune valeur commune à comparer).`,
+  bCmpX:(d,a,w)=>`Pas encore d’autre relevé « ${w} ». Celui du ${d} a été pris « ${a} » : pas directement comparable.`,
+  bFirst:w=>`Premier relevé « ${w} ». Pour comparer, refais-le dans les mêmes conditions.`
+});
+Object.assign(L.en,{
+  bT:"Body composition · Tanita",bX:"Log your scale's values, even partial ones. Only compare readings taken under the same conditions — most reliable: morning, fasted, before drinking and training.",
+  bAdd:"Add a reading",bEditT:"Edit reading",bWhenT:"Measurement conditions",
+  bw_fast:"Morning, fasted",bw_before:"Before workout",bw_after:"After workout",bw_other:"Other time",
+  bwx_fast:"The reference: the most reliable reading to follow your progress.",bwx_before:"Comparable with your other “before workout” readings, ideally at the same time of day.",
+  bwx_after:"Less reliable: sweat, body heat and water drunk skew the reading. Only compare it with other “after workout” readings.",
+  bwx_other:"Add the context in the note (e.g. evening, after a meal).",bwx_none:"Choose when you measured: it stays visible in the history.",
+  bMainT:"Fill in only what you have",bWeight:"Weight",bFat:"Fat mass",bMus:"Muscle mass",bBmr:"Basal metabolic rate",bKcal:"kcal/day",
+  bHelp:"Basal metabolic rate: the Tanita shows kJ and kcal, enter the kcal. Its “muscle mass” counts everything that is neither fat nor bone (muscle, organs, water): follow its trend rather than its value.",
+  bSegT:"Trunk, arms and legs (optional)",bSegM:"Muscle",bSegF:"Fat",
+  seg_trunk:"Trunk",seg_leftArm:"Left arm",seg_rightArm:"Right arm",seg_leftLeg:"Left leg",seg_rightLeg:"Right leg",
+  bNote:"Note (optional)",bNoteP:"e.g. after 1 L of water",
+  bNeedWhen:"Choose the measurement conditions (e.g. After workout).",bNeedOne:"Enter at least one value.",
+  bNaN:(l,v)=>`${l}: “${v}” is not a number.`,bRange:(l,a,b)=>`${l}: value out of range (${a} to ${b}).`,
+  bOver:(l,v,w)=>`${l}: ${v} kg is more than the weight (${w} kg).`,bKj:(v,k)=>`Basal metabolic rate: ${v} looks like kJ. Enter the kcal value (≈ ${k} kcal).`,
+  bChkQ:"These values don't add up",bChkKg:(l,p,w,e,s)=>`${l}: ${p} % of ${w} kg = ${e} kg, but you entered ${s} kg.`,
+  bChk100:(a,b)=>`Fat ${a} % + muscle ${b} % add up to more than 100 %.`,bChkSeg:(s,m)=>`Trunk + arms + legs = ${s} kg of muscle, but the total entered is ${m} kg.`,
+  bChkX:"A typo? (e.g. kg and % swapped)",bSaveAny:"Save anyway",bFix:"Fix it",
+  bSaved:"Reading saved.",bUpd:"Reading updated.",bDeleted:"Reading deleted.",bDelQ:"Delete this reading?",
+  bHist:n=>`History · ${n} reading${n>1?"s":""}`,bAll:n=>`Show all (${n})`,
+  bS_fat:"fat",bS_mus:"muscle",bWs:"weight",bFs:"fat",bPs:"fat %",bMs:"muscle",bPt:"pt",
+  bCmp:(d,s)=>`Since ${d}, same conditions: ${s}`,bCmp0:d=>`Previous reading under the same conditions: ${d} (no value in common to compare).`,
+  bCmpX:(d,a,w)=>`No other “${w}” reading yet. The one on ${d} was taken “${a}”: not directly comparable.`,
+  bFirst:w=>`First “${w}” reading. To compare, repeat it under the same conditions.`
 });
 Object.assign(L.en,{
   rampT:"Ramp-up sets",wuShow:"show",wuThen:"Then do the ramp-up sets shown on the first exercise.",wuClose:"Warm-up done",
@@ -341,7 +392,7 @@ function readState(raw){
       if(log.cardio!=null){requireData(nonnegative(+log.cardio));log.cardio=+log.cardio}
       if(log.nx!=null&&!isRecord(log.nx))delete log.nx;if(log.xt!=null&&!(Array.isArray(log.xt)&&log.xt.every(q=>isRecord(q)&&Array.isArray(q.ids)&&q.ids.every(x=>known(E,x))&&nonnegative(q.sec)&&nonnegative(q.plan))))delete log.xt;
     }
-    profile.logs.sort((a,b)=>a.date-b.date);
+    profile.logs.sort((a,b)=>a.date-b.date);profile.body=cleanBody(profile.body);
     const c=profile.cur;
     if(c!=null){
       requireData(isRecord(c)&&known(P[key],c.wk)&&Number.isFinite(c.start)&&isRecord(c.ex));
@@ -377,7 +428,7 @@ function askAction(title,detail,accept,callback,cancel=t("cancel"),opts={}){
   pendingAction=callback;dialog.showModal();(opts.word?word:$("action-cancel")).focus();
 }
 function clearView(){
-  closeAction();Object.assign(U,{ed:null,sum:null,open:-1,pick:null,ex:"",gi:null,sw:null,note:null,tl:false,chk:null,bk:false,wuo:0,rf:null,rfy:false,add:0,addg:"",lcx:0});
+  closeAction();Object.assign(U,{bd:null,bo:null,ball:false,ed:null,sum:null,open:-1,pick:null,ex:"",gi:null,sw:null,note:null,tl:false,chk:null,bk:false,wuo:0,rf:null,rfy:false,add:0,addg:"",lcx:0});
 }
 function applyStorage(raw){
   const next=raw===null?freshState():readState(raw);
@@ -1249,12 +1300,12 @@ function setUndo(key,v){const u=undoAll();if(v)u[key]=v;else delete u[key];for(c
   try{Object.keys(u).length?localStorage.setItem(UNDO_KEY,JSON.stringify(u)):localStorage.removeItem(UNDO_KEY);return true}catch{return false}}
 function eraseProfile(){
   const key=S.p,name=t(key==="M"?"him":"her"),d=S.d[key];
-  askAction(t("rq1n")(name),t("rqD")(d.logs.length,d.ms.length+d.hd.length),t("cont"),()=>askAction(t("rq2"),t("rqW")(t("eraseWord")),t("del"),()=>{
+  askAction(t("rq1n")(name),t("rqD")(d.logs.length,d.ms.length+d.hd.length+(d.body||[]).length),t("cont"),()=>askAction(t("rq2"),t("rqW")(t("eraseWord")),t("del"),()=>{
     const previous=S.d[key],fresh={...mk(),pf:{...PFD[key]}};
     const kept=setUndo(key,{at:Date.now(),d:JSON.parse(JSON.stringify(previous))});
     S.d[key]=fresh;
     if(!save()){if(S.d[key]===fresh)S.d[key]=previous;setUndo(key,null);return}
-    clearView();navigate("today");notice(kept?t("erasedN")(fd(Date.now()+UNDO_DAYS*864e5)):t("erasedX"));
+    bdDrop(key);clearView();navigate("today");notice(kept?t("erasedN")(fd(Date.now()+UNDO_DAYS*864e5)):t("erasedX"));
   },t("cancel"),{word:t("eraseWord"),danger:true}),t("cancel"));
 }
 function undoErase(){const key=S.p,u=undoOf(key);if(!u)return;
@@ -1545,6 +1596,133 @@ function nutH(){const pf=D().pf,n=nut();if(!n)return`<b>${t("nutT")}</b><p class
  <p class=lb>${t("advT")}</p>${!ad.tr?`<p class=mu>${t("adv0")}</p>`:`<p class=ts>${t("advR")((ad.tr.rate>0?"+":"")+f1(ad.tr.rate),f1(ad.lo),f1(ad.hi))}</p><p>${ad.d==0?t("advOk"):t((ad.d>0?"advUp":"advDn")+(pf.goal=="loss"?"L":pf.goal=="gain"?"G":""))}</p>${ad.d&&!ad.wait?`<button class="p w" onclick="adjK(${ad.d})">${t("apply")(ad.d)}</button>`:""}${ad.d&&ad.wait?`<p class=mu>${t("wait")(ad.wait)}</p>`:""}`}
  ${pf.kadj?`<button class=w onclick="D().pf.kadj=0;D().pf.kat=0;save();go()">${t("adjRst")}</button>`:""}<p class=mu style=margin-top:10px>${t("ndisc")}</p>`}
 function pfLive(){const a=document.getElementById("pjx"),b=document.getElementById("nutc");if(a)a.innerHTML=pjH();if(b)b.innerHTML=nutH()}
+// ===== Body composition (Tanita) — partial readings, measurement conditions kept visible, per profile =====
+const BSEG=["trunk","leftArm","rightArm","leftLeg","rightLeg"],BWHEN=["fast","before","after","other"];
+const BF={weight:[20,350],fatKg:[.5,250],fatPct:[2,75],muscleKg:[5,200],musclePct:[15,98],bmr:[500,5000]};
+for(const g of BSEG){BF[g+"Muscle"]=[.2,80];BF[g+"Fat"]=[1,75]}
+const BKEYS=Object.keys(BF),BKG=["fatKg","muscleKg",...BSEG.map(g=>g+"Muscle")];
+const bUnit=k=>k==="bmr"?t("bKcal"):/(Pct|Fat)$/.test(k)?"%":"kg";
+const bName=k=>({weight:t("bWeight"),fatKg:t("bFat"),fatPct:t("bFat"),muscleKg:t("bMus"),musclePct:t("bMus"),bmr:t("bBmr")})[k]||(t("seg_"+k.replace(/(Muscle|Fat)$/,""))+" · "+t(k.endsWith("Fat")?"bSegF":"bSegM"));
+const bLabel=k=>bName(k)+" ("+bUnit(k)+")";
+const bIn0=v=>String(v).replace(".",S.lg=="fr"?",":".");
+const bDate=d=>{const x=dms(d);if(x==null)return d;const o={day:"numeric",month:"short"};if(new Date(x).getFullYear()!==new Date().getFullYear())o.year="numeric";return new Date(x).toLocaleDateString(S.lg,o)};
+const bSg=v=>(v>0?"+":v<0?"−":"±")+f1(Math.abs(v));
+function cleanBody(rows){
+  if(!Array.isArray(rows))return[];const ids=new Set(),out=[];
+  rows.forEach((r,i)=>{
+    if(!isRecord(r)||dms(r.d)===null)return;
+    let id=typeof r.id==="string"&&r.id&&r.id.length<40?r.id:"b-"+r.d+"-"+i;while(ids.has(id))id+="x";
+    const o={id,d:r.d,when:BWHEN.includes(r.when)?r.when:"other"};
+    for(const k of BKEYS){if(r[k]==null||r[k]==="")continue;const v=+r[k];if(Number.isFinite(v)&&v>=BF[k][0]&&v<=BF[k][1])o[k]=v}
+    if(o.weight!=null)for(const k of BKG)if(o[k]!=null&&o[k]>o.weight)delete o[k];
+    if(typeof r.note==="string"&&r.note.trim())o.note=r.note.trim().slice(0,80);
+    if(BKEYS.some(k=>o[k]!=null)){ids.add(id);out.push(o)}
+  });
+  return out.sort((a,b)=>a.d.localeCompare(b.d));
+}
+// unsaved form survives iOS reloading the page (e.g. switching to Photos to read the scale picture); one draft per profile, never in backups
+const BDK="duofit-body-draft";
+function bdAll(){try{const v=JSON.parse(localStorage.getItem(BDK)||"{}");return isRecord(v)?v:{}}catch{return{}}}
+function bdWrite(a){try{Object.keys(a).length?localStorage.setItem(BDK,JSON.stringify(a)):localStorage.removeItem(BDK)}catch{}}
+function bdStore(){const a=bdAll();if(U.bd)a[S.p]=U.bd;else delete a[S.p];bdWrite(a)}
+function bdDrop(key){const a=bdAll();delete a[key];bdWrite(a);if(key===S.p)U.bd=null}
+function bdLoad(){
+  if(U.bd)return U.bd;const v=bdAll()[S.p];if(!isRecord(v))return null;
+  const vals=isRecord(v.v)?Object.fromEntries(Object.entries(v.v).filter(([k,x])=>BKEYS.includes(k)&&typeof x==="string")):{};
+  U.bd={id:typeof v.id==="string"&&D().body.some(r=>r.id===v.id)?v.id:null,d:typeof v.d==="string"?v.d:tday(),when:BWHEN.includes(v.when)?v.when:"",v:vals,note:typeof v.note==="string"?v.note.slice(0,80):"",seg:!!v.seg};
+  return U.bd;
+}
+function bOpen(id){
+  const r=id?D().body.find(x=>x.id===id):null;
+  U.bd={id:r?r.id:null,d:r?r.d:tday(),when:r?r.when:"",v:r?Object.fromEntries(BKEYS.filter(k=>r[k]!=null).map(k=>[k,bIn0(r[k])])):{},note:r&&r.note||"",seg:!!r&&BSEG.some(g=>r[g+"Muscle"]!=null||r[g+"Fat"]!=null)};
+  bdStore();go();const f=$("bdf");if(f&&f.scrollIntoView)f.scrollIntoView({block:"start"});
+}
+function bIn(k,v){const b=U.bd;if(!b)return;if(k==="d")b.d=v;else if(k==="note")b.note=String(v).slice(0,80);else b.v[k]=v;
+  const el=$("b_"+k);if(el)el.removeAttribute("aria-invalid");bdStore()}
+function bWhen(w){if(!U.bd||!BWHEN.includes(w))return;U.bd.when=w;bdStore();go()}
+function bCancel(){U.bd=null;bdStore();go()}
+function bBad(k,msg){notice(msg);const el=$("b_"+k);if(!el)return;if(BSEG.some(g=>k.startsWith(g))){const s=el.closest("details");if(s)s.open=true}el.setAttribute("aria-invalid","true");el.focus()}
+function bChecks(r){const w=[];
+  if(r.weight!=null)for(const [kg,pc,l] of [["fatKg","fatPct",t("bFat")],["muscleKg","musclePct",t("bMus")]])
+    if(r[kg]!=null&&r[pc]!=null){const e=r.weight*r[pc]/100;if(Math.abs(e-r[kg])>.6)w.push(t("bChkKg")(l,f1(r[pc]),f1(r.weight),f1(e),f1(r[kg])))}
+  if(r.fatPct!=null&&r.musclePct!=null&&r.fatPct+r.musclePct>100.5)w.push(t("bChk100")(f1(r.fatPct),f1(r.musclePct)));
+  const sm=BSEG.map(g=>r[g+"Muscle"]);if(r.muscleKg!=null&&sm.every(v=>v!=null)){const s=sm.reduce((a,b)=>a+b,0);if(Math.abs(s-r.muscleKg)>1.5)w.push(t("bChkSeg")(f1(s),f1(r.muscleKg)))}
+  return w}
+function bSave(force){
+  const b=U.bd;if(!b)return;
+  if(dms(b.d)===null||b.d>tday()){bBad("d",t("validDate"));return}
+  if(!BWHEN.includes(b.when)){notice(t("bNeedWhen"));const c=document.querySelector(".bwc");if(c&&c.scrollIntoView)c.scrollIntoView({block:"center"});return}
+  const row={id:b.id||("b"+Date.now().toString(36)+Math.random().toString(36).slice(2,6)),d:b.d,when:b.when};
+  for(const k of BKEYS){
+    const raw=String(b.v[k]??"").trim();if(!raw)continue;const v=num(raw);
+    if(v===""){bBad(k,t("bNaN")(bLabel(k),raw));return}
+    if(k==="bmr"&&v>BF.bmr[1]&&v<=25000){bBad(k,t("bKj")(Math.round(v).toLocaleString(S.lg),Math.round(v/4.184).toLocaleString(S.lg)));return}
+    if(v<BF[k][0]||v>BF[k][1]){bBad(k,t("bRange")(bLabel(k),bIn0(BF[k][0]),bIn0(BF[k][1])));return}
+    row[k]=v;
+  }
+  if(!BKEYS.some(k=>row[k]!=null)){notice(t("bNeedOne"));return}
+  if(row.weight!=null)for(const k of BKG)if(row[k]!=null&&row[k]>row.weight){bBad(k,t("bOver")(bLabel(k),f1(row[k]),f1(row.weight)));return}
+  if(b.note.trim())row.note=b.note.trim().slice(0,80);
+  const warn=bChecks(row);
+  if(warn.length&&!force){askAction(t("bChkQ"),warn.join("\n")+"\n"+t("bChkX"),t("bSaveAny"),()=>bSave(true),t("bFix"));return}
+  const p=D(),old=p.body,rows=b.id&&old.some(r=>r.id===b.id)?old.map(r=>r.id===b.id?row:r):[...old,row];
+  rows.sort((x,y)=>x.d.localeCompare(y.d));p.body=rows;
+  if(!save()){if(D()===p)p.body=old;return}
+  U.bd=null;bdStore();U.bo=row.id;go();notice(t(b.id?"bUpd":"bSaved"));
+  const el=document.querySelector(`[data-b="${row.id}"]`);if(el&&el.scrollIntoView)el.scrollIntoView({block:"nearest"});
+}
+function bDel(id){
+  const p=D(),r=p.body.find(x=>x.id===id);if(!r)return;
+  askAction(t("bDelQ"),bDate(r.d)+" · "+t("bw_"+r.when)+(r.weight!=null?" · "+f1(r.weight)+" kg":""),t("del"),()=>{
+    const old=p.body;p.body=old.filter(x=>x!==r);if(!save()){if(D()===p)p.body=old;return}
+    if(U.bd&&U.bd.id===id){U.bd=null;bdStore()}go();notice(t("bDeleted"));
+  },t("cancel"),{danger:true});
+}
+function bCmp(r,rows){
+  const i=rows.indexOf(r),before=rows.slice(0,i),same=before.filter(x=>x.when===r.when).at(-1),w=t("bw_"+r.when).toLowerCase();
+  if(same){
+    const parts=[["weight","kg","bWs"],["fatKg","kg","bFs"],["fatPct",t("bPt"),"bPs"],["muscleKg","kg","bMs"]].filter(([k])=>r[k]!=null&&same[k]!=null).map(([k,u,l])=>`${t(l)} ${bSg(r[k]-same[k])} ${u}`);
+    return parts.length?t("bCmp")(bDate(same.d),parts.join(" · ")):t("bCmp0")(bDate(same.d));
+  }
+  const prev=before.at(-1);
+  return prev?t("bCmpX")(bDate(prev.d),t("bw_"+prev.when).toLowerCase(),w):t("bFirst")(w);
+}
+function bRow(r,rows){
+  const v=(k,u)=>r[k]!=null?`<span class=bdv>${k==="bmr"?Math.round(r[k]).toLocaleString(S.lg):f1(r[k])}${u?" "+u:""}</span>`:"";
+  const sum=[r.weight!=null?v("weight","kg"):"",r.fatPct!=null?`${v("fatPct","%")} ${t("bS_fat")}`:r.fatKg!=null?`${v("fatKg","kg")} ${t("bS_fat")}`:"",r.muscleKg!=null?`${v("muscleKg","kg")} ${t("bS_mus")}`:""].filter(Boolean).join(" · ");
+  const pair=(a,b)=>[r[a]!=null?f1(r[a])+" "+bUnit(a):"",r[b]!=null?f1(r[b])+" "+bUnit(b):""].filter(Boolean).join(" · ");
+  const lines=[["bWeight",r.weight!=null?f1(r.weight)+" kg":""],["bFat",pair("fatKg","fatPct")],["bMus",pair("muscleKg","musclePct")],["bBmr",r.bmr!=null?Math.round(r.bmr).toLocaleString(S.lg)+" "+t("bKcal"):""]].filter(x=>x[1]);
+  const segs=BSEG.filter(g=>r[g+"Muscle"]!=null||r[g+"Fat"]!=null);
+  return`<details class=bdr data-b="${r.id}" ${U.bo===r.id?"open":""} ontoggle="if(this.open)U.bo='${r.id}';else if(U.bo==='${r.id}')U.bo=null"><summary><b>${bDate(r.d)}</b><span class="bw bw-${r.when}">${t("bw_"+r.when)}</span><span>${sum}</span></summary>
+  <dl class=bdl>${lines.map(([l,x])=>`<dt>${t(l)}</dt><dd>${x}</dd>`).join("")}${segs.map(g=>`<dt>${t("seg_"+g)}</dt><dd>${pair(g+"Muscle",g+"Fat")}</dd>`).join("")}</dl>
+  ${r.note?`<p class=mu style="margin:6px 0 0">📝 ${escapeHtml(r.note)}</p>`:""}<p class="bcm mu">${bCmp(r,rows)}</p>
+  <div class=r><button class=hb onclick="bOpen('${r.id}')">✏️ ${t("edit")}</button><button class=hb onclick="bDel('${r.id}')">🗑️ ${t("del")}</button></div></details>`;
+}
+function bForm(b){
+  const inp=(k,cls="")=>`<span class="bu ${cls}"><input id=b_${k} type=text inputmode=decimal autocomplete=off aria-label="${escapeHtml(bLabel(k))}" value="${escapeHtml(b.v[k]??"")}" oninput="bIn('${k}',this.value)"><i>${bUnit(k)}</i></span>`;
+  return`<div id=bdf>${b.id?`<p class=lb>✏️ ${t("bEditT")}</p>`:""}
+  <label class=fl><span>${t("date")}</span><input type=date id=b_d value="${escapeHtml(b.d)}" max="${tday()}" oninput="bIn('d',this.value)" onchange="bIn('d',this.value)"></label>
+  <p class=lb>${t("bWhenT")}</p><div class="sg bwc" role=group aria-label="${t("bWhenT")}">${BWHEN.map(w=>`<button type=button class="${b.when===w?"on":""}" aria-pressed="${b.when===w}" onclick="bWhen('${w}')">${t("bw_"+w)}</button>`).join("")}</div>
+  <p class=mu>${t("bwx_"+(b.when||"none"))}</p>
+  <p class=lb>${t("bMainT")}</p>
+  <div class=bgr><span>${t("bWeight")}</span>${inp("weight","bu2")}</div>
+  <div class=bgr><span>${t("bFat")}</span>${inp("fatKg")}${inp("fatPct")}</div>
+  <div class=bgr><span>${t("bMus")}</span>${inp("muscleKg")}${inp("musclePct")}</div>
+  <div class=bgr><span>${t("bBmr")}</span>${inp("bmr","bu2 bk")}</div>
+  <p class=mu>${t("bHelp")}</p>
+  <details class=bseg ${b.seg?"open":""} ontoggle="if(U.bd){U.bd.seg=this.open;bdStore()}"><summary>${t("bSegT")}</summary>
+  <div class="bgr bgh"><span></span><span>${t("bSegM")}</span><span>${t("bSegF")}</span></div>
+  ${BSEG.map(g=>`<div class=bgr><span>${t("seg_"+g)}</span>${inp(g+"Muscle")}${inp(g+"Fat")}</div>`).join("")}</details>
+  <label class=bnt><span class=mu>${t("bNote")}</span><input id=b_note type=text maxlength=80 autocomplete=off placeholder="${t("bNoteP")}" value="${escapeHtml(b.note)}" oninput="bIn('note',this.value)"></label>
+  <div class=r><button onclick="bCancel()">${t("cancel")}</button><button class=p onclick="bSave()">${t("save")}</button></div></div>`;
+}
+function bodyCard(){
+  const b=bdLoad(),rows=D().body,list=[...rows].reverse(),max=U.ball?list.length:6;
+  return`<div class="c bdc" id=bdc><b>⚖️ ${t("bT")}</b><p class=mu>${t("bX")}</p>
+  ${b?bForm(b):`<button class="p w" onclick="bOpen()">＋ ${t("bAdd")}</button>`}
+  ${rows.length?`<p class=lb>${t("bHist")(rows.length)}</p>${list.slice(0,max).map(r=>bRow(r,rows)).join("")}${list.length>max?`<button class=w onclick="U.ball=true;go()">${t("bAll")(list.length)}</button>`:""}`:""}</div>`;
+}
+
 function profileCards(){const pf=D().pf,k=li(),n=nut(),we=lastWE();let h="";
  // my info
  h+=`<div class=c><b>${t("me")} — ${t(S.p=="M"?"him":"her")}</b>${seg("sex",[["m",t("male")],["f",t("female")]])}${fld("age",t("age"),"ans")}${fld("h",t("hgt"),"cm")}${we?`<p class=mu style=margin:4px_0>${t("lastw")(f1(we.w),fd(dms(we.d)))}</p>`.replace("margin:4px_0","margin:4px 0"):fld("w",t("wgt"),"kg")}
@@ -1565,7 +1743,7 @@ function msCard(){const d=D(),ms=d.ms.map(m=>({...m,x:dms(m.d)})).filter(m=>m.x&
  let rt="";const lv=k=>{const m=[...d.ms].reverse().find(m=>m[k]!=null);return m?m[k]:null},lsh=lv("sh"),lwa=lv("wa");if(S.p=="M"&&lsh&&lwa)rt=`<p class=ts>${t("ratio")} : <b>${(lsh/lwa).toFixed(2).replace(".",S.lg=="fr"?",":".")}</b> — ${t("ratx")}</p>`;
  return`<div class=c><b>${t("msT")}</b><select style="width:100%;margin:6px 0" onchange="U.mm=this.value;go()">${av.map(k=>`<option value=${k} ${k==U.mm?"selected":""}>${t("m_"+k)}</option>`).join("")}</select>${sub}${lc(pts)}${rt}</div>`}
 
-function set(){return`<h1>${t("pfT")}</h1>${profileCards()}${varCard()}${gymCard()}<div class=c><b>${t("theme")}</b><div class=r>${["","dark","light"].map(x=>`<button class="${S.th==x?"p":""}" onclick="S.th='${x}';th();save();go()">${x?(x=="dark"?"🌙":"☀️"):t("auto")}</button>`).join("")}</div></div><div class=c id=bkc><b>💾 ${t("bk")}</b><p class=mu>${t("bkn2")}</p><p class=ts>${S.bk&&S.bk.at?t("bkLast")(fd(S.bk.at),bkAge()):t("bkNever")}</p>
+function set(){return`<h1>${t("pfT")}</h1>${bodyCard()}${profileCards()}${varCard()}${gymCard()}<div class=c><b>${t("theme")}</b><div class=r>${["","dark","light"].map(x=>`<button class="${S.th==x?"p":""}" onclick="S.th='${x}';th();save();go()">${x?(x=="dark"?"🌙":"☀️"):t("auto")}</button>`).join("")}</div></div><div class=c id=bkc><b>💾 ${t("bk")}</b><p class=mu>${t("bkn2")}</p><p class=ts>${S.bk&&S.bk.at?t("bkLast")(fd(S.bk.at),bkAge()):t("bkNever")}</p>
   <button class="p w" onclick="shareBackup()">📤 ${t("bkSend")}</button><p class=mu>${t("bkSendX")}</p>
   <label class="w lbtn" for=bkf>📂 ${t("bkFile")}</label><input type=file id=bkf class=vh accept=".json,.txt,application/json,text/plain" onchange="fileRestore(this)">
   <details class=bkm><summary>${t("bkManual")}</summary><p class=mu>${t("bkn")}</p><textarea id=jx></textarea><div class=r><button onclick="exp()">${t("exp")}</button><button onclick="restoreBackup()">${t("imp")}</button></div></details></div><div class=c id=erc><b>${t("rst")}</b><p class=mu>${t("rstx")}</p>${undoLine()}<button class=w style="color:#e5484d" onclick="eraseProfile()">${t("rst")} (${t(S.p=='M'?'him':'her')})</button></div><p class=mu style=text-align:center>v ${VER}</p>`}
@@ -1574,7 +1752,7 @@ function th(){const r=document.documentElement;S.th?r.setAttribute("data-theme",
 function go(){th();CH=[];const ids=["today","plan","lib","prg","hist","set"],f={today,plan,lib,prg,hist,set}[U.tab];
 document.getElementById("v").innerHTML=`<div class=pf><div><button class="${S.p=="M"?"on":""}" onclick="switchProfile('M')">${t("him")}</button><button class="${S.p=="F"?"on":""}" onclick="switchProfile('F')">${t("her")}</button></div><div><button class="${S.lg=="fr"?"on":""}" onclick="S.lg='fr';save();go()">FR</button><button class="${S.lg=="en"?"on":""}" onclick="S.lg='en';save();go()">EN</button></div></div>`+f();
 document.getElementById("nv").innerHTML=ids.map((x,i)=>`<button class="${U.tab==x?"on":""}" onclick="navigate('${x}')">${t("tab")[i]}</button>`).join("");renderRest();hook()}
-const VER="2026-11-14k";
+const VER="2026-11-14l";
 function upd(){if(!/^https?:/.test(location.protocol))return;fetch(location.pathname+"?nocache="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(h=>{const m=/const VER="([^"]+)"/.exec(h);if(!m||m[1]==VER)return;
 if(!S.d.M.cur&&!S.d.F.cur&&!$("action-dialog").open&&U.ed==null){location.replace(location.pathname+"?v="+m[1]);return}
 const b=document.getElementById("upb");b.style.display="block";b.textContent=t("upd");b.onclick=()=>location.replace(location.pathname+"?v="+m[1])}).catch(()=>{})}
