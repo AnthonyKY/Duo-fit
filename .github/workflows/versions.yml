@@ -9,24 +9,26 @@ on:
     workflows: [DUOFIT tests]
     types: [completed]
     branches: [main]
+  workflow_dispatch:   # "Run workflow" button: save the current main now
 permissions:
   contents: write
 jobs:
   keep:
-    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha }}
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
           fetch-depth: 0
       - name: Save this version (app, code, full history)
         env:
           GH_TOKEN: ${{ github.token }}
-          SHA: ${{ github.event.workflow_run.head_sha }}
+          SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
         run: |
           set -euo pipefail
-          VER=$(grep -o 'const VER="[^"]*"' index.html | cut -d'"' -f2)
+          VER=$(grep -o 'const VER="2[^"]*"' index.html | head -1 | cut -d'"' -f2)
+          [[ "$VER" =~ ^[0-9a-z-]+$ ]] || { echo "version not found"; exit 1; }
           TAG="v$VER"
           if gh release view "$TAG" >/dev/null 2>&1; then TAG="v$VER-${SHA:0:7}"; fi
           if gh release view "$TAG" >/dev/null 2>&1; then echo "already saved"; exit 0; fi
