@@ -101,7 +101,7 @@ ok('5. Normal reading unchanged (fat-free mass ≈ 61,2 kg, bone ≈ 3,2 kg with
 // ===== 6. Timers: lock, expiry, reload =====
 await E(a,()=>{U.tab='today';U.pick='A';go();start('A',0);xRun(xkey(0));setv(0,0,'w','40');setv(0,0,'r','10');done(0,0)});
 await E(a,()=>{Object.defineProperty(document,'visibilityState',{value:'hidden',configurable:true});document.dispatchEvent(new Event('visibilitychange'))});
-await a.clock.runFor(180e3);await show(a);
+await a.clock.runFor(180e3);await show(a);await a.waitForLoadState('networkidle'); // coming back also checks for an update: let that request finish before reloading
 let tm=await E(a,()=>({rest:Math.round(restRemaining(cur().rest)/1000),x:Math.floor(xMs(xkey(0))/1000),run:cur().xr===xkey(0),sess:$('session-clock').textContent}));
 ok('6. Locked 3 min during a 2-min rest: rest over, exercise timer 3:00 and still running, session 3:00',tm.rest===0&&tm.x===180&&tm.run&&tm.sess==='03:00',JSON.stringify(tm));
 await E(a,()=>{setv(0,1,'w','40');setv(0,1,'r','10');done(0,1)});await a.clock.runFor(30e3);
