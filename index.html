@@ -45,6 +45,7 @@ dialog::backdrop{background:rgb(0 0 0 / .58)}dialog .r{margin-top:18px}
 .bkm{margin-top:10px}.bkm summary{color:var(--mu);font-size:13px;cursor:pointer}
 .swr{grid-template-columns:1fr 1fr;padding:6px 0;border-bottom:1px solid var(--bd)}.swr span{grid-column:1/-1;font-weight:600}
 .budget{margin:10px 0;border:1px solid var(--bd);border-radius:10px;padding:9px 12px}.budget summary{cursor:pointer;font-weight:600}.budget dl{margin:8px 0}.budget dl>div{display:flex;justify-content:space-between;gap:8px}.budget dd,.budget dt{margin:3px 0}.budget dd{white-space:nowrap;font-variant-numeric:tabular-nums}.gear{min-width:0;margin:12px 0;padding:8px 10px;border:1px solid var(--bd);border-radius:10px}.gear label{display:inline-flex;align-items:center;margin:4px 10px 4px 0}.gear input{width:auto}#varc{scroll-margin-top:70px}
+.ex-clock,.ex-review,.extra-picker{margin:10px 0;padding:10px;border:1px solid var(--bd);border-radius:10px}.ex-clock button,.extra-picker button{margin:4px 4px 0 0}.ex-clock [data-band]{display:inline-block;padding:3px 6px;border-radius:5px;font-variant-numeric:tabular-nums}.ex-clock [data-band=extraTime]{background:#ffdf75;color:#362500}.ex-clock [data-band=overTime]{background:#a91e2d;color:white}.extra-picker select{display:block;max-width:100%;width:100%}.ex-feedback{padding:7px 0}.ex-review summary{font-weight:bold}
 </style></head><body><div id="upb" style="display:none;position:fixed;top:calc(8px + env(safe-area-inset-top,0px));left:12px;right:12px;z-index:9;background:var(--ac);color:var(--on);font-weight:700;text-align:center;padding:12px;border-radius:12px;cursor:pointer"></div><div id="storage-warning" role="alert" hidden></div><main id="v"></main><div id="notice" role="status" hidden></div><div id="tm" hidden></div><nav id="nv"></nav>
 <dialog id="action-dialog" aria-labelledby="action-title" aria-describedby="action-detail">
   <h2 id="action-title"></h2><p id="action-detail"></p><input id="action-word" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" hidden><div class="r">
@@ -290,6 +291,16 @@ function readState(raw){
       requireData(isRecord(c)&&known(P[key],c.wk)&&Number.isFinite(c.start)&&isRecord(c.ex));
       const plan=c.pl||P[key][c.wk].ex;
       requireData(Array.isArray(plan)&&plan.length&&plan.every((entry,i)=>Array.isArray(entry)&&known(E,entry[0])&&entry.slice(1,7).length===6&&entry.slice(1,7).every(nonnegative)&&Array.isArray(c.ex[i])&&c.ex[i].every(isRecord)));
+      if(c.clocks!=null){
+        if(!isRecord(c.clocks)||!isRecord(c.clocks.rows))c.clocks={active:null,rows:{}};
+        const clocks=c.clocks;
+        for(const [key,row] of Object.entries(clocks.rows)){
+          if(!isRecord(row)||!known(E,row.id)||!nonnegative(row.ms)||!Number.isFinite(row.target)||row.target<=0||!/^\d+-[a-z0-9]+$/.test(key)){delete clocks.rows[key];continue}
+          if(!nonnegative(row.since))row.since=null;
+        }
+        if(!Object.hasOwn(clocks.rows,clocks.active)||clocks.rows[clocks.active].since==null)clocks.active=null;
+        if(!Object.hasOwn(clocks.rows,clocks.resume))delete clocks.resume;
+      }
       c.note=String(c.note??"");if(c.swp!=null){requireData(isRecord(c.swp));for(const [k,v] of Object.entries(c.swp))if(!known(E,v))delete c.swp[k]}if(c.back!=null&&![0,1,2].includes(c.back))c.back=null;if(c.wd!=null&&!(isRecord(c.wd)&&Array.isArray(c.wd.d)&&c.wd.d.every(x=>known(WU,x))&&known(WU,c.wd.g)))delete c.wd;if(c.rest&&!(nonnegative(c.rest.totalMs)&&nonnegative(c.rest.remainingMs)&&(c.rest.end==null||Number.isFinite(c.rest.end))))delete c.rest;
     }
     state.d[key]=profile;
@@ -319,6 +330,7 @@ function askAction(title,detail,accept,callback,cancel=t("cancel"),opts={}){
   pendingAction=callback;dialog.showModal();(opts.word?word:$("action-cancel")).focus();
 }
 function clearView(){
+  U.review=null;U.extra=false;
   closeAction();Object.assign(U,{ed:null,sum:null,open:-1,pick:null,ex:"",gi:null,sw:null,note:null,tl:false,chk:null,bk:false,wuo:0,rf:null,rfy:false});
 }
 function applyStorage(raw){
@@ -370,6 +382,137 @@ function timeText(seconds){
   const pair=n=>String(n).padStart(2,"0"),minutes=Math.floor(seconds/60);
   return (minutes>=60?Math.floor(minutes/60)+":":"")+pair(minutes%60)+":"+pair(seconds%60);
 }
+// Per-exercise clocks use stable slot and exercise IDs, independent of list order.
+const clockWords={
+  startEx:["Start exercise","Lancer l’exercice"],stopEx:["Finish exercise","Finir l’exercice"],resumeEx:["Resume exercise","Reprendre l’exercice"],
+  pauseEx:["Pause exercise","Pause exercice"],targetTime:["Target","Prévu"],withinTime:["On time","Dans le temps prévu"],
+  extraTime:["Up to 10% over","Dépassement ≤ 10 %"],overTime:["Over 10%","Dépassement > 10 %"],
+  activeTime:["Timed exercises","Temps des exercices"],wallTime:["Session clock","Chrono global"],
+  noClock:["No exercise timer started","Aucun exercice chronométré"],localCoach:["Exercise feedback","Bilan de l’exercice"],
+  nextTarget:["Next target","Prochain objectif"],partialEx:["Partial exercise","Exercice partiel"],
+  noIncrease:["Keep the adjusted load in this session.","Garde la charge adaptée pour cette séance."],
+  nextRep:["Aim for one more rep at this load within the target range.","Vise une répétition de plus à cette charge dans la plage prévue."],
+  nextSec:["Aim for one more second within the target range.","Vise une seconde de plus dans la plage prévue."],
+  belowRange:["Below the target range. Use a load that lets you reach the lower target with control.","Sous la plage prévue. Choisis une charge qui te permet d’atteindre le minimum avec un geste maîtrisé."],
+  mixedLoads:["Different loads logged. Compare sets at the same load next time.","Plusieurs charges saisies. Compare les séries à charge égale la prochaine fois."],
+  partialAdvice:["Complete the planned sets before increasing the load.","Complète les séries prévues avant d’augmenter la charge."],
+  extraEx:["Add an exercise","Ajouter un exercice"],chooseEx:["Choose an exercise","Choisir un exercice"],
+  emptyEx:["No further exercise matches your settings.","Aucun autre exercice ne correspond à tes réglages."],
+  addToday:["Add to this workout","Ajouter à cette séance"],addedTime:["Additional planned time","Temps prévu en plus"],
+  untimedInfo:["Start each exercise to include its time in the total.","Lance chaque exercice pour compter son temps dans le total."],
+  lastReview:["Last exercise feedback","Dernier bilan d’exercice"]
+};
+for(const [key,[en,fr]] of Object.entries(clockWords)){L.en[key]=en;L.fr[key]=fr}
+function clockKey(i){return oix(i)+"-"+sid(i)}
+function clockRow(c,key){return c.clocks?.rows[key]}
+function clockMs(c,key,now=Date.now()){
+  const row=clockRow(c,key);if(!row)return 0;
+  return row.ms+(c.clocks.active===key&&row.since!=null?Math.max(0,now-row.since):0);
+}
+function frozenTimes(c,now){
+  return Object.fromEntries(Object.keys(c.clocks.rows).map(key=>[key,{id:c.clocks.rows[key].id,ms:clockMs(c,key,now)}]));
+}
+function stopClock(c){
+  const key=c.clocks?.active;if(!key)return;
+  const row=clockRow(c,key);row.ms=clockMs(c,key);row.since=null;c.clocks.active=null;
+}
+function exerciseTarget(i){
+  const e=[...cx()[i]];e[0]=sid(i);
+  return budgetParts([e],0,0).total;
+}
+function runExercise(i){
+  const c=cur();if(!c?.clocks||!cx()[i]||c.pausedAt!=null)return;
+  const key=clockKey(i);if(c.clocks.active===key)return;
+  stopClock(c);
+  const row=c.clocks.rows[key]??={id:sid(i),ms:0,target:exerciseTarget(i)};
+  U.review=null;row.since=Date.now();row.finished=false;c.clocks.active=key;save();go();
+}
+function endExercise(i,finish){
+  const c=cur();if(!c?.clocks||!cx()[i])return;
+  const key=clockKey(i);if(key===c.clocks.active)stopClock(c);
+  if(finish){
+    if(c.clocks.resume===key)delete c.clocks.resume;
+    const row=c.clocks.rows[key]??={id:sid(i),ms:0,target:exerciseTarget(i)};
+    row.finished=true;U.review=key;
+  }
+  save();go();
+}
+function clockBand(ms,target){return ms<=target*1000?"withinTime":ms<=target*1100?"extraTime":"overTime"}
+function clockDisplay(i,now){
+  const c=cur(),key=clockKey(i),row=clockRow(c,key),ms=clockMs(c,key,now),target=row?.target||exerciseTarget(i);
+  return {text:timeText(ms/1000)+" / "+timeText(target),band:clockBand(ms,target)};
+}
+function updateExerciseClocks(c,now){
+  if(!c.clocks)return;
+  for(const el of document.querySelectorAll("[data-ex-clock]")){
+    const i=Number(el.dataset.exClock);if(!cx()[i])continue;
+    const d=clockDisplay(i,now);el.dataset.band=d.band;
+    el.firstElementChild.textContent=d.text;el.lastElementChild.textContent=t(d.band);
+  }
+}
+function exerciseClock(i){
+  const c=cur();if(!c.clocks)return "";
+  const key=clockKey(i),row=clockRow(c,key),active=c.clocks.active===key,d=clockDisplay(i,Date.now());
+  const feedback=coachText(i);
+  return `<div class=ex-clock><div data-ex-clock="${i}" data-band="${d.band}"><b role=timer aria-live=off>${d.text}</b> · <span>${t(d.band)}</span></div>
+    <button type=button data-start-ex="${i}" onclick="${active?'endExercise('+i+',false)':'runExercise('+i+')'}" ${c.pausedAt!=null?"disabled":""}>${t(active?"pauseEx":row?"resumeEx":"startEx")}</button>
+    ${!row?.finished&&(row||feedback)?`<button type=button onclick="endExercise(${i},true)">${t("stopEx")}</button>`:""}
+    ${feedback?`<details><summary>${t("localCoach")}</summary>${feedback}</details>`:""}</div>`;
+}
+function coachText(i){
+  const c=cur(),id=sid(i),e=cx()[i],sets=c.ex[i].filter(s=>s.ok||s.touchedR).map(s=>readSet(s,id)).filter(Boolean);
+  if(!sets.length)return "";
+  const previous=last(id,0,c.wk),partial=sets.length<e[1],mixed=sets.some(s=>s.w!==sets[0].w);
+  const short=sets.some(s=>s.r<e[2]),unit=isT(id)?"s":t("repsW");
+  const suggest=assessSets(id,e,sets,previous),limited=c.back>=1;
+  const reason=limited?t("noIncrease"):partial?t("partialAdvice"):mixed?t("mixedLoads"):short?t("belowRange"):(isT(id)&&!suggest.rep?t("nextSec"):suggest.t);
+  const weight=limited||partial||mixed?sets.at(-1).w:suggest.w;
+  const aim=limited||short||partial||mixed?e[2]:suggest.rep?e[3]+3:weight>sets[0].w?e[2]:Math.min(e[3],Math.min(...sets.map(s=>s.r))+1);
+  return `<div class=ex-feedback><b>${nm(id)}</b> · ${sets.length}/${e[1]} ${t("sets")}<br>${sets.map(s=>fs(id,s)).join(" · ")}<br>${reason}<br><b>${t("nextTarget")}</b> · ${weight>0?f1(weight)+" kg × ":""}${aim} ${unit}</div>`;
+}
+function exerciseReview(){
+  const c=cur();if(!c?.clocks||!U.review)return "";
+  const i=cx().findIndex((_,i)=>clockKey(i)===U.review);if(i<0)return "";
+  const body=coachText(i);if(!body)return "";
+  return `<details class=ex-review open><summary>${t("localCoach")}</summary>${body}</details>`;
+}
+function addedEntry(id,slot){
+  const d=D(),w=cur().wk,blueprint=prog()[w].ex,idx=SL[S.p][w].findIndex(([pattern])=>PAT[pattern]?.includes(id)||PATF[pattern]?.includes(id));
+  const other=Object.values(prog()).flatMap(day=>day.ex).find(e=>e[0]===id);
+  const base=idx>=0?blueprint[idx]:other||[id,3,8,12,75,2,incOf(id)];
+  const e=[...base.slice(0,7),slot];e[0]=id;e[1]=2;
+  if(XR[id])[e[2],e[3]]=XR[id][d.pf.lvl==="beg"?1:0];
+  if(d.pf.lvl==="beg"||cur().back>=1)e[5]=Math.min(4,e[5]+1);
+  return e;
+}
+function availableExtras(){
+  const used=new Set(cx().map((_,i)=>sid(i)));
+  return Object.keys(E).filter(id=>!used.has(id)&&eligible(id,null)&&!(cur().back===2&&(SAFE[id]||AX.includes(id)))).sort((a,b)=>nm(a).localeCompare(nm(b),S.lg));
+}
+function addToSession(id){
+  const c=cur();if(!c||!availableExtras().includes(id))return;
+  const plan=ensurePl();let slot=1000;
+  while(plan.some(e=>e[7]===slot)||Object.keys(c.clocks?.rows||{}).some(k=>k.startsWith(slot+"-")))slot++;
+  const e=addedEntry(id,slot);let w=sug(id,e,c.wk).w;
+  if(c.back>=1&&w>0&&!isBW(id))w=rdn(id,w*(c.back===2?.8:.9));
+  c.ex[plan.length]=Array.from({length:e[1]},()=>({w,r:"",ok:0}));plan.push(e);U.extra=false;save();go();notice(nm(id)+" · +"+timeText(budgetParts([e],0,0).total));
+}
+function extraChooser(){
+  if(!U.extra)return `<button class=w onclick="U.extra=true;go()">＋ ${t("extraEx")}</button>`;
+  const ids=availableExtras();
+  return `<div class=extra-picker><label>${t("chooseEx")} ${ids.length?`<select id=extra-id oninput="extraEstimate(this.value)">${ids.map(id=>`<option value="${id}">${nm(id)}</option>`).join("")}</select>`:""}</label>
+    ${ids.length?`<p class=mu>${t("addedTime")} · <b id=extra-time>${timeText(budgetParts([addedEntry(ids[0],1000)],0,0).total)}</b></p><button onclick="addToSession($('extra-id').value)">${t("addToday")}</button>`:t("emptyEx")}
+    <button onclick="U.extra=false;go()">${t("cancel")}</button></div>`;
+}
+function extraEstimate(id){if(known(E,id)&&$("extra-time"))$("extra-time").textContent=timeText(budgetParts([addedEntry(id,1000)],0,0).total)}
+function timedBreakdown(log){
+  if(!isRecord(log.exerciseTimes))return "";
+  const byId={};for(const row of Object.values(log.exerciseTimes)){
+    if(row&&known(E,row.id)&&nonnegative(row.ms))byId[row.id]=(byId[row.id]||0)+row.ms;
+  }
+  return `<details><summary>${t("activeTime")} · ${durationText(log)}</summary>${Object.keys(byId).length?Object.entries(byId).map(([id,ms])=>`<div>${nm(id)} · ${timeText(ms/1000)}</div>`).join(""):t("noClock")}<div class=mu>${t("wallTime")} · ${timeText(log.wallSec||0)}</div></details>`;
+}
+
 function elapsedSeconds(session,now=Date.now()){
   return Math.max(0,Math.floor(((session.pausedAt??now)-session.start-(session.pausedMs||0))/1000));
 }
@@ -395,10 +538,12 @@ function restControl(action){
 function toggleSessionClock(){
   const c=cur();if(!c)return;const now=Date.now(),r=c.rest;
   if(c.pausedAt==null){
+    if(c.clocks?.active){c.clocks.resume=c.clocks.active;stopClock(c)}
     c.pausedAt=now;
     if(r?.end!=null){r.remainingMs=restRemaining(r,now);r.end=null;r.withSession=r.remainingMs>0}
   }else{
     c.pausedMs=(c.pausedMs||0)+Math.max(0,now-c.pausedAt);c.pausedAt=null;
+    if(c.clocks?.resume){const key=c.clocks.resume;c.clocks.active=key;c.clocks.rows[key].since=now;delete c.clocks.resume}
     if(r?.withSession){r.end=now+r.remainingMs;r.withSession=false}
   }
   save();go();
@@ -415,6 +560,7 @@ function renderRest(){
 }
 function tick(){
   const c=cur();if(!c)return;const now=Date.now(),clock=$("session-clock");
+  updateExerciseClocks(c,now);
   if(clock){const text=timeText(elapsedSeconds(c,now));if(clock.textContent!==text)clock.textContent=text}
   const r=c.rest;if(r?.end==null)return;const left=restRemaining(r,now);
   if(left===0){
@@ -431,7 +577,10 @@ function last(id,n=0,wk){let l=D().logs.filter(x=>x.ex[id]);if(wk){const m=l.fil
 const isBW=id=>E[id][4]=="BW",tday=(ms=Date.now())=>{const d=new Date(ms);return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")},
 fs=(id,x)=>isBW(id)?(x.w?f1(x.w)+" kg × ":"")+x.r+(isT(id)?" s":" reps"):f1(x.w)+" × "+x.r;
 function rph(id,e,j,wk){const l=last(id,0,wk);if(l){const a=l.ex[id];return(a[j]||a[a.length-1]).r}return e[2]}
-function sug(id,c,wk){const l=last(id,0,wk),bw=isBW(id);if(!l)return{w:bw?0:"",t:bw?t("s1b"):t("s1")(c[5])};const s=l.ex[id],w=Math.max(...s.map(x=>x.w)),p=last(id,1,wk);if(bw)return{w,t:s.length>=c[1]&&s.every(x=>x.r>=c[3])?t("s2b"):t("s3b")(c[3])};
+function sug(id,c,wk){const l=last(id,0,wk),bw=isBW(id);if(!l)return{w:bw?0:"",t:bw?t("s1b"):t("s1")(c[5])};const sets=l.ex[id];
+if(l.exercisePlans?.[id]&&(l.back>=1||sets.length<l.exercisePlans[id]||sets.some(s=>s.w!==sets[0].w)))return{w:sets.at(-1).w,t:t(l.back>=1?"noIncrease":sets.length<l.exercisePlans[id]?"partialAdvice":"mixedLoads")};
+return assessSets(id,c,sets,last(id,1,wk))}
+function assessSets(id,c,s,p){const bw=isBW(id),w=Math.max(...s.map(x=>x.w));if(bw)return{w,t:s.length>=c[1]&&s.every(x=>x.r>=c[3])?t("s2b"):t("s3b")(c[3])};
 if(s.some(x=>x.r<c[2])&&p&&p.ex[id].some(x=>x.r<c[2])){const d=rnd(id,w*.9);return{w:d<w?d:Math.max(0,r2(w-incOf(id))),t:t("s4")}}
 if(s.length>=c[1]&&s.every(x=>x.r>=c[3])){const st=incOf(id),up=rnd(id,w+st),nx=up>w?up:r2(w+st);if((nx-w)/w>.1&&!s.every(x=>x.r>=c[3]+3))return{w,t:t("s5")(f1(nx),c[3]+3),rep:1};return{w:nx,t:t("s2")(f1(r2(nx-w)))}}
 return{w,t:t("s3")(f1(w),c[3])}}
@@ -448,8 +597,8 @@ function start(wk,back){
     if(f<1&&w!==""&&w>0&&!isBW(id))w=rdn(id,w*f);
     ex[i]=Array.from({length:entry[1]},()=>({w,r:"",ok:0}));
   });
-  D().cur={wk,start:Date.now(),ex,note:"",pl:plan.ex,cm:back===2?0:plan.cm,cmv:"",cmok:0,back,swp,snapshot:true,budget:plan.budget,mode:vmode(),wu:[],wd:{g:plan.g,gm:plan.gm,m:plan.wm,d:plan.wu,ramp:plan.ramp,ok:[],x:0}};
-  U.pick=null;U.sum=null;U.open=-1;U.gi=null;U.sw=null;U.tl=false;U.wuo=0;save();go();scrollTo(0,0);
+  D().cur={wk,start:Date.now(),ex,note:"",pl:plan.ex,cm:back===2?0:plan.cm,cmv:"",cmok:0,back,swp,clocks:{active:null,rows:{}},snapshot:true,budget:plan.budget,mode:vmode(),wu:[],wd:{g:plan.g,gm:plan.gm,m:plan.wm,d:plan.wu,ramp:plan.ramp,ok:[],x:0}};
+  U.review=null;U.extra=false;U.pick=null;U.sum=null;U.open=-1;U.gi=null;U.sw=null;U.tl=false;U.wuo=0;save();go();scrollTo(0,0);
 }
 function num(value){
   const raw=String(value??"").trim().replace(",",".");
@@ -487,6 +636,10 @@ function done(i,j){
     Object.assign(s,value,{ok:1});
     const next=sets[j+1];if(next&&!next.ok&&!next.touchedR&&!next.touchedW)next.w=s.w;
     beginRest(entry[4]);
+    if(c.clocks&&sets.every(s=>s.ok)){
+      const key=clockKey(i);if(c.clocks.active===key)stopClock(c);if(c.clocks.resume===key)delete c.clocks.resume;
+      if(c.clocks.rows[key])c.clocks.rows[key].finished=true;U.review=key;
+    }
   }
   save();go();
 }
@@ -556,7 +709,7 @@ function backAsk(){const c=cur();if(!c||c.back!=null)return"";if(U.rf==="cur")re
 function applyBack(lv){const c=cur();if(!c||c.back)return;ensurePl();const f=lv===2?.8:.9;c.back=lv;
   c.pl=c.pl.map(e=>{const n=[...e];n[5]=Math.min(4,n[5]+1);return n});
   c.pl.forEach((e,i)=>{const a=c.ex[i];
-    if(lv===2&&!a.some(s=>s.ok||s.touchedR||s.touchedW)){const next=painReplacement(sid(i),c.wk,oix(i),cx().map((_,k)=>sid(k)));if(next){c.swp=c.swp||{};c.swp[oix(i)]=next;fitRange(e,c.wk,next);const g=sug(next,e,c.wk);a.forEach(s=>{s.w=g.w;s.r=""})}}
+    if(lv===2&&!a.some(s=>s.ok||s.touchedR||s.touchedW)){const next=painReplacement(sid(i),c.wk,oix(i),cx().map((_,k)=>sid(k)));if(next){if(c.clocks?.active===clockKey(i))stopClock(c);if(c.clocks?.resume===clockKey(i))delete c.clocks.resume;c.swp=c.swp||{};c.swp[oix(i)]=next;fitRange(e,c.wk,next);const g=sug(next,e,c.wk);a.forEach(s=>{s.w=g.w;s.r=""})}}
     const id=sid(i);if(isBW(id))return;a.forEach(s=>{if(!s.ok&&!s.touchedW){const w=num(s.w);if(w>0)s.w=rdn(id,w*f)}})});
   if(lv===2&&!c.cmok&&!num(c.cmv))c.cm=0;U.bk=false;save();go();scrollTo(0,0)}
 // steppers (guided mode)
@@ -573,18 +726,22 @@ function swapOptions(i){
   return choices.filter(x=>x!==id&&eligible(x,s?.[2]||base)&&(fixed||!cx().some((_,k)=>k!==i&&sid(k)===x)));
 }
 function swapPanel(i){const c=cur(),o=oix(i),id=sid(i),pin=D().sub[c.wk+o]===id,opts=swapOptions(i);
-  return`<div class=swp>${opts.length?`<b>${t("swapBy")}</b>${opts.map(x=>`<div class=swr><span>${nm(x)}</span><button class=hb onclick="swapTo(${i},'${x}',0)">${t("today1")}</button><button class=hb onclick="swapTo(${i},'${x}',1)">${t("always")}</button></div>`).join("")}`:`<span class=mu>${t("noalt")}</span>`}
+  return`<div class=swp>${opts.length?`<b>${t("swapBy")}</b>${opts.map(x=>`<div class=swr><span>${nm(x)}</span><button class=hb onclick="swapTo(${i},'${x}',0)">${t("today1")}</button>${o<100?`<button class=hb onclick="swapTo(${i},'${x}',1)">${t("always")}</button>`:""}</div>`).join("")}`:`<span class=mu>${t("noalt")}</span>`}
   <div class="r tools">${o<100?`<button class=hb onclick="pinCur(${i})">${pin?"↺ "+t("unpinB"):"📌 "+t("pinB")}</button>`:""}<button class=hb onclick="noGym(${i})">🚫 ${t("noGymB")}</button></div><button class="hb" onclick="U.sw=null;go()">${t("cancel")}</button></div>`}
 // replace an exercise in the running workout; sets already entered stay with the old exercise (nothing is lost),
 // the remaining sets move to the new one with its own rep range (seconds for holds, reps per side…)
 function swapTo(i,nid,always){const c=cur();if(!c||!known(E,nid))return;ensurePl();const oi=oix(i),base=cx()[i][0],old=sid(i),a=c.ex[i],
     entered=s=>!!(s.ok||s.touchedR||s.touchedW||String(s.r??"").trim()!==""),kept=a.filter(entered),rest=a.length-kept.length;
   if(kept.length&&!rest){U.sw=null;go();notice(t("nothingLeft"));return}
-  if(always){if(nid===base&&(c.mode||vmode())==="fix")delete D().sub[c.wk+oi];else D().sub[c.wk+oi]=nid}
+  if(c.clocks?.active===clockKey(i))stopClock(c);
+  if(c.clocks?.resume===clockKey(i))delete c.clocks.resume;
+  if(always&&oi<100){if(nid===base&&(c.mode||vmode())==="fix")delete D().sub[c.wk+oi];else D().sub[c.wk+oi]=nid}
   c.swp=c.swp||{};
   if(nid===(c.snapshot?base:(D().sub[c.wk+oi]||base)))delete c.swp[oi];else c.swp[oi]=nid;
   const ne=[...c.pl[i]];fitRange(ne,c.wk,nid);const g=sug(nid,ne,c.wk),fresh=n=>Array.from({length:n},()=>({w:g.w,r:"",ok:0}));
   if(kept.length){let q=100+oi;while(c.pl.some(e=>e[7]===q))q+=100;const dn=[...c.pl[i]];dn[0]=old;dn[1]=kept.length;dn[7]=q;ne[1]=rest;
+    if(c.clocks){const key=oi+"-"+old,row=c.clocks.rows[key];if(row){c.clocks.rows[q+"-"+old]=row;delete c.clocks.rows[key]}}
+    c.pl[i]=ne;
     c.pl.splice(i,0,dn);const ex={};Object.keys(c.ex).map(Number).sort((x,y)=>x-y).forEach(k=>{if(k<i)ex[k]=c.ex[k];else if(k>i)ex[k+1]=c.ex[k]});ex[i]=kept;ex[i+1]=fresh(rest);c.ex=ex}
   else{c.pl[i]=ne;c.ex[i]=fresh(a.length)}
   if(i<=1)c.wu=[];
@@ -595,6 +752,7 @@ function fitRange(e,w,id){const r=rangeFor(w,e[7]??0,id);if(r){e[2]=r[0];e[3]=r[
 function ensurePl(){const c=cur();c.pl=cx().map((e,k)=>e[7]!=null?e:[...e.slice(0,7),k]);return c.pl}
 function busy(i){const c=cur();if(!c)return;const pl=ensurePl();if(i>=pl.length-1){notice(t("busyLast"));return}
   const name=nm(sid(i)),order=pl.map((_,k)=>k);order.splice(i,1);order.push(i);
+  if(c.clocks?.active===clockKey(i))stopClock(c);if(c.clocks?.resume===clockKey(i))delete c.clocks.resume;
   if(i<2)c.wu=[];c.pl=fixPairs(order.map(k=>pl[k]));const ex={};order.forEach((k,n)=>{ex[n]=c.ex[k]});c.ex=ex;
   U.gi=null;U.open=-1;U.sw=null;U.note=null;save();go();notice(t("busyDone")(name))}
 function remMin(){const c=cur(),pl=cx();
@@ -626,6 +784,7 @@ function timeLeft(N){const c=cur();if(!c)return;ensurePl();U.tl=false;
     if(set!=null){c.ex[set].pop();c.pl[set][1]=c.ex[set].length;rs++;continue}
     if(remove==null)break;
     const sets=c.pl.map((_,i)=>c.ex[i]);
+    if(c.clocks?.active===clockKey(remove))stopClock(c);if(c.clocks?.resume===clockKey(remove))delete c.clocks.resume;
     c.pl.splice(remove,1);sets.splice(remove,1);c.ex=Object.fromEntries(sets.entries());rm++;
   }
   fixPairs(c.pl);if(c.pl.length!==originalRows){U.sw=null;U.open=-1;U.note=null;c.wu=[]}
@@ -641,7 +800,7 @@ function guidedWorkout(){
     main=`<div class="c gd"><div class=mu>${t("exN")} ${i+1}/${plan.length} · ${t("series")} ${j+1}/${c.ex[i].length}</div>
     <h2 class=gx>${nm(id)}</h2>
     <div class=mu>${e[2]}–${e[3]}${isT(id)?" s":" reps"} · RIR ${e[5]} · <button class=rest-link onclick="manualRest(${i})">${t("rest")} ${e[4]} s</button></div>
-    ${ssLine(i)}<div class=mu>${t("last")} : ${ps?fs(id,ps)+" ("+fd(prev.date)+")":"—"}</div><div class=tip-text>${g.t}</div>
+    ${exerciseClock(i)}${ssLine(i)}<div class=mu>${t("last")} : ${ps?fs(id,ps)+" ("+fd(prev.date)+")":"—"}</div><div class=tip-text>${g.t}</div>
     ${noteLine(id)}${j===0?`<div id="ramp-${i}">${wuHtml(i)}</div>`:""}
     <div class=stp><span class=sl>${bw?t("opt"):t("load")}</span><button aria-label="− ${t("load")}" onclick="stp(${i},${j},'w',-1)">−</button><input id="w${i}_${j}" type=text inputmode=decimal autocomplete=off aria-label="${t("load")}" placeholder="${bw?"0":"kg"}" value="${escapeHtml(s.w===0&&bw?"":s.w)}" oninput="setv(${i},${j},'w',this.value)"><button aria-label="+ ${t("load")}" onclick="stp(${i},${j},'w',1)">+</button></div>
     <div class=stp><span class=sl>${isT(id)?t("seconds"):t("reps")}</span><button aria-label="− ${t("reps")}" onclick="stp(${i},${j},'r',-1)">−</button><input id="r${i}_${j}" type=text inputmode=numeric pattern="[0-9]*" autocomplete=off aria-label="${t("reps")}" placeholder="${rph(id,e,j,c.wk)}" value="${escapeHtml(s.r)}" oninput="setv(${i},${j},'r',this.value)"><button aria-label="+ ${t("reps")}" onclick="stp(${i},${j},'r',1)">+</button></div>
@@ -651,10 +810,10 @@ function guidedWorkout(){
   const cardio=c.cm?`<div class=c><h2>🚶 ${t("cdT")}</h2><p class=mu>${t("cdx")}</p>
     <div class=s style="grid-template-columns:1fr 48px"><input type=text inputmode=numeric pattern="[0-9]*" aria-label="${t("cdl")} (min)" id=cmin placeholder="${c.cm} min" value="${escapeHtml(c.cmv)}" oninput="cur().cmv=this.value;cur().cmTouched=true;save()"><button class="${c.cmok?"ok":""}" aria-label="${t("cdl")} ✓" aria-pressed="${!!c.cmok}" onclick="cdo()">✓</button></div></div>`:"";
   return `<h1>${prog()[c.wk].n[k]}</h1>${modeBar()}
-    <div class="session-clock"><div><span class=mu>${t("timer")}${c.pausedAt!=null?" · "+t("paused"):""}</span><strong id="session-clock" role="timer" aria-live="off">${timeText(elapsedSeconds(c))}</strong></div>
+    <div class="session-clock"><div><span class=mu>${t("wallTime")}${c.pausedAt!=null?" · "+t("paused"):""}</span><strong id="session-clock" role="timer" aria-live="off">${timeText(elapsedSeconds(c))}</strong></div>
     <button onclick="toggleSessionClock()">${t(c.pausedAt==null?"pause":"resume")}</button></div>
-    <div class=bar><i style="width:${count/sets.length*100}%"></i></div><p class=mu>${count}/${sets.length} ${t("sets")}</p>
-    ${backBanner()}${wuCard()}${main}${list}${cardio}${tlPanel()}
+    ${c.clocks?`<p class=mu>${t("untimedInfo")}</p>`:""}<div class=bar><i style="width:${count/sets.length*100}%"></i></div><p class=mu>${count}/${sets.length} ${t("sets")}</p>
+    ${backBanner()}${wuCard()}${exerciseReview()}${main}${list}${cardio}${extraChooser()}${tlPanel()}
     <textarea aria-label="${t("notes")}" placeholder="${t("notes")}" oninput="cur().note=this.value;save()">${escapeHtml(c.note)}</textarea>
     <button class="p w" onclick="fin()">${t("fin")}</button><button class=w onclick="abandon()">${t("disc")}</button>`;
 }
@@ -713,7 +872,9 @@ function fin(){
     if(!Number.isSafeInteger(cardio)||cardio<=0){notice(t("cardioError"));return}
   }
   const ents={};cx().forEach((e,i)=>{ents[sid(i)]=e});
-  const totals=workoutTotals(ex),end=Date.now(),seconds=elapsedSeconds(c,end);
+  const totals=workoutTotals(ex),end=Date.now(),wallSec=elapsedSeconds(c,end);
+  const exerciseTimes=c.clocks?frozenTimes(c,end):null;
+  const seconds=exerciseTimes?Math.floor(Object.values(exerciseTimes).reduce((sum,row)=>sum+row.ms,0)/1000):wallSec;
   const detail=totals.sets||cardio?[timeText(seconds),unit(totals.sets,"oneSet","sets"),totals.vol.toLocaleString(S.lg)+" kg",cardio?cardio+" min "+t("cdl"):""].filter(Boolean).join(" · ")+(pending?"\n"+t("autoSets")(pending):""):t("emptyFinish");
   askAction(t("finishQ"),detail,t("saveSession"),()=>{
     if(cur()!==c)return;
@@ -724,6 +885,10 @@ function fin(){
       if(past.length&&past.every(s=>s.w<top))prs.push(nm(id)+" "+f1(top)+" kg");
     }
     const log={pr:prs,date:end,wk:c.wk,dur:Math.round(seconds/60),durSec:seconds,ex,note:c.note,...totals};
+    if(exerciseTimes){
+      log.exerciseTimes=exerciseTimes;log.wallSec=wallSec;log.exercisePlans={};
+      cx().forEach((e,i)=>{const id=sid(i);log.exercisePlans[id]=(log.exercisePlans[id]||0)+e[1]});
+    }
     if(c.snapshot){log.mode=c.mode;log.budget=c.budget}
     if(cardio)log.cardio=cardio;if(c.back!=null)log.back=c.back;
     if(!writeSessionEnd(log))return;
@@ -766,7 +931,7 @@ function exerciseCard(entry,i){
   }).join("");
   return `<div class=c><div class=r><h2 style="flex:3">${nm(id)}</h2><button class=hb onclick="U.open=U.open===${i}?-1:${i};go()">${t("guide")}</button>${canSwap?`<button class=hb aria-label="${t("swap")} · ${nm(id)}" onclick="U.sw=U.sw===${i}?null:${i};go()">⇄</button>`:""}<button class=hb aria-label="${t("busyB")} · ${nm(id)}" onclick="busy(${i})">⏭</button></div>
     <div class=mu>${entry[1]}×${entry[2]}–${entry[3]}${isT(id)?" s":""} · <button class=rest-link aria-label="${t("startRest")} · ${entry[4]} s" onclick="manualRest(${i})">${t("rest")} ${entry[4]} s</button> · RIR ${entry[5]}</div>
-    ${ssLine(i)}<div class=mu>${t("last")}: ${previous?fd(previous.date)+" — "+previous.ex[id].map(s=>fs(id,s)).join(", "):"—"}</div>
+    ${exerciseClock(i)}${ssLine(i)}<div class=mu>${t("last")}: ${previous?fd(previous.date)+" — "+previous.ex[id].map(s=>fs(id,s)).join(", "):"—"}</div>
     <div class=tip-text>${sug(id,entry,c.wk).t}</div>${U.sw===i?swapPanel(i):""}${U.open===i?card(id):""}${noteLine(id)}<div id="ramp-${i}">${wuHtml(i)}</div>${rows}</div>`;
 }
 function activeWorkout(){
@@ -775,10 +940,10 @@ function activeWorkout(){
   const cardio=c.cm?`<div class=c><h2>🚶 ${t("cdT")}</h2><p class=mu>${t("cdx")}</p>
     <div class=s style="grid-template-columns:1fr 48px"><input type=text inputmode=numeric pattern="[0-9]*" aria-label="${t("cdl")} (min)" id=cmin placeholder="${c.cm} min" value="${escapeHtml(c.cmv)}" oninput="cur().cmv=this.value;cur().cmTouched=true;save()"><button class="${c.cmok?"ok":""}" aria-label="${t("cdl")} ✓" aria-pressed="${!!c.cmok}" onclick="cdo()">✓</button></div></div>`:"";
   return `<h1>${prog()[c.wk].n[li()]}</h1>${modeBar()}
-    <div class="session-clock"><div><span class=mu>${t("timer")}${c.pausedAt!=null?" · "+t("paused"):""}</span><strong id="session-clock" role="timer" aria-live="off">${timeText(elapsedSeconds(c))}</strong></div>
+    <div class="session-clock"><div><span class=mu>${t("wallTime")}${c.pausedAt!=null?" · "+t("paused"):""}</span><strong id="session-clock" role="timer" aria-live="off">${timeText(elapsedSeconds(c))}</strong></div>
     <button onclick="toggleSessionClock()">${t(c.pausedAt==null?"pause":"resume")}</button></div>
-    <div class=bar><i style="width:${count/sets.length*100}%"></i></div><p class=mu>${count}/${sets.length} ${t("sets")} · ${t("seriesHelp")}</p>
-    ${backBanner()}${wuCard()}${plan.map(exerciseCard).join("")}${cardio}${tlPanel()}
+    ${c.clocks?`<p class=mu>${t("untimedInfo")}</p>`:""}<div class=bar><i style="width:${count/sets.length*100}%"></i></div><p class=mu>${count}/${sets.length} ${t("sets")} · ${t("seriesHelp")}</p>
+    ${backBanner()}${wuCard()}${exerciseReview()}${plan.map(exerciseCard).join("")}${cardio}${extraChooser()}${tlPanel()}
     <textarea aria-label="${t("notes")}" placeholder="${t("notes")}" oninput="cur().note=this.value;save()">${escapeHtml(c.note)}</textarea>
     <button class="p w" onclick="fin()">${t("fin")}</button><button class=w onclick="abandon()">${t("disc")}</button>`;
 }
@@ -786,7 +951,7 @@ function workoutSummary(){
   const {lg,prs,pv}=U.sum;
   return `<h1>${t("done")}</h1><div class=c><h2>${prog()[lg.wk].n[li()]}</h2>
     ⏱ ${durationText(lg)} · ${unit(Object.keys(lg.ex).length,"oneExercise","exs")} · ${unit(lg.sets,"oneSet","sets")} · ${lg.vol.toLocaleString(S.lg)} kg${lg.cardio?" · 🚶 "+lg.cardio+" min":""}
-    <p>${pv==null?t("first"):t("prev")+" : "+pv.toLocaleString(S.lg)+" kg ("+(lg.vol>=pv?"+":"")+(lg.vol-pv).toLocaleString(S.lg)+" kg)"}</p>
+    ${timedBreakdown(lg)}<p>${pv==null?t("first"):t("prev")+" : "+pv.toLocaleString(S.lg)+" kg ("+(lg.vol>=pv?"+":"")+(lg.vol-pv).toLocaleString(S.lg)+" kg)"}</p>
     ${lg.sets?`<p>${prs.length?t("prs")+" · "+prs.join(", "):t("nopr")}</p>`:""}
     ${U.sum.nx&&U.sum.nx.length?`<div class=nxt><b>${t("nxT")}</b>${U.sum.nx.map(r=>`<div class=nxr><b>${nm(r.id)}</b><br><span class="${r.p.c}">${r.p.x}</span> · → ${r.n}</div>`).join("")}</div>`:""}
     <button class="p w" onclick="navigate('hist')">${t("seeHistory")}</button><button class=w onclick="navigate('today')">${t("close")}</button></div>`;
@@ -1116,7 +1281,7 @@ function hist(){
     html+=`<div class="c history-entry"><div class=r><b style="flex:3">${prog()[log.wk].n[li()]}</b>
       <button class=hb onclick="U.ed=${i};go();scrollTo(0,0)">${t("edit")}</button><button class=hb onclick="deleteLog(${i})">${t("del")}</button></div>
       <div class=mu>${date} · ${durationText(log)} · ${unit(log.sets,"oneSet","sets")} · ${log.vol.toLocaleString(S.lg)} kg${log.back!=null?" · "+t("bkL")+" "+BKI[log.back]:""}</div>
-      ${Object.entries(log.ex).map(([id,sets])=>`<div>${nm(id)} : <span class=mu>${sets.map(s=>fs(id,s)).join(", ")}</span></div>`).join("")}
+      ${timedBreakdown(log)}${Object.entries(log.ex).map(([id,sets])=>`<div>${nm(id)} : <span class=mu>${sets.map(s=>fs(id,s)).join(", ")}</span></div>`).join("")}
       ${log.cardio?`<div>🚶 ${t("cdl")} · ${log.cardio} min</div>`:""}
       ${!log.sets&&!log.cardio?`<div class=mu>${t("timedOnly")}</div>`:""}
       ${log.note?`<p class="mu saved-note">📝 ${escapeHtml(log.note)}</p>`:""}</div>`;
@@ -1409,7 +1574,7 @@ function th(){const r=document.documentElement;S.th?r.setAttribute("data-theme",
 function go(){th();CH=[];const ids=["today","plan","lib","prg","hist","set"],f={today,plan,lib,prg,hist,set}[U.tab];
 document.getElementById("v").innerHTML=`<div class=pf><div><button class="${S.p=="M"?"on":""}" onclick="switchProfile('M')">${t("him")}</button><button class="${S.p=="F"?"on":""}" onclick="switchProfile('F')">${t("her")}</button></div><div><button class="${S.lg=="fr"?"on":""}" onclick="S.lg='fr';save();go()">FR</button><button class="${S.lg=="en"?"on":""}" onclick="S.lg='en';save();go()">EN</button></div></div>`+f();
 document.getElementById("nv").innerHTML=ids.map((x,i)=>`<button class="${U.tab==x?"on":""}" onclick="navigate('${x}')">${t("tab")[i]}</button>`).join("");renderRest();hook()}
-const VER="2026-11-14i";
+const VER="2026-11-14j";
 function upd(){if(!/^https?:/.test(location.protocol))return;fetch(location.pathname+"?nocache="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(h=>{const m=/const VER="([^"]+)"/.exec(h);if(!m||m[1]==VER)return;
 if(!S.d.M.cur&&!S.d.F.cur&&!$("action-dialog").open&&U.ed==null){location.replace(location.pathname+"?v="+m[1]);return}
 const b=document.getElementById("upb");b.style.display="block";b.textContent=t("upd");b.onclick=()=>location.replace(location.pathname+"?v="+m[1])}).catch(()=>{})}

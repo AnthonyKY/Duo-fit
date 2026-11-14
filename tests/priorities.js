@@ -85,7 +85,7 @@ await E(()=>{U.sum=null;S.d.M.pf.time=60;S.d.M.pf.gear=["M","DB","C","SM"];save(
 // ===== 3. Reliability during a workout =====
 await p.clock.fastForward(DAY);await E(()=>{U.pick="A";go()});await tap(p.locator("#v button",{hasText:"Commencer la séance"}));
 if(await E(()=>!!U.chk))await tap(p.locator(".bkx").first());
-await p.clock.runFor(90e3);ok("3. Timer runs (1:30)",await E(()=>elapsedSeconds(cur())===90));
+await tap(p.locator("[data-start-ex=\"1\"]"));await p.clock.runFor(90e3);ok("3. Timer runs (1:30)",await E(()=>elapsedSeconds(cur())===90));
 await tap(p.locator(".session-clock button"));await p.clock.runFor(120e3);ok("3. Pause freezes it",await E(()=>elapsedSeconds(cur())===90));
 await tap(p.locator(".session-clock button"));await p.clock.runFor(30e3);ok("3. Resume continues from 1:30",await E(()=>elapsedSeconds(cur())===120));
 // log one set on exercise 2, then replace it for today
@@ -107,7 +107,7 @@ ok("3. Airplane mode: app relaunches with the workout, same sets, timer not rese
 await E(()=>{const i=cx().findIndex((e,k)=>cur().ex[k].some(s=>!s.ok));const j=cur().ex[i].findIndex(s=>!s.ok);setv(i,j,"w",isBW(sid(i))?"":"10");setv(i,j,"r","12");done(i,j)});
 await tap(p.locator("#v button",{hasText:"Terminer la séance"}));await accept();
 const off=await E(()=>({n:S.d.M.logs.length,last:S.d.M.logs.at(-1)}));
-ok("3. Finished offline: saved in history with its 3 sets and real duration",off.n===5&&off.last.sets===3&&off.last.durSec>=150,JSON.stringify({n:off.n,sets:off.last.sets,dur:off.last.durSec}));
+ok("3. Finished offline: saved in history with its 3 sets and real duration",off.n===5&&off.last.sets===3&&off.last.durSec>=120&&off.last.wallSec>=150,JSON.stringify({n:off.n,sets:off.last.sets,dur:off.last.durSec}));
 await ctx.setOffline(false);await p.reload();await p.waitForTimeout(200);
 ok("3. Back online: history unchanged after reload",await E(()=>S.d.M.logs.length===5&&!cur()));
 // abandon a workout: nothing else touched

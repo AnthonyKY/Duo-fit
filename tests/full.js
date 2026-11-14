@@ -49,7 +49,7 @@ let sum=await finish(day(0,19,2));
 ok('Summary: 3 exercises, 10 sets',sum.includes('3 exercices')&&sum.includes('10 séries'),sum.slice(0,160));
 const vol1=40*12*3+7.5*15*4+22.5*29;
 ok('Summary volume = '+Math.round(vol1),sum.replace(/\s/g,'').includes(Math.round(vol1).toLocaleString('fr-FR').replace(/\s/g,'')+'kg'));
-ok('Summary duration 1:02:00',sum.includes('1:02:00'),sum.slice(0,120));
+ok('Untimed working sets contribute zero to exercise time; wall clock records 1:02:00',await E(()=>D().logs[0].durSec===0&&D().logs[0].wallSec===3720)&&sum.includes('1:02:00'),sum.slice(0,120));
 let logs=await E(()=>S.d.M.logs);
 ok('Decimal comma stored as 22.5',logs[0].ex.idp[0].w===22.5);
 

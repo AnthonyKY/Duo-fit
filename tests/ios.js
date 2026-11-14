@@ -17,7 +17,7 @@ const row=(name,j)=>card(name).locator('.s').nth(j);
 await tap(p.locator('text=Commencer la séance'));
 ok('Session started',(await txt()).includes('Terminer la séance'));
 ok('Stopwatch shows 00:00',(await p.textContent('#session-clock'))=='00:00',await p.textContent('#session-clock'));
-await p.clock.runFor(65000);
+await tap(p.locator("[data-start-ex=\"0\"]"));await p.clock.runFor(65000);
 ok('Stopwatch ticks to ~01:05',/01:0[45]/.test(await p.textContent('#session-clock')),await p.textContent('#session-clock'));
 // ---- ✓ with keyboard still open, reps typed before weight, then weight
 await typ(row('Développé épaules machine',0).locator('input').nth(1),'10');
@@ -57,7 +57,7 @@ await E(()=>{const i=cx().findIndex(e=>e[0]=='clr');setv(i,0,'w','');go()});
 // ---- Terminer
 await p.clock.runFor(30*60000);
 await tap(p.locator('text=Terminer la séance'));ok('Terminer asks for confirmation with totals',await E(()=>document.getElementById('action-dialog').open)&&(await p.textContent('#action-detail')).includes('3 séries'),await p.textContent('#action-detail'));await tap(p.locator('#action-accept'));let tx=await txt();
-ok('Terminer → summary (1 exercise, 3 sets, ~31-32 min)',tx.includes('Séance terminée')&&tx.includes('1 exercice ')&&tx.includes('3 séries')&&/3[12]:\d\d/.test(tx),tx.slice(0,160));
+ok('Terminer → summary (exercise time excludes the idle half hour)',tx.includes('Séance terminée')&&tx.includes('1 exercice ')&&tx.includes('3 séries')&&await E(()=>D().logs.at(-1).durSec>=90&&D().logs.at(-1).durSec<=105&&D().logs.at(-1).wallSec>1800),tx.slice(0,160));
 ok('Volume 42,5×10+42,5×9+40×11 = 1 248 kg',tx.includes('1 248 kg'));
 await tap(p.locator('text=Fermer'));
 ok('Timer stopped after finishing',!(await p.isVisible('#rest-clock')));
