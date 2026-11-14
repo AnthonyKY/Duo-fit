@@ -491,7 +491,8 @@ function elapsedSeconds(session,now=Date.now()){
   return Math.max(0,Math.floor(((session.pausedAt??now)-session.start-(session.pausedMs||0))/1000));
 }
 function durationText(log){return nonnegative(log.durSec)?timeText(log.durSec):log.dur+" "+t("min")}
-function restRemaining(timer,now=Date.now()){return timer.end==null?timer.remainingMs:Math.max(0,timer.end-now)}
+// never more than the planned rest, even if the phone clock steps back (time sync, tests with a simulated clock)
+function restRemaining(timer,now=Date.now()){return timer.end==null?timer.remainingMs:Math.max(0,Math.min(Number.isFinite(timer.totalMs)?timer.totalMs:Infinity,timer.end-now))}
 function beginRest(seconds){
   const c=cur();if(!c)return;
   enableAudio();const totalMs=seconds*1000;
@@ -1837,7 +1838,7 @@ function th(){const r=document.documentElement;S.th?r.setAttribute("data-theme",
 function go(){th();CH=[];const ids=["today","plan","lib","prg","hist","set"],f={today,plan,lib,prg,hist,set}[U.tab];
 document.getElementById("v").innerHTML=`<div class=pf><div><button class="${S.p=="M"?"on":""}" onclick="switchProfile('M')">${t("him")}</button><button class="${S.p=="F"?"on":""}" onclick="switchProfile('F')">${t("her")}</button></div><div><button class="${S.lg=="fr"?"on":""}" onclick="S.lg='fr';save();go()">FR</button><button class="${S.lg=="en"?"on":""}" onclick="S.lg='en';save();go()">EN</button></div></div>`+f();
 document.getElementById("nv").innerHTML=ids.map((x,i)=>`<button class="${U.tab==x?"on":""}" onclick="navigate('${x}')">${t("tab")[i]}</button>`).join("");renderRest();hook()}
-const VER="2026-11-14o";
+const VER="2026-11-14p";
 function upd(){if(!/^https?:/.test(location.protocol))return;fetch(location.pathname+"?nocache="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(h=>{const m=/const VER="([^"]+)"/.exec(h);if(!m||m[1]==VER)return;
 if(!S.d.M.cur&&!S.d.F.cur&&!$("action-dialog").open&&U.ed==null){location.replace(location.pathname+"?v="+m[1]);return}
 const b=document.getElementById("upb");b.style.display="block";b.textContent=t("upd");b.onclick=()=>location.replace(location.pathname+"?v="+m[1])}).catch(()=>{})}
