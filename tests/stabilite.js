@@ -44,7 +44,8 @@ await E(a,()=>switchProfile('M'));
 // ===== 2. Two tabs, storage errors =====
 await b2.reload();
 await E(a,()=>{U.pick='A';go();begin('A');if(U.chk)start('A',0);setv(0,0,'w','40');setv(0,0,'r','10');done(0,0)});
-const live=await E(b2,()=>new Promise(r=>setTimeout(()=>r(!!S.d.M.cur&&S.d.M.cur.ex[0][0].ok===1),0)));
+// poll from the test side: the page's own timers are frozen by the simulated clock
+let live=false;for(let i=0;i<100&&!live;i++){live=await E(b2,()=>!!S.d.M.cur&&S.d.M.cur.ex[0][0].ok===1);if(!live)await new Promise(r=>setTimeout(r,20))}
 ok('2. The other tab sees the logged set at once',live);
 await staleWrite(b2,'2026-11-14');await E(b2,()=>{D().ms.push({d:'2026-11-14',wa:81});save()});
 st=await stored(b2);
