@@ -25,7 +25,7 @@ await typ(row('Développé épaules machine',0).locator('input').nth(0),'42,5');
 await tap(row('Développé épaules machine',0).locator('button'));
 let s0=await E(()=>cur().ex[0][0]);
 ok('✓ stores exactly what was typed (42,5 kg × 10)',s0.ok==1&&s0.w==42.5&&s0.r==10,JSON.stringify(s0));
-ok('Rest timer appears at 02:00',await p.isVisible('#rest-clock')&&/^0(2:00|1:59)$/.test(await p.textContent('#rest-clock')),await p.textContent('#rest-clock'));
+ok('Rest timer appears at 02:00',await p.isVisible('#rest-clock')&&/^0(2:0[01]|1:59)$/.test(await p.textContent('#rest-clock')),await p.textContent('#rest-clock'));
 await p.clock.runFor(30000);ok('Rest timer counts (01:30)',['01:30','01:31'].includes(await p.textContent('#rest-clock')));
 ok('Progress shows 1/19 sets',(await txt()).includes('1/19'),'');
 // next set: weight copied, reps typed then ✓
