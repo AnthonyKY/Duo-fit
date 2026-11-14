@@ -17,7 +17,7 @@ const server=http.createServer((req,res)=>{const route=new URL(req.url,'http://x
   res.end(fs.readFileSync(path.join(root,name)))});
 await new Promise(r=>server.listen(0,'127.0.0.1',r));const url='http://127.0.0.1:'+server.address().port+base;
 const b=await BR.launch(),ctx=await b.newContext({...BR.dev('iPhone SE'),locale:'fr-FR',timezoneId:'Europe/Paris'});await ctx.addInitScript(IOS);await ctx.addInitScript(SHARE);
-const p=await ctx.newPage();p.setDefaultTimeout(8000);const errs=[];p.on('pageerror',e=>errs.push(e.message));
+const p=await ctx.newPage();p.setDefaultTimeout(8000);const errs=[];p.on('pageerror',e=>BR.noise(e.message)||errs.push(e.message));
 const T0=Date.UTC(2026,10,21,8);await p.clock.install({time:T0});await p.clock.pauseAt(T0+1000);
 await p.goto(url);await p.evaluate(()=>navigator.serviceWorker.ready.then(()=>true));
 const E=(f,a)=>p.evaluate(f,a),txt=async sel=>(await p.textContent(sel||'#v')).replace(/[\u00a0\u202f]/g,' ');

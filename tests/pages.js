@@ -13,7 +13,7 @@ const server=http.createServer((req,res)=>{const route=new URL(req.url,"http://x
   let body=fs.readFileSync(path.join(root,name));if(name==="index.html")body=body.toString().replace(`const VER="${CUR}"`,`const VER="${served}"`);res.end(body)});
 await new Promise(r=>server.listen(0,"127.0.0.1",r));const url="http://127.0.0.1:"+server.address().port+base;
 const b=await BR.launch(),ctx=await b.newContext({...BR.dev("iPhone SE"),locale:"fr-FR"});await ctx.addInitScript(IOS);
-let p=await ctx.newPage();const errs=[];const watch=()=>p.on("pageerror",e=>errs.push(e.message));watch();
+let p=await ctx.newPage();const errs=[];const watch=()=>p.on("pageerror",e=>BR.noise(e.message)||errs.push(e.message));watch();
 await p.goto(url);await p.evaluate(()=>navigator.serviceWorker.ready.then(()=>true));await p.reload();
 ok("Service worker controls the page under /Duo-fit/",await p.evaluate(()=>!!navigator.serviceWorker.controller&&navigator.serviceWorker.controller.scriptURL.includes("/Duo-fit/sw.js")));
 const man=await p.evaluate(async()=>{const href=document.querySelector("link[rel=manifest]").href,m=await (await fetch(href)).json(),abs=x=>new URL(x,href).href;

@@ -13,4 +13,7 @@ if(device&&!all[device])throw Error('Unknown DEVICE '+device);
 // checked); real offline relaunches are covered by the Chromium runs.
 let noted=false;
 const offline=async(ctx,on)=>{if(engine==='webkit'){if(!noted){console.log('NOTE WebKit: airplane-mode steps run online (driver limit), offline is covered in Chromium');noted=true}return false}await ctx.setOffline(on);return true};
-module.exports={engine,device,offline,launch:o=>pw[engine].launch(o),dev:d=>all[device||d]};
+// WebKit's driver reports the background update check, aborted by a reload in a test, as a page error ("… due to access
+// control checks"). It is not an app error (update checks are tested by pages.js); only that message, only in WebKit, is set aside.
+const noise=m=>engine==='webkit'&&/\?nocache=\d+ due to access control checks/.test(String(m));
+module.exports={engine,device,offline,noise,launch:o=>pw[engine].launch(o),dev:d=>all[device||d]};

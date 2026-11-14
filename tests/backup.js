@@ -9,7 +9,7 @@ navigator.share=async d=>{const f=d.files&&d.files[0];window.__shared.push({name
   if(window.__shareMode==="cancel"){const e=new Error("cancel");e.name="AbortError";throw e}};`;
 (async()=>{const b=await BR.launch();
 const ctx=await b.newContext({...BR.dev('iPhone SE'),locale:'fr-FR',timezoneId:'Europe/Paris',acceptDownloads:true});await ctx.addInitScript(IOS);await ctx.addInitScript(SHARE);
-const p=await ctx.newPage();p.setDefaultTimeout(8000);const errs=[];p.on('pageerror',e=>errs.push(e.message));
+const p=await ctx.newPage();p.setDefaultTimeout(8000);const errs=[];p.on('pageerror',e=>BR.noise(e.message)||errs.push(e.message));
 const DAY=864e5,T0=Date.UTC(2026,10,16,9);await p.clock.install({time:T0});
 const E=(f,a)=>p.evaluate(f,a),txt=async()=>(await p.textContent('#v')).replace(/[  ]/g,' ');
 const tap=loc=>loc.evaluate(el=>el.click()),nav=n=>tap(p.locator('nav button').nth(n)),accept=()=>tap(p.locator('#action-accept'));

@@ -4,7 +4,7 @@ const URL=process.env.URL||'http://localhost:8766/index.html';
 const R=[];let fails=0;const ok=(n,c,x='')=>{const l=(c?'PASS ':'FAIL ')+n+(x?' — '+x:'');R.push(l);console.log(l);if(!c)fails++};
 (async()=>{const b=await BR.launch();
 const ctx=await b.newContext({...BR.dev('iPhone 13'),locale:'fr-FR',timezoneId:'Europe/Paris'});await ctx.addInitScript(IOS);
-const p=await ctx.newPage();p.setDefaultTimeout(8000);const errs=[];p.on('pageerror',e=>errs.push(e.message));
+const p=await ctx.newPage();p.setDefaultTimeout(8000);const errs=[];p.on('pageerror',e=>BR.noise(e.message)||errs.push(e.message));
 const E=(f,a)=>p.evaluate(f,a),txt=async()=>(await p.textContent('#v')).replace(/[  ]/g,' ');
 const tap=loc=>loc.evaluate(el=>el.click());
 const nav=n=>tap(p.locator('nav button').nth(n));
