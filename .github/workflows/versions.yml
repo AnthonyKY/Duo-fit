@@ -34,7 +34,10 @@ jobs:
           if gh release view "$TAG" >/dev/null 2>&1; then echo "already saved"; exit 0; fi
           cp index.html "duofit-$VER-index.html"
           git archive --format=zip -o "duofit-$VER-code.zip" "$SHA"
-          git bundle create "duofit-$VER-historique-complet.bundle" --all
+          # every branch as a real branch in the bundle, so "git clone file.bundle" brings them all back
+          for b in $(git for-each-ref --format='%(refname:strip=3)' refs/remotes/origin | grep -vx HEAD); do git branch -f "$b" "origin/$b" >/dev/null; done
+          git bundle create "duofit-$VER-historique-complet.bundle" --branches --tags
+          git bundle verify "duofit-$VER-historique-complet.bundle"
           gh release create "$TAG" --target "$SHA" --title "Duo-fit $VER ($(date -u +%Y-%m-%d))" \
             --notes "Copie automatique de la version $VER (commit ${SHA:0:7}), publiée après tous les tests verts. index.html = l'app telle quelle ; code.zip = le dépôt à cette version ; historique-complet.bundle = toutes les versions et branches (git clone fichier.bundle)." \
             "duofit-$VER-index.html" "duofit-$VER-code.zip" "duofit-$VER-historique-complet.bundle"
