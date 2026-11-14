@@ -1638,7 +1638,7 @@ function bOpen(id){
   bdStore();go();const f=$("bdf");if(f&&f.scrollIntoView)f.scrollIntoView({block:"start"});
 }
 function bIn(k,v){const b=U.bd;if(!b)return;if(k==="d")b.d=v;else if(k==="note")b.note=String(v).slice(0,80);else b.v[k]=v;
-  const el=$("b_"+k);if(el)el.removeAttribute("aria-invalid");bdStore()}
+  const el=$("b_"+k);if(el)el.removeAttribute("aria-invalid");bdStore();bRefreshHints(b)}
 function bWhen(w){if(!U.bd||!BWHEN.includes(w))return;U.bd.when=w;bdStore();go()}
 function bCancel(){U.bd=null;bdStore();go()}
 function bBad(k,msg){notice(msg);const el=$("b_"+k);if(!el)return;if(BSEG.some(g=>k.startsWith(g))){const s=el.closest("details");if(s)s.open=true}el.setAttribute("aria-invalid","true");el.focus()}
@@ -1678,30 +1678,131 @@ function bDel(id){
     if(U.bd&&U.bd.id===id){U.bd=null;bdStore()}go();notice(t("bDeleted"));
   },t("cancel"),{danger:true});
 }
+// Each expression retains its original readings. When weight is reconstructed from fat,
+// the fat input is perturbed only once, even when it also appears in the lean-mass formula.
+function bMeasure(key,value,step=.1){
+  return {inputs:{[key]:[value,step/2]},eval:x=>x[key],value};
+}
+function bExpr(fn,...args){
+  if(args.some(x=>!x))return null;
+  return {inputs:Object.assign({},...args.map(x=>x.inputs)),eval:x=>fn(...args.map(a=>a.eval(x))),value:fn(...args.map(a=>a.value))};
+}
+function bBounds(expr){
+  const entries=Object.entries(expr.inputs),point={};let lo=expr.value,hi=expr.value;
+  function visit(i){
+    if(i===entries.length){const v=expr.eval(point);lo=Math.min(lo,v);hi=Math.max(hi,v);return}
+    const [key,[v,r]]=entries[i];point[key]=v-r;visit(i+1);point[key]=v+r;visit(i+1);
+  }
+  visit(0);
+  if(expr.canBeZero)lo=0;
+  return [lo,hi];
+}
+const bText=(fr,en)=>S.lg==="fr"?fr:en;
+function bCalc(raw){
+  const result={},blocked=new Set(),valid=(k,v)=>Number.isFinite(v)&&v>=BF[k][0]&&v<=BF[k][1];
+  for(const k of BKEYS){
+    if(raw[k]==null||String(raw[k]).trim()==="")continue;
+    const v=num(raw[k]);
+    if(valid(k,v))result[k]=bMeasure(k,v,k==="bmr"?1:.1);else blocked.add(k);
+  }
+  function put(k,expr,origin="calc"){
+    if(result[k]||blocked.has(k)||!expr||!Number.isFinite(expr.value)||(BF[k]&&!valid(k,expr.value)))return;
+    result[k]={...expr,origin};
+  }
+  const sum=(...a)=>a.reduce((n,x)=>n+x,0),ratio=(kg,p)=>100*kg/p;
+  if(result.weight)for(const k of BKG)if(result[k]?.value>result.weight.value){delete result[k];blocked.add(k)}
+  put("muscleKg",bExpr(sum,...BSEG.map(g=>result[g+"Muscle"])));
+  for(const part of ["muscle","fat"])put("weight",bExpr(ratio,result[part+"Kg"],result[part+"Pct"]));
+  if(!result.weight&&!blocked.has("weight")){
+    const w=D().hd.find(x=>x.d===raw.d&&valid("weight",x.w))?.w;
+    if(w!=null)put("weight",bMeasure("weighIn",w),"weighIn");
+  }
+  const w=result.weight;
+  if(w)for(const k of BKG)if(result[k]?.value>w.value){delete result[k];blocked.add(k)}
+  for(const part of ["fat","muscle"]){
+    const kg=part+"Kg",pct=part+"Pct";
+    put(kg,bExpr((a,b)=>a*b/100,w,result[pct]));
+    put(pct,bExpr(ratio,result[kg],w));
+  }
+  const lean=bExpr((a,b)=>a-b,w,result.fatKg);
+  if(lean?.value>0)put("lean",lean);
+  const bone=bExpr((a,b)=>a-b,result.lean,result.muscleKg);
+  if(bone){if(bone.value>=1-1e-9&&bone.value<=6+1e-9)put("bone",bone);else result.badBone=true}
+  for(const [key,a,b] of [["arms","leftArmMuscle","rightArmMuscle"],["legs","leftLegMuscle","rightLegMuscle"]]){
+    const diff=bExpr((l,r)=>100*Math.abs(l-r)/Math.max(l,r),result[a],result[b]);
+    if(diff){diff.canBeZero=Math.abs(result[a].value-result[b].value)<=.10000001;put(key,diff)}
+  }
+  const h=Number(D().pf.h)/100;
+  if(h>=.9&&h<=2.5){
+    put("bmi",bExpr(a=>a/(h*h),w));put("ffmi",bExpr(a=>a/(h*h),result.lean));
+    if(D().pf.sex==="m")put("adjusted",bExpr(a=>a+6.1*(1.8-h),result.ffmi));
+  }
+  put("bmr",bExpr(a=>500+22*a,result.lean),"estimate");
+  return result;
+}
+function bComputedText(k,m,unit){
+  const [lo,hi]=bBounds(m),err=Math.max(m.value-lo,hi-m.value);
+  const v=k==="bmr"?Math.round(m.value/10)*10:m.value;
+  const digits=k==="bmr"||err>=10?0:1;
+  const format=n=>n.toLocaleString(S.lg,{maximumFractionDigits:digits});
+  return "≈ "+format(v)+(unit==="kg"&&err>.30000001?" ± "+format(Math.ceil((err-1e-9)*10)/10):"");
+}
+function bLegend(c){
+  let s=bText("≈ = calculé","≈ = calculated");
+  if(c.weight?.origin==="weighIn")s+=" · "+bText("poids de ta pesée du jour","weight from your same-day weigh-in");
+  if(c.bmr?.origin)s+=" · "+bText("métabolisme estimé (Cunningham)","estimated metabolism (Cunningham)");
+  return s;
+}
+function bDerived(c){
+  const labels={lean:["Masse maigre","Fat-free mass","kg"],bone:["Masse osseuse estimée","Estimated bone mass","kg"],bmi:["IMC","BMI","kg/m²"],ffmi:["FFMI","FFMI","kg/m²"],adjusted:["FFMI ramené à 1,80 m","FFMI normalized to 1.80 m","kg/m²"],arms:["Écart musculaire des bras","Arm muscle difference","%"],legs:["Écart musculaire des jambes","Leg muscle difference","%"],bmr:["Métabolisme estimé","Estimated metabolism",t("bKcal")]};
+  const lines=Object.entries(labels).filter(([k])=>c[k]?.origin).map(([k,[fr,en,u]])=>`<dt>${bText(fr,en)}</dt><dd>${bComputedText(k,c[k],u)} ${u}</dd>`);
+  return `<b>${bText("Calculs","Calculations")}</b><p class=mu>${bLegend(c)}</p><dl class=bdl>${lines.join("")}</dl>
+  ${c.badBone?`<p>${bText("Valeurs incohérentes pour estimer la masse osseuse.","Inconsistent values for estimating bone mass.")}</p>`:""}
+  ${c.adjusted?`<p class=mu>${bText("Repère masculin : autour de 18–20 dans la population étudiée. Environ 25 était la limite observée chez les sportifs déclarés sans stéroïdes dans une étude, sans constituer un plafond individuel.","Male reference: around 18–20 in the population studied. Around 25 was the upper value observed in one sample of athletes reporting no steroids, not an individual ceiling.")}</p>`:""}`;
+}
+function bHint(c,k){return c[k]?.origin?bComputedText(k,c[k],bUnit(k)):""}
+function bRefreshHints(b){
+  const c=bCalc({...b.v,d:b.d});
+  for(const k of BKEYS){const el=$("b_"+k);if(el)el.placeholder=bHint(c,k)}
+  const legend=$("bLegend");if(legend)legend.textContent=bLegend(c);
+}
+
 function bCmp(r,rows){
   const i=rows.indexOf(r),before=rows.slice(0,i),same=before.filter(x=>x.when===r.when).at(-1),w=t("bw_"+r.when).toLowerCase();
   if(same){
-    const parts=[["weight","kg","bWs"],["fatKg","kg","bFs"],["fatPct",t("bPt"),"bPs"],["muscleKg","kg","bMs"]].filter(([k])=>r[k]!=null&&same[k]!=null).map(([k,u,l])=>`${t(l)} ${bSg(r[k]-same[k])} ${u}`);
+    const now=bCalc(r),prev=bCalc(same);
+    const parts=[["weight","kg","bWs"],["fatKg","kg","bFs"],["fatPct",t("bPt"),"bPs"],["muscleKg","kg","bMs"]]
+      .filter(([k])=>now[k]&&prev[k]).sort(([a],[b])=>Number(!!(now[a].origin||prev[a].origin))-Number(!!(now[b].origin||prev[b].origin)))
+      .map(([k,u,l])=>{
+        const a=now[k],b=prev[k],delta=a.value-b.value;
+        if(!a.origin&&!b.origin)return t(l)+" "+bSg(delta)+" "+u;
+        const [al,ah]=bBounds(a),[bl,bh]=bBounds(b),err=Math.max(delta-(al-bh),ah-bl-delta);
+        return t(l)+" ≈ "+bSg(delta)+(u==="kg"&&err>.30000001?" ± "+f1(Math.ceil((err-1e-9)*10)/10):"")+" "+u;
+      });
     return parts.length?t("bCmp")(bDate(same.d),parts.join(" · ")):t("bCmp0")(bDate(same.d));
   }
   const prev=before.at(-1);
   return prev?t("bCmpX")(bDate(prev.d),t("bw_"+prev.when).toLowerCase(),w):t("bFirst")(w);
 }
 function bRow(r,rows){
-  const v=(k,u)=>r[k]!=null?`<span class=bdv>${k==="bmr"?Math.round(r[k]).toLocaleString(S.lg):f1(r[k])}${u?" "+u:""}</span>`:"";
-  const sum=[r.weight!=null?v("weight","kg"):"",r.fatPct!=null?`${v("fatPct","%")} ${t("bS_fat")}`:r.fatKg!=null?`${v("fatKg","kg")} ${t("bS_fat")}`:"",r.muscleKg!=null?`${v("muscleKg","kg")} ${t("bS_mus")}`:""].filter(Boolean).join(" · ");
-  const pair=(a,b)=>[r[a]!=null?f1(r[a])+" "+bUnit(a):"",r[b]!=null?f1(r[b])+" "+bUnit(b):""].filter(Boolean).join(" · ");
-  const lines=[["bWeight",r.weight!=null?f1(r.weight)+" kg":""],["bFat",pair("fatKg","fatPct")],["bMus",pair("muscleKg","musclePct")],["bBmr",r.bmr!=null?Math.round(r.bmr).toLocaleString(S.lg)+" "+t("bKcal"):""]].filter(x=>x[1]);
+  const c=bCalc(r);
+  const v=(k,u)=>r[k]!=null?f1(r[k])+" "+u:c[k]?`<span class=mu>${bComputedText(k,c[k],u)} ${u}</span>`:"";
+  const fat=c.fatPct?v("fatPct","%"):v("fatKg","kg");
+  const sum=[v("weight","kg"),fat&&fat+" "+t("bS_fat"),c.muscleKg&&v("muscleKg","kg")+" "+t("bS_mus")].filter(Boolean).join(" · ");
+  const pair=(a,b)=>[v(a,bUnit(a)),v(b,bUnit(b))].filter(Boolean).join(" · ");
+  const lines=[["bWeight",v("weight","kg")],["bFat",pair("fatKg","fatPct")],["bMus",pair("muscleKg","musclePct")],["bBmr",r.bmr!=null?v("bmr",t("bKcal")):""]].filter(x=>x[1]);
   const segs=BSEG.filter(g=>r[g+"Muscle"]!=null||r[g+"Fat"]!=null);
   return`<details class=bdr data-b="${r.id}" ${U.bo===r.id?"open":""} ontoggle="if(this.open)U.bo='${r.id}';else if(U.bo==='${r.id}')U.bo=null"><summary><b>${bDate(r.d)}</b><span class="bw bw-${r.when}">${t("bw_"+r.when)}</span><span>${sum}</span></summary>
   <dl class=bdl>${lines.map(([l,x])=>`<dt>${t(l)}</dt><dd>${x}</dd>`).join("")}${segs.map(g=>`<dt>${t("seg_"+g)}</dt><dd>${pair(g+"Muscle",g+"Fat")}</dd>`).join("")}</dl>
+  ${bDerived(c)}
   ${r.note?`<p class=mu style="margin:6px 0 0">📝 ${escapeHtml(r.note)}</p>`:""}<p class="bcm mu">${bCmp(r,rows)}</p>
   <div class=r><button class=hb onclick="bOpen('${r.id}')">✏️ ${t("edit")}</button><button class=hb onclick="bDel('${r.id}')">🗑️ ${t("del")}</button></div></details>`;
 }
 function bForm(b){
-  const inp=(k,cls="")=>`<span class="bu ${cls}"><input id=b_${k} type=text inputmode=decimal autocomplete=off aria-label="${escapeHtml(bLabel(k))}" value="${escapeHtml(b.v[k]??"")}" oninput="bIn('${k}',this.value)"><i>${bUnit(k)}</i></span>`;
+  const c=bCalc({...b.v,d:b.d});
+  const inp=(k,cls="")=>`<span class="bu ${cls}"><input id=b_${k} type=text inputmode=decimal autocomplete=off aria-label="${escapeHtml(bLabel(k))}" placeholder="${bHint(c,k)}" value="${escapeHtml(b.v[k]??"")}" oninput="bIn('${k}',this.value)"><i>${bUnit(k)}</i></span>`;
   return`<div id=bdf>${b.id?`<p class=lb>✏️ ${t("bEditT")}</p>`:""}
-  <label class=fl><span>${t("date")}</span><input type=date id=b_d value="${escapeHtml(b.d)}" max="${tday()}" oninput="bIn('d',this.value)" onchange="bIn('d',this.value)"></label>
+  <label class=fl><span>${t("date")}</span><input type=date id=b_d value="${escapeHtml(b.d)}" max="${tday()}" oninput="bIn('d',this.value)"></label>
   <p class=lb>${t("bWhenT")}</p><div class="sg bwc" role=group aria-label="${t("bWhenT")}">${BWHEN.map(w=>`<button type=button class="${b.when===w?"on":""}" aria-pressed="${b.when===w}" onclick="bWhen('${w}')">${t("bw_"+w)}</button>`).join("")}</div>
   <p class=mu>${t("bwx_"+(b.when||"none"))}</p>
   <p class=lb>${t("bMainT")}</p>
@@ -1709,7 +1810,7 @@ function bForm(b){
   <div class=bgr><span>${t("bFat")}</span>${inp("fatKg")}${inp("fatPct")}</div>
   <div class=bgr><span>${t("bMus")}</span>${inp("muscleKg")}${inp("musclePct")}</div>
   <div class=bgr><span>${t("bBmr")}</span>${inp("bmr","bu2 bk")}</div>
-  <p class=mu>${t("bHelp")}</p>
+  <p class=mu>${t("bHelp")}</p><p class=mu id=bLegend>${bLegend(c)}</p>
   <details class=bseg ${b.seg?"open":""} ontoggle="if(U.bd){U.bd.seg=this.open;bdStore()}"><summary>${t("bSegT")}</summary>
   <div class="bgr bgh"><span></span><span>${t("bSegM")}</span><span>${t("bSegF")}</span></div>
   ${BSEG.map(g=>`<div class=bgr><span>${t("seg_"+g)}</span>${inp(g+"Muscle")}${inp(g+"Fat")}</div>`).join("")}</details>
@@ -1752,7 +1853,7 @@ function th(){const r=document.documentElement;S.th?r.setAttribute("data-theme",
 function go(){th();CH=[];const ids=["today","plan","lib","prg","hist","set"],f={today,plan,lib,prg,hist,set}[U.tab];
 document.getElementById("v").innerHTML=`<div class=pf><div><button class="${S.p=="M"?"on":""}" onclick="switchProfile('M')">${t("him")}</button><button class="${S.p=="F"?"on":""}" onclick="switchProfile('F')">${t("her")}</button></div><div><button class="${S.lg=="fr"?"on":""}" onclick="S.lg='fr';save();go()">FR</button><button class="${S.lg=="en"?"on":""}" onclick="S.lg='en';save();go()">EN</button></div></div>`+f();
 document.getElementById("nv").innerHTML=ids.map((x,i)=>`<button class="${U.tab==x?"on":""}" onclick="navigate('${x}')">${t("tab")[i]}</button>`).join("");renderRest();hook()}
-const VER="2026-11-14l";
+const VER="2026-11-14m";
 function upd(){if(!/^https?:/.test(location.protocol))return;fetch(location.pathname+"?nocache="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"").then(h=>{const m=/const VER="([^"]+)"/.exec(h);if(!m||m[1]==VER)return;
 if(!S.d.M.cur&&!S.d.F.cur&&!$("action-dialog").open&&U.ed==null){location.replace(location.pathname+"?v="+m[1]);return}
 const b=document.getElementById("upb");b.style.display="block";b.textContent=t("upd");b.onclick=()=>location.replace(location.pathname+"?v="+m[1])}).catch(()=>{})}
