@@ -31,6 +31,16 @@ jobs:
           set -o pipefail
           npm run test:web | tee /tmp/web-chromium
           ! grep -Eq '^FAIL|^CRASH' /tmp/web-chromium
+      - name: Security policy of a build made for a Supabase project (fake public values)
+        env:
+          COLLABFIT_SUPABASE_URL: https://abcdefghijklmnopqrst.supabase.co
+          COLLABFIT_SUPABASE_ANON_KEY: sb_publishable_ci_placeholder
+          SMOKE_ONLY: csp
+        run: |
+          set -o pipefail
+          npm run build:web && npm run test:web | tee /tmp/web-csp
+          ! grep -Eq '^FAIL|^CRASH' /tmp/web-csp
+          npm run build:web
       - name: Web app on iPhone 16 Plus (WebKit, Safari's engine)
         env:
           BROWSER: webkit

@@ -142,6 +142,14 @@ select t.fails(format('insert into storage.objects (bucket_id, name, owner) valu
   'row-level security', 'only pictures (jpg, png, webp)');
 select t.as_user(:'A');
 select t.ok(t.n(format('select * from storage.objects where name = %L', :'pic')) = 1, 'Alice can open Bob''s picture');
+\set apic :ws/:A/66666666-6666-4666-8666-666666666666.jpg
+insert into storage.objects (bucket_id, name, owner) values ('chat-media', :'apic', :'A');
+select t.as_user(:'B');
+delete from storage.objects where name = :'apic';
+reset role;
+select t.ok(exists (select 1 from storage.objects where name = :'apic'), 'an active member cannot delete someone else''s picture');
+set role authenticated;
+select t.as_user(:'A');
 select t.as_user(:'D');
 select t.ok(t.n(format('select * from storage.objects where name = %L', :'pic')) = 0, 'a stranger who guesses the path gets nothing');
 select t.as_user(:'A');
@@ -168,8 +176,23 @@ select t.fails(format('update public.profiles set id = %L where id = %L', :'D', 
 -- ===================================================================== removal: access ends at once
 select public.remove_member(:'ws', :'B') \gset
 select t.as_user(:'B');
-select t.ok(t.n('select * from public.messages') = 0, 'removed: Bob no longer reads the messages');
-select t.ok(t.n(format('select * from storage.objects where name = %L', :'pic')) = 0, 'removed: Bob no longer opens the pictures, even his own upload');
+select t.ok(t.n('select * from public.messages where author_id <> auth.uid() or author_id is null') = 0, 'removed: Bob no longer reads Alice''s messages');
+select t.ok(t.n(format('select * from storage.objects where bucket_id = %L and name not like %L', 'chat-media', '%/' || :'B' || '/%')) = 0, 'removed: Bob no longer opens Alice''s pictures');
+select t.ok(t.n('select * from public.messages where author_id = auth.uid() and deleted_at is null') >= 1, 'removed: Bob still sees his own messages (to delete them)');
+select t.ok(t.n(format('select * from storage.objects where name = %L', :'pic')) = 1, 'removed: Bob still sees his own picture (to delete it)');
+delete from storage.objects where name = :'apic';
+select t.fails(format('select public.delete_message(%L)', :'m1'), 'not found', 'removed: Bob cannot delete Alice''s message');
+reset role;
+select t.ok(exists (select 1 from storage.objects where name = :'apic'), 'removed: Bob''s attempt to delete Alice''s picture leaves it in place');
+set role authenticated;
+select t.as_user(:'B');
+select public.delete_message(:'m2') \gset
+delete from storage.objects where bucket_id = 'chat-media' and name = :'pic';
+reset role;
+select t.ok((select body is null from public.messages where id = :'m2') and not exists (select 1 from storage.objects where name = :'pic'),
+  'removed: Bob can still erase his own message and picture (his content stays his)');
+set role authenticated;
+select t.as_user(:'B');
 select t.fails(format('select t.send(%L, %L)', :'ws', 'encore là ?'), 'row-level security', 'removed: Bob cannot post');
 select t.fails(format('select public.publish_workout_event(%L, %L, %L)', :'ws', 'started', 'w2'), 'sharing is off', 'removed: Bob cannot publish');
 select t.ok(t.n('select * from public.workspaces') = 0, 'removed: the space disappears from Bob''s list');
@@ -202,6 +225,18 @@ select public.create_workspace('Autre groupe', 'friends') as fw2 \gset
 select public.create_invitation(:'fw2') as btok \gset
 select t.as_user(:'E');
 select t.fails(format('select public.accept_invitation(%L)', :'btok'), 'invalid or expired', 'a blocked person cannot join a space of the person who blocked him');
+-- explicit transfer in a space of three, to the most recent member (not the next in line)
+select t.as_user(:'C');
+select public.transfer_ownership(:'fw', :'D') \gset
+reset role;
+select t.ok((select owner_id from public.workspaces where id = :'fw') = :'D'::uuid
+  and (select count(*) from public.workspace_members where workspace_id = :'fw' and role = 'owner' and status = 'active') = 1
+  and (select role from public.workspace_members where workspace_id = :'fw' and user_id = :'C') = 'member'
+  and (select status from public.workspace_members where workspace_id = :'fw' and user_id = :'C') = 'active',
+  'transfer to the most recent member: he is the only owner, the former owner stays a member');
+set role authenticated;
+select t.as_user(:'D');
+select public.transfer_ownership(:'fw', :'C') \gset
 select t.as_user(:'C');
 select public.leave_workspace(:'fw') \gset
 reset role;
@@ -226,6 +261,16 @@ select t.ok(not exists (select 1 from public.profiles where id = :'E'), 'deleted
 select t.ok(not exists (select 1 from public.workspace_members where user_id = :'E'), 'deleted account: memberships gone');
 select t.ok((select owner_id from public.workspaces where id = :'fw') = :'D'::uuid, 'deleted owner: ownership passes to the next member');
 select t.ok(exists (select 1 from public.messages where workspace_id = :'fw' and author_id is null), 'deleted account: its messages stay for the others, anonymous');
+select t.fails(format('delete from auth.users where id = %L', :'A'), 'files first', 'an account with files left cannot be deleted (no orphan files)');
+-- the deletion function does this through the Storage API: every avatar and chat picture of the account
+delete from storage.objects where (bucket_id = 'avatars' and split_part(name, '/', 1) = :'A') or (bucket_id = 'chat-media' and split_part(name, '/', 2) = :'A');
 delete from auth.users where id = :'A';
-select t.ok(not exists (select 1 from public.workspaces where id = :'ws'), 'deleted last member of the couple: the couple space is deleted');
+select t.ok(not exists (select 1 from public.workspaces where id = :'ws'), 'files removed first, then the account: the couple space is deleted');
+select t.ok(not exists (select 1 from public.profiles where id = :'A'), '…and the profile with it');
+-- client roles: read through policies, write through functions, nothing structural
+select t.ok(not exists (select 1 from information_schema.role_table_grants where table_schema = 'public'
+  and grantee in ('anon', 'authenticated') and privilege_type in ('TRUNCATE', 'REFERENCES', 'TRIGGER')), 'client roles have no TRUNCATE / REFERENCES / TRIGGER right');
+select t.ok(not exists (select 1 from information_schema.role_table_grants where table_schema = 'public' and grantee = 'anon'), 'not signed in: no right on any table');
+select t.ok(not exists (select 1 from pg_class c join pg_namespace n on n.oid = c.relnamespace where n.nspname = 'public' and c.relkind = 'r' and not c.relrowsecurity),
+  'row level security is on for every table');
 \echo SECURITY-SUITE-DONE

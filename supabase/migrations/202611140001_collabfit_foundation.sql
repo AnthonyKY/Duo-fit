@@ -150,8 +150,9 @@ create policy blocks_insert_own on public.user_blocks for insert to authenticate
 create policy blocks_delete_own on public.user_blocks for delete to authenticated using (blocker_id = (select auth.uid()));
 
 create policy messages_read on public.messages for select to authenticated using (
-  public.is_active_member(workspace_id) and created_at >= public.member_since(workspace_id)
-  and (author_id is null or not public.blocked_by_me(author_id)));
+  author_id = (select auth.uid())
+  or (public.is_active_member(workspace_id) and created_at >= public.member_since(workspace_id)
+      and (author_id is null or not public.blocked_by_me(author_id))));
 create policy messages_send on public.messages for insert to authenticated with check (
   author_id = (select auth.uid()) and deleted_at is null and public.is_active_member(workspace_id)
   and (image_path is null or split_part(image_path, '/', 2) = (select auth.uid())::text));
@@ -162,6 +163,7 @@ create policy events_read on public.workout_events for select to authenticated u
 
 -- belt and braces: Supabase grants every table to the client roles; take back what only the functions may do
 revoke all on all tables in schema public from anon;
+revoke truncate, references, trigger on all tables in schema public from authenticated;
 revoke insert, update, delete, truncate on public.workspaces, public.workspace_members, public.workspace_invitations,
   public.workout_events from authenticated;
 revoke insert, update, delete, truncate on public.messages from authenticated;
@@ -193,7 +195,8 @@ language plpgsql security definer set search_path = '' as $$
 declare wid uuid := old.workspace_id; heir uuid;
 begin
   if old.role <> 'owner' or old.status <> 'active' then return null; end if;
-  if tg_op = 'UPDATE' and new.status = 'active' and new.role = 'owner' then return null; end if;
+  -- still an active member (e.g. transfer_ownership demoting the old owner): not a departure, nothing to do
+  if tg_op = 'UPDATE' and new.status = 'active' then return null; end if;
   if not exists (select 1 from public.workspaces where id = wid) then return null; end if;
   select m.user_id into heir from public.workspace_members m
     where m.workspace_id = wid and m.status = 'active' and m.user_id <> old.user_id
