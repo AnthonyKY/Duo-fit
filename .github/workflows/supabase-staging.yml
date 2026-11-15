@@ -75,7 +75,7 @@ jobs:
       - name: Check from outside that the database answers and refuses anonymous reads
         if: steps.cfg.outputs.ready
         run: |
-          key=$(curl -sS "https://api.supabase.com/v1/projects/$PROJECT_ID/api-keys" -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" | jq -r '[.[] | select(.type=="publishable" or .name=="anon")][0].api_key')
+          key="${{ vars.COLLABFIT_SUPABASE_ANON_KEY }}"   # the app's public key (no Management API call: fewer moving parts)
           code=$(curl -s -o /tmp/r.json -w '%{http_code}' "https://$PROJECT_ID.supabase.co/rest/v1/workspaces?select=id" -H "apikey: $key")
           echo "anonymous read of workspaces: HTTP $code $(head -c 160 /tmp/r.json)"
           [ "$code" = 401 ] || [ "$code" = 403 ] || { echo "::error::anonymous read was not refused"; exit 1; }
