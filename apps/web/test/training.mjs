@@ -85,6 +85,19 @@ await savedAll(A);
 const uid = [...sb.db.users.values()].find(u => u.email === 'alice@example.com').id;
 ok(tag + 'On the account: 1 workout', sb.db.training.get(uid)?.data.d.M.logs.length === 1, JSON.stringify(sb.db.calls.filter(c => /training|save_training/.test(c)).slice(-8)) + ' errs=' + A.errs.join('|').slice(0,200) + ' sync=' + await A.p.getAttribute('[data-sync]','data-sync'));
 
+// a slow network: the workout ends while the previous save is on its way, and that save's answer comes back
+// just after — the workout must still reach the account (it used to be marked as sent and stay on the phone)
+let release; sb.db.saveGate = new Promise(r => { release = r; }); sb.db.held = 0;
+await doWorkout(A, 'B', '22,5');                          // starting saved the drawn exercises: that save is held
+await A.p.waitForFunction(() => true); for (let k = 0; k < 40 && !sb.db.held; k++) await new Promise(r => setTimeout(r, 100));
+await A.p.click('button:has-text("Terminer et enregistrer")'); await A.p.waitForSelector('text=Séance enregistrée');
+sb.db.saveGate = null; release();                          // the old answer arrives now
+await A.p.click('button:has-text("Retour")'); await new Promise(r => setTimeout(r, 2500)); await savedAll(A);
+ok(tag + 'Workout finished while a save was on its way: it still reaches the account (2 workouts)', sb.db.training.get(uid)?.data.d.M.logs.length === 2, String(sb.db.training.get(uid)?.data.d.M.logs.length));
+sb.db.training.get(uid).data.d.M.logs = sb.db.training.get(uid).data.d.M.logs.filter(l => l.wk !== 'B'); // back to 1 for the next checks
+sb.db.training.get(uid).version++;
+await A.p.reload(); await A.p.waitForSelector('.history');
+
 // the same account on a second phone
 const A2 = await phone(dev);
 await signUp(A2, 'Alice', 'alice@example.com', 'in');

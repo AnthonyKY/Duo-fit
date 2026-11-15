@@ -137,6 +137,11 @@ export function standIn() {
         db.events.push(row); publish('workout_events', 'INSERT', row); return json(route, 200, row.id);
       }
       if (rpc[1] === 'save_training') {
+        // a slow network: the request is applied, but its answer is held until the test releases it
+        if (db.saveGate) { db.held = (db.held || 0) + 1; const cur0 = db.training.get(who), r0 = route;
+          if (a.p_version === 0 ? !cur0 : cur0 && cur0.version === a.p_version) { const v = (cur0?.version ?? 0) + 1; db.training.set(who, { data: JSON.parse(JSON.stringify(a.p_data)), version: v });
+            await db.saveGate; return json(r0, 200, v); }
+          await db.saveGate; return pgErr(r0, 409, '40001', 'saved meanwhile from another phone'); }
         const cur = db.training.get(who);
         if (a.p_version === 0 ? !!cur : !cur || cur.version !== a.p_version) return pgErr(route, 409, '40001', 'saved meanwhile from another phone');
         const v = (cur?.version ?? 0) + 1; db.training.set(who, { data: JSON.parse(JSON.stringify(a.p_data)), version: v }); return json(route, 200, v);

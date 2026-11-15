@@ -13,6 +13,7 @@ type Row = { data: unknown; version: number };
 
 const listeners = new Set<Listener>();
 let uid = '', trainer: Trainer | null = null, version = 0, dirty = false, sync: SyncState = 'saved', loaded = false, timer: ReturnType<typeof setTimeout> | undefined;
+let edits = 0, pushing = false; // a change made while a save is on its way is sent by the next save, never dropped
 let draft: Draft | null = null;
 const k = (what: string) => `collabfit-${what}-${uid}`;
 const emit = () => { for (const l of listeners) l(); };
@@ -44,16 +45,24 @@ function merge(local: Trainer, server: unknown, lang: Lang): Trainer {
 
 async function push(): Promise<void> {
   if (!trainer || !dirty || !uid) return;
+  if (pushing) { schedule(500); return; }
+  pushing = true;
+  try { await pushNow(); } finally { pushing = false; }
+}
+async function pushNow(): Promise<void> {
+  if (!trainer) return;
+  const at = edits;
   sync = 'saving'; emit();
   const lang = (trainer.state.lg as Lang) ?? 'fr';
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
-      version = await rpc<number>('save_training', { p_data: outgoing(trainer), p_version: version });
-      dirty = false; sync = 'saved'; keepLocal(); emit(); return;
+      version = await rpc<number>('save_training', { p_data: outgoing(trainer!), p_version: version });
+      if (edits === at) { dirty = false; sync = 'saved'; } else schedule(0); // changed meanwhile: one more save
+      keepLocal(); emit(); return;
     } catch (e) {
       if (e instanceof BackendError && e.problem === 'conflict') {
         const row = (await rest<Row[]>(`training_profiles?select=data,version&user_id=eq.${uid}`))[0];
-        if (row) { trainer = merge(trainer, row.data, lang); version = row.version; continue; }
+        if (row) { trainer = merge(trainer!, row.data, lang); version = row.version; continue; }
         version = 0; continue;
       }
       sync = e instanceof BackendError && e.problem === 'offline' ? 'offline' : 'error'; keepLocal(); emit();
@@ -63,7 +72,7 @@ async function push(): Promise<void> {
 }
 function schedule(ms = 800) { clearTimeout(timer); timer = setTimeout(() => void push(), ms); }
 /** something changed in the training state: kept on the phone at once, sent to the account shortly after */
-export function changed() { dirty = true; if (sync === 'saved') sync = 'saving'; keepLocal(); emit(); schedule(); }
+export function changed() { edits++; dirty = true; if (sync === 'saved') sync = 'saving'; keepLocal(); emit(); schedule(); }
 
 export async function loadTraining(lang: Lang): Promise<void> {
   const s = currentSession();
