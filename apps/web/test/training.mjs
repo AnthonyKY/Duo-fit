@@ -29,7 +29,9 @@ const webkitAbort = text => (process.env.BROWSER || '') === 'webkit' && /due to 
 const ok = (n, c, x = '') => { const l = (c ? 'PASS ' : 'FAIL ') + n + (x ? ' — ' + String(x).slice(0, 260) : ''); R.push(l); console.log(l); if (!c) fails++; };
 const b = await BR.launch(), sb = standIn();
 async function phone(dev) {
-  const ctx = await b.newContext({ ...BR.dev(dev), locale: 'fr-FR', timezoneId: 'Europe/Paris' });
+  // serviceWorkers 'block': the app's worker only shows notifications (push.mjs); with one attached, WebKit's test driver
+  // stops routing requests (stand-in server, Netlify badge stub)
+  const ctx = await b.newContext({ ...BR.dev(dev), locale: 'fr-FR', timezoneId: 'Europe/Paris', serviceWorkers: 'block' });
   await ctx.addInitScript(IOS); await useStandIn(ctx, sb);
   const p = await ctx.newPage(); p.setDefaultTimeout(8000);
   const errs = []; p.on('pageerror', e => { if (!webkitAbort(e.message)) errs.push(e.message); });

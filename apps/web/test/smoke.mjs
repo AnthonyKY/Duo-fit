@@ -30,7 +30,9 @@ const SAMPLE = JSON.stringify({ p: 'M', d: { M: { logs: [{ date: Date.UTC(2026, 
 const b = await BR.launch();
 for (const dev of BR.device ? [BR.device] : ['iPhone SE', 'iPhone 16 Plus']) {
   { // the DUOFIT version under review, served next to the test app (its own page, its own fresh storage)
-    const ctx = await b.newContext({ ...BR.dev(dev), locale: 'fr-FR', timezoneId: 'Europe/Paris' });
+    // serviceWorkers 'block': the app's worker only shows notifications (push.mjs); with one attached, WebKit's test driver
+  // stops routing requests (stand-in server, Netlify badge stub)
+  const ctx = await b.newContext({ ...BR.dev(dev), locale: 'fr-FR', timezoneId: 'Europe/Paris', serviceWorkers: 'block' });
     await ctx.addInitScript(IOS);
     if (process.env.SMOKE_URL) await ctx.route('**/.netlify/scripts/**', r => r.fulfill({ status: 200, contentType: 'text/javascript', body: '' }));
     const p = await ctx.newPage(); p.setDefaultTimeout(8000);
@@ -43,7 +45,9 @@ for (const dev of BR.device ? [BR.device] : ['iPhone SE', 'iPhone 16 Plus']) {
     ok(`[${dev}] DUOFIT preview runs without errors`, !errs.length && await p.evaluate(() => window.__nd.length === 0), errs.join(' | '));
     await ctx.close();
   }
-  const ctx = await b.newContext({ ...BR.dev(dev), locale: 'fr-FR', timezoneId: 'Europe/Paris' });
+  // serviceWorkers 'block': the app's worker only shows notifications (push.mjs); with one attached, WebKit's test driver
+  // stops routing requests (stand-in server, Netlify badge stub)
+  const ctx = await b.newContext({ ...BR.dev(dev), locale: 'fr-FR', timezoneId: 'Europe/Paris', serviceWorkers: 'block' });
   await ctx.addInitScript(IOS);
   const p = await ctx.newPage(); p.setDefaultTimeout(8000);
   const errs = []; p.on('pageerror', e => errs.push(e.message)); p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });

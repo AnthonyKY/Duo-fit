@@ -13,7 +13,9 @@ const ok = (n, c, x = '') => { const l = (c ? 'PASS ' : 'FAIL ') + n + (x ? ' â€
 const who = { email: `collabfit-ui-t-${randomBytes(3).toString('hex')}@example.com`, pw: randomBytes(15).toString('base64url') };
 const b = await BR.launch(), dev = BR.device || 'iPhone 16 Plus', tag = `[${dev}] `;
 async function phone() {
-  const ctx = await b.newContext({ ...BR.dev(dev), locale: 'fr-FR', timezoneId: 'Europe/Paris' });
+  // serviceWorkers 'block': the app's worker only shows notifications (push.mjs); with one attached, WebKit's test driver
+  // stops routing requests (stand-in server, Netlify badge stub)
+  const ctx = await b.newContext({ ...BR.dev(dev), locale: 'fr-FR', timezoneId: 'Europe/Paris', serviceWorkers: 'block' });
   await ctx.addInitScript(IOS);
   await ctx.route('**/.netlify/scripts/**', r => r.fulfill({ status: 200, contentType: 'text/javascript', body: '' })); // Netlify's badge, not the app
   const p = await ctx.newPage(); p.setDefaultTimeout(20000);

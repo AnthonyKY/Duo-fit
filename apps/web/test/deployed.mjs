@@ -14,7 +14,9 @@ const R = []; let fails = 0;
 const ok = (n, c, x = '') => { const l = (c ? 'PASS ' : 'FAIL ') + n + (x ? ' — ' + String(x).slice(0, 240) : ''); R.push(l); console.log(l); if (!c) fails++; };
 const b = await BR.launch();
 for (const dev of BR.device ? [BR.device] : ['iPhone SE', 'iPhone 16 Plus']) {
-  const ctx = await b.newContext({ ...BR.dev(dev), locale: 'fr-FR', timezoneId: 'Europe/Paris' });
+  // serviceWorkers 'block': the app's worker only shows notifications (push.mjs); with one attached, WebKit's test driver
+  // stops routing requests (stand-in server, Netlify badge stub)
+  const ctx = await b.newContext({ ...BR.dev(dev), locale: 'fr-FR', timezoneId: 'Europe/Paris', serviceWorkers: 'block' });
   await ctx.addInitScript(IOS);
   // Netlify's free plan injects its "Powered by" badge script; the app's policy blocks what it injects. Not the app's code.
   await ctx.route('**/.netlify/scripts/**', r => r.fulfill({ status: 200, contentType: 'text/javascript', body: '' }));

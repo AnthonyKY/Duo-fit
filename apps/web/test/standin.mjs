@@ -50,6 +50,8 @@ export function standIn() {
   };
 
   async function handle(route) {
+    // a phone without network (set by a test): requests fail as they would, whatever the browser's own emulation does
+    if (db.offlineToken && (route.request().headers().authorization || '') === 'Bearer ' + db.offlineToken) return route.abort('internetdisconnected');
     const req = route.request(), u = new URL(req.url()), m = req.method(), p = u.pathname, q = u.searchParams;
     const who = db.byToken.get((req.headers().authorization || '').replace(/^Bearer /, ''));
     db.calls.push(`${m} ${p}${u.search}`);

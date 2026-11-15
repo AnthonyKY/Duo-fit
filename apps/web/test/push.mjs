@@ -35,7 +35,9 @@ const sb = standIn();
 // the device's push subscription, as a browser gives it (headless browsers have no push service): address + keys
 const FAKE = { endpoint: 'https://fcm.googleapis.com/fcm/send/test-device-', p256dh: 'BJkMSuZOWdNeKx9bHvz7-gUKPF-AmR6tUxXV5Bl1kyR0eB4OfE15-EqxaFZL_UugT9m6oPkRi8_U3aIoCyXpf8E', auth: 'Zcl2MylPk7P00ykn6vqVMA' };
 async function phone(dev, name, safariTab = false) {
-  const ctx = await b.newContext({ ...BR.dev(dev), locale: 'fr-FR', timezoneId: 'Europe/Paris' });
+  // the real service worker in Chromium; WebKit's test driver stops routing requests once one is attached (not so on a
+  // real iPhone, where the worker intercepts nothing): there, only what does not need it is checked
+  const ctx = await b.newContext({ ...BR.dev(dev), locale: 'fr-FR', timezoneId: 'Europe/Paris', ...(webkit ? { serviceWorkers: 'block' } : {}) });
   await ctx.addInitScript(IOS);
   if (!webkit) await ctx.grantPermissions(['notifications'], { origin: url.slice(0, -1) });
   // an iPhone's Safari tab has no push at all (only the app opened from the home screen has it)
@@ -79,7 +81,8 @@ ok(tag + 'iPhone, Safari tab: explains that notifications need the app on the ho
 await signUp(A, 'Alice', 'alice@push.example');
 await A.p.waitForSelector('[data-push]');
 const state = await A.p.getAttribute('[data-push]', 'data-push');
-{
+if (webkit) console.log('NOTE WebKit: the switch-on flow and the service worker are checked in Chromium (driver limit with service workers)');
+else {
   ok(tag + 'Notifications off until the person turns them on', state === 'off' && (await A.text()).includes('Activer sur cet appareil'), state);
   ok(tag + 'Nothing saved before that', sb.db.push.size === 0);
   await A.p.click('[data-push] button.primary:not([disabled])');

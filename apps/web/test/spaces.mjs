@@ -100,11 +100,12 @@ ok(tag + 'Picture shrunk on the phone (JPEG' + (up?.[1].bytes ? ', 1600 px max' 
 // offline: typed, kept, sent when the network is back (Chromium can cut the network; WebKit's switch is a no-op here)
 if (!webkit) {
   await B.ctx.setOffline(true);
+  sb.db.offlineToken = await B.p.evaluate(() => JSON.parse(localStorage.getItem('collabfit-session')).access_token); // Bob's requests only
   await B.p.evaluate(() => dispatchEvent(new Event('offline')));
   await B.type('.composer textarea', 'Écrit dans le métro'); await B.p.click('.composer button[type=submit]');
   await B.p.waitForSelector('.msg.pending >> text=Écrit dans le métro');
   ok(tag + 'Offline: message shown as waiting, kept on the phone', (await B.text()).includes('en attente de connexion') && await B.p.evaluate(() => Object.keys(localStorage).some(k => k.startsWith('collabfit-outbox-') && localStorage.getItem(k).includes('métro'))));
-  await B.ctx.setOffline(false); await B.p.evaluate(() => dispatchEvent(new Event('online')));
+  await B.ctx.setOffline(false); sb.db.offlineToken = null; await B.p.evaluate(() => dispatchEvent(new Event('online')));
   await A.p.waitForSelector('.msg:not(.mine) >> text=Écrit dans le métro', { timeout: 6000 });
   ok(tag + 'Back online: sent once, arrives', sb.db.messages.filter(m => m.body === 'Écrit dans le métro').length === 1 && !(await B.p.isVisible('.msg.pending')));
 }
