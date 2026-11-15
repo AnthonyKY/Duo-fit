@@ -112,6 +112,7 @@ jobs:
           check "security policy without inline code" "grep -o 'Content-Security-Policy\" content=\"[^\"]*' /tmp/page | grep -v -q unsafe-inline"
           check "security policy allows exactly this Supabase project" "grep -o 'Content-Security-Policy\" content=\"[^\"]*' /tmp/page | grep -q \"connect-src 'self' $SUPABASE_URL wss://\""
           check "no secret key in the page or its scripts" "! (cat /tmp/page; for s in \$(grep -o 'src=\"[^\"]*\.js' /tmp/page | cut -d'\"' -f2); do curl -sS \"$APP_URL/\${s#/}\"; done) | grep -Eq 'sb_secret_|service_role'"
+          [ $fail = 0 ] || { echo "--- response:"; head -12 /tmp/h; head -c 400 /tmp/page; echo; }
           exit $fail
       - name: Browsers
         if: steps.cfg.outputs.ready
