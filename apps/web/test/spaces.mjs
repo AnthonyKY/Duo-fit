@@ -138,6 +138,25 @@ ok(tag + 'Alice leaves: back to her spaces, none left, she can create a couple a
 await B.p.click('a[role=tab]:has-text("Membres")'); await B.p.reload(); await B.p.waitForSelector('[data-member=me]');
 ok(tag + 'Bob: alone, owner, can invite again', (await B.text()).includes('1/2 personnes') && (await B.text()).includes('Inviter quelqu’un'));
 
+// pasting a link inside the app (on iPhone, links from Messages open in Safari, not in the home-screen app)
+await B.p.click('a[role=tab]:has-text("Messages")'); await B.p.click('a.back');
+await B.p.waitForSelector('text=Mes espaces');
+await A.p.click('text=Créer un groupe d’amis'); await A.type('form[data-create=friends] input', 'Running du dimanche');
+await A.p.selectOption('form[data-create=friends] select', '6'); await A.p.click('form[data-create=friends] button[type=submit]');
+await A.p.waitForSelector('text=Inviter quelqu’un');
+ok(tag + 'Friends group: Alice chose 6 places', (await A.text()).includes('1/6 personnes'));
+await A.p.selectOption('[data-invite] select', '3'); await A.p.click('text=Créer le lien'); await A.p.waitForSelector('.linkbox input');
+const link2 = await A.p.inputValue('.linkbox input');
+ok(tag + 'Link for 3 people listed', (await A.text()).includes('3 places'));
+await B.p.click('text=J’ai reçu un lien d’invitation'); await B.type('[data-paste] input', 'pas un lien'); await B.p.click('[data-paste] button[type=submit]');
+ok(tag + 'Pasting something else: refused', (await B.text()).includes('Ce lien d’invitation n’est pas valide.'));
+await B.type('[data-paste] input', '  ' + link2 + ' '); await B.p.click('[data-paste] button[type=submit]');
+await B.p.waitForSelector('button:has-text("Rejoindre")');
+ok(tag + 'Pasting the link: the invitation shows', (await B.text()).includes('« Running du dimanche » (Amis)'));
+await B.p.click('button:has-text("Rejoindre")'); await B.p.waitForSelector('.composer textarea');
+await A.p.reload(); await A.p.waitForSelector('[data-member=other]');
+ok(tag + 'Bob joined the group: 2/6, the link has 2 places left', (await A.text()).includes('2/6 personnes') && (await A.text()).includes('2 places'));
+
 for (const [who, ph] of [['Alice', A], ['Bob', B]]) {
   ok(tag + `${who}: fits the screen`, await ph.p.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
   ok(tag + `${who}: no errors, no blocked content, no native dialogs`, !ph.errs.length && await ph.p.evaluate(() => window.__nd.length === 0), ph.errs.join(' | '));

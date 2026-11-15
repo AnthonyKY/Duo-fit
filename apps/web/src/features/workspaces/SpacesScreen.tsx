@@ -47,6 +47,24 @@ function PendingInvite({ token, onDone }: { token: string; onDone: () => void })
   );
 }
 
+// On iPhone an invitation link opened from Messages or WhatsApp lands in Safari, not in the app on the home screen
+// (they do not share storage): pasting the link here joins from the app itself.
+function PasteInvite({ onFound }: { onFound: (token: string) => void }) {
+  const { t } = useI18n();
+  const [open, setOpen] = useState(false);
+  const [val, setVal] = useState('');
+  const [bad, setBad] = useState(false);
+  if (!open) return <button type="button" className="block" onClick={() => setOpen(true)}>{t.sp.pasteOpen}</button>;
+  return (
+    <form className="card" data-paste onSubmit={e => { e.preventDefault(); const tok = parseInvite(val); if (tok) onFound(tok); else setBad(true); }}>
+      <label className="field"><span>{t.sp.pasteLabel}</span>
+        <input value={val} autoCapitalize="none" autoCorrect="off" spellCheck={false} onInput={e => { setVal((e.target as HTMLInputElement).value); setBad(false); }} /></label>
+      <div className="row wrap"><button type="submit" className="primary">{t.sp.pasteGo}</button><button type="button" onClick={() => setOpen(false)}>{t.acc.cancel}</button></div>
+      {bad && <p className="note err" role="alert">{t.inviteInvalid}</p>}
+    </form>
+  );
+}
+
 function CreateSpace({ mode, onCreated }: { mode: WorkspaceMode; onCreated: () => void }) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
@@ -110,6 +128,7 @@ function MySpaces() {
           </ul>
         </div>
       )}
+      {spaces && !pending && <PasteInvite onFound={tok => { writeSession('collabfit-invite', tok); setPending(tok); }} />}
       {spaces && !hasCouple && <CreateSpace mode="couple" onCreated={() => reload(n + 1)} />}
       {spaces && <CreateSpace mode="friends" onCreated={() => reload(n + 1)} />}
       <div className="card muted small"><ul>{t.spacesRules.map(r => <li key={r}>{r}</li>)}</ul></div>
