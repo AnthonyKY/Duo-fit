@@ -27,6 +27,12 @@ const url = `http://127.0.0.1:${server.address().port}/`;
 if (!(await readFile(path.join(dist, 'assets/app.js'), 'utf8')).includes(SB)) { console.log('CRASH build is not configured for ' + SB); process.exit(1); }
 
 const R = []; let fails = 0;
+// WebKit does not hand uploaded file bytes to the test tool (Playwright limitation): the stand-in then serves this
+// 512×512 picture, and the byte checks run in Chromium (WebKit's real upload is checked on the deployed app)
+const SQUARE_PNG = await (async () => { const { deflateSync } = await import('node:zlib'); const crc = b => { let c, t = []; for (let n = 0; n < 256; n++) { c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } c = 0xffffffff; for (const x of b) c = t[(c ^ x) & 255] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; };
+  const chunk = (type, data) => { const l = Buffer.alloc(4); l.writeUInt32BE(data.length); const td = Buffer.concat([Buffer.from(type), data]); const c = Buffer.alloc(4); c.writeUInt32BE(crc(td)); return Buffer.concat([l, td, c]); };
+  const ihdr = Buffer.alloc(13); ihdr.writeUInt32BE(512, 0); ihdr.writeUInt32BE(512, 4); ihdr[8] = 8; ihdr[9] = 2;
+  const raw = Buffer.alloc(512 * (1 + 512 * 3)); return Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk('IHDR', ihdr), chunk('IDAT', deflateSync(raw)), chunk('IEND', Buffer.alloc(0))]); })();
 const ok = (n, c, x = '') => { const l = (c ? 'PASS ' : 'FAIL ') + n + (x ? ' — ' + String(x).slice(0, 240) : ''); R.push(l); console.log(l); if (!c) fails++; };
 
 // ------------------------------------------------------------------ stand-in Supabase (only what the app calls)
@@ -72,7 +78,7 @@ function standIn() {
     const obj = /^\/storage\/v1\/object\/(avatars)\/(.+)$/.exec(p);
     if (m === 'POST' && obj) {
       if (!obj[2].startsWith(who + '/')) return json(route, 400, { statusCode: '403', error: 'Unauthorized' });
-      db.files.set(obj[2], { type: req.headers()['content-type'], bytes: req.postDataBuffer() }); return json(route, 200, { Key: `avatars/${obj[2]}` });
+      db.files.set(obj[2], { type: req.headers()['content-type'], bytes: req.postDataBuffer() ?? null }); return json(route, 200, { Key: `avatars/${obj[2]}` });
     }
     if (m === 'DELETE' && p === '/storage/v1/object/avatars') { for (const n of body().prefixes) if (n.startsWith(who + '/')) db.files.delete(n); return json(route, 200, []); }
     const sign = /^\/storage\/v1\/object\/sign\/avatars\/(.+)$/.exec(p);
@@ -96,7 +102,7 @@ for (const dev of BR.device ? [BR.device] : ['iPhone SE', 'iPhone 16 Plus']) {
   await ctx.route(SB + '/**', route => {
     const u = new URL(route.request().url());
     const g = /^\/storage\/v1\/object\/sign\/avatars\/(.+)$/.exec(u.pathname);
-    if (route.request().method() === 'GET' && g) { const f = sb.db.files.get(g[1]); return f ? route.fulfill({ status: 200, contentType: f.type, body: f.bytes }) : route.fulfill({ status: 400 }); }
+    if (route.request().method() === 'GET' && g) { const f = sb.db.files.get(g[1]); return f ? route.fulfill({ status: 200, contentType: f.bytes ? f.type : 'image/png', body: f.bytes ?? SQUARE_PNG }) : route.fulfill({ status: 400 }); }
     return sb.handle(route);
   });
   const p = await ctx.newPage(); p.setDefaultTimeout(8000);
@@ -152,7 +158,8 @@ for (const dev of BR.device ? [BR.device] : ['iPhone SE', 'iPhone 16 Plus']) {
   const files = [...sb.db.files.entries()];
   const jpg = files[0]?.[1];
   ok(tag + 'Photo uploaded into my own folder', files.length === 1 && files[0][0].startsWith(uid + '/') && /\.jpg$/.test(files[0][0]));
-  ok(tag + 'Re-drawn on the phone: JPEG, no hidden metadata block', jpg?.type === 'image/jpeg' && jpg.bytes[0] === 0xff && jpg.bytes[1] === 0xd8 && !jpg.bytes.includes(Buffer.from('Exif')));
+  ok(tag + 'Re-drawn on the phone: JPEG' + (jpg?.bytes ? ', no hidden metadata block' : ' (bytes not visible to the tool in this engine)'),
+    jpg?.type === 'image/jpeg' && (!jpg.bytes || (jpg.bytes[0] === 0xff && jpg.bytes[1] === 0xd8 && !jpg.bytes.includes(Buffer.from('Exif')))));
   await p.waitForSelector('img.avatar.photo');
   ok(tag + 'Photo shown through a short-lived private link', (await p.getAttribute('img.avatar.photo', 'src')).startsWith(SB + '/storage/v1/object/sign/avatars/'));
   ok(tag + 'Square 512 px', await p.evaluate(() => { const i = document.querySelector('img.avatar.photo'); return i.complete && i.naturalWidth === 512 && i.naturalHeight === 512; }));
