@@ -271,6 +271,11 @@ select t.ok(not exists (select 1 from public.profiles where id = :'A'), '…and 
 select t.ok(not exists (select 1 from information_schema.role_table_grants where table_schema = 'public'
   and grantee in ('anon', 'authenticated') and privilege_type in ('TRUNCATE', 'REFERENCES', 'TRIGGER')), 'client roles have no TRUNCATE / REFERENCES / TRIGGER right');
 select t.ok(not exists (select 1 from information_schema.role_table_grants where table_schema = 'public' and grantee = 'anon'), 'not signed in: no right on any table');
+select t.ok(not exists (select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public'
+  and has_function_privilege('anon', p.oid, 'execute')), 'not signed in: no function callable (found on staging: try_uuid)');
+create function public.zz_future_probe() returns int language sql as 'select 1';
+select t.ok(not has_function_privilege('anon', 'public.zz_future_probe()', 'execute'), 'not signed in: a function added later is not callable either');
+drop function public.zz_future_probe();
 select t.ok(not exists (select 1 from pg_class c join pg_namespace n on n.oid = c.relnamespace where n.nspname = 'public' and c.relkind = 'r' and not c.relrowsecurity),
   'row level security is on for every table');
 \echo SECURITY-SUITE-DONE

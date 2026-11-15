@@ -54,7 +54,8 @@ jobs:
           export PGPASSWORD="$SUPABASE_DB_PASSWORD" PGSSLMODE=require
           q() { psql "host=$PGHOST_POOLER port=5432 user=postgres.$PROJECT_ID dbname=postgres" -v ON_ERROR_STOP=1 -tAc "$1"; }
           fail=0; check() { if [ "$2" = "$3" ]; then echo "PASS $1"; else echo "FAIL $1 — got '$2', expected '$3'"; fail=1; fi; }
-          check "migrations recorded" "$(q "select count(*) from supabase_migrations.schema_migrations where version in ('202611140001','202611140002')")" 2
+          files=$(ls supabase/migrations/*.sql | sed -E "s#.*/([0-9]+)_.*#'\\1'#" | paste -sd, -); n=$(ls supabase/migrations/*.sql | wc -l)
+          check "all $n migrations recorded" "$(q "select count(*) from supabase_migrations.schema_migrations where version in ($files)")" "$n"
           check "RLS on every CollabFit table" "$(q "select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind='r' and not c.relrowsecurity")" 0
           check "anonymous visitors: no right on any table" "$(q "select count(*) from information_schema.role_table_grants where grantee='anon' and table_schema='public'")" 0
           check "anonymous visitors: no function callable" "$(q "select count(*) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and has_function_privilege('anon', p.oid, 'execute')")" 0
