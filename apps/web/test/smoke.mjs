@@ -32,7 +32,8 @@ for (const dev of BR.device ? [BR.device] : ['iPhone SE', 'iPhone 16 Plus']) {
   const ctx = await b.newContext({ ...BR.dev(dev), locale: 'fr-FR', timezoneId: 'Europe/Paris' });
   await ctx.addInitScript(IOS);
   const p = await ctx.newPage(); p.setDefaultTimeout(8000);
-  const errs = []; p.on('pageerror', e => errs.push(e.message)); p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
+  const errs = []; p.on('pageerror', e => errs.push(e.message)); p.on('console', m => { if (m.type() === 'error' && !(process.env.SMOKE_URL && (m.location().url || '').includes('/.netlify/scripts/'))) errs.push(m.text()); });
+  // ^ on Netlify's free plan, Netlify injects its "Powered by" badge script; our policy blocks what it tries to inject, as it should
   const text = async () => (await p.textContent('body')).replace(/[  ]/g, ' ');
   const fits = () => p.evaluate(() => document.documentElement.scrollWidth <= innerWidth);
   const tag = `[${dev}] `;
