@@ -24,6 +24,8 @@ const url = `http://127.0.0.1:${server.address().port}/`;
 if (!(await readFile(path.join(dist, 'assets/app.js'), 'utf8')).includes(SB)) { console.log('CRASH build is not configured for ' + SB); process.exit(1); }
 
 const R = []; let fails = 0;
+// WebKit (only) logs a request cut short by a reload as "… due to access control checks": not an app error
+const webkitAbort = text => (process.env.BROWSER || '') === 'webkit' && /due to access control checks/i.test(text) && text.includes(new URL(SB).host);
 const ok = (n, c, x = '') => { const l = (c ? 'PASS ' : 'FAIL ') + n + (x ? ' — ' + String(x).slice(0, 260) : ''); R.push(l); console.log(l); if (!c) fails++; };
 const b = await BR.launch(), sb = standIn();
 async function phone(dev) {
@@ -31,7 +33,7 @@ async function phone(dev) {
   await ctx.addInitScript(IOS); await useStandIn(ctx, sb);
   const p = await ctx.newPage(); p.setDefaultTimeout(8000);
   const errs = []; p.on('pageerror', e => errs.push(e.message));
-  p.on('console', m => { if (m.type() === 'error' && !((m.location().url || '').startsWith(SB) && /Failed to load resource/i.test(m.text()))) errs.push(m.text()); });
+  p.on('console', m => { if (m.type() === 'error' && !((m.location().url || '').startsWith(SB) && /Failed to load resource/i.test(m.text())) && !webkitAbort(m.text())) errs.push(m.text()); });
   const text = async () => (await p.textContent('body')).replace(/[  ]/g, ' ');
   const type = (sel, v) => p.locator(sel).first().evaluate((el, v) => { el.focus(); el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); }, v);
   return { ctx, p, errs, text, type };
