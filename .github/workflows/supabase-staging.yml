@@ -35,9 +35,34 @@ jobs:
           version: latest
       - name: Apply the migrations
         if: steps.cfg.outputs.ready
+        # GitHub's machines have no IPv6, and the database's direct address is IPv6-only: go through Supabase's
+        # session pooler (IPv4). Its host depends on the cluster, so try the Paris ones until one answers.
         run: |
-          supabase link --project-ref "$PROJECT_ID"
-          supabase db push --linked --yes   # newer CLIs default to a local database
+          export PGPASSWORD="$SUPABASE_DB_PASSWORD" PGSSLMODE=require PGCONNECT_TIMEOUT=10
+          host=""
+          for h in aws-0-eu-west-3 aws-1-eu-west-3 aws-2-eu-west-3; do
+            if psql "host=$h.pooler.supabase.com port=5432 user=postgres.$PROJECT_ID dbname=postgres" -tAc 'select 1' >/dev/null 2>&1; then host="$h.pooler.supabase.com"; break; fi
+          done
+          [ -n "$host" ] || { echo "::error::no session pooler answered for this project (check STAGING_DB_PASSWORD)"; exit 1; }
+          echo "session pooler: $host"; echo "PGHOST_POOLER=$host" >> "$GITHUB_ENV"
+          pw=$(jq -rn --arg p "$SUPABASE_DB_PASSWORD" '$p|@uri'); url="postgresql://postgres.$PROJECT_ID:$pw@$host:5432/postgres?sslmode=require"
+          echo "::add-mask::$pw"
+          supabase db push --db-url "$url" --yes
+      - name: Check the real privileges in the database (what a signed-in or anonymous app user may do)
+        if: steps.cfg.outputs.ready
+        run: |
+          export PGPASSWORD="$SUPABASE_DB_PASSWORD" PGSSLMODE=require
+          q() { psql "host=$PGHOST_POOLER port=5432 user=postgres.$PROJECT_ID dbname=postgres" -v ON_ERROR_STOP=1 -tAc "$1"; }
+          fail=0; check() { if [ "$2" = "$3" ]; then echo "PASS $1"; else echo "FAIL $1 — got '$2', expected '$3'"; fail=1; fi; }
+          check "migrations recorded" "$(q "select count(*) from supabase_migrations.schema_migrations where version in ('202611140001','202611140002')")" 2
+          check "RLS on every CollabFit table" "$(q "select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind='r' and not c.relrowsecurity")" 0
+          check "anonymous visitors: no right on any table" "$(q "select count(*) from information_schema.role_table_grants where grantee='anon' and table_schema='public'")" 0
+          check "anonymous visitors: no function callable" "$(q "select count(*) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and has_function_privilege('anon', p.oid, 'execute')")" 0
+          check "signed-in users: no TRUNCATE/REFERENCES/TRIGGER" "$(q "select count(*) from information_schema.role_table_grants where grantee='authenticated' and table_schema='public' and privilege_type in ('TRUNCATE','REFERENCES','TRIGGER')")" 0
+          check "signed-in users: no direct UPDATE/DELETE (except un-blocking someone; profile fields are column grants)" "$(q "select string_agg(distinct table_name||':'||privilege_type, ',' order by table_name||':'||privilege_type) from information_schema.role_table_grants where grantee='authenticated' and table_schema='public' and privilege_type in ('UPDATE','DELETE')")" "user_blocks:DELETE"
+          check "storage buckets private" "$(q "select string_agg(id||'='||public::text, ',' order by id) from storage.buckets where id in ('avatars','chat-media')")" "avatars=false,chat-media=false"
+          check "live updates enabled for messages, workout events, members" "$(q "select count(*) from pg_publication_tables where pubname='supabase_realtime' and schemaname='public' and tablename in ('messages','workout_events','workspace_members')")" 3
+          exit $fail
       - name: Sign-in options for staging (email + password, no confirmation e-mail; test app address)
         if: steps.cfg.outputs.ready
         run: |
