@@ -37,7 +37,7 @@ jobs:
         if: steps.cfg.outputs.ready
         run: |
           supabase link --project-ref "$PROJECT_ID"
-          supabase db push --yes
+          supabase db push --linked --yes   # newer CLIs default to a local database
       - name: Sign-in options for staging (email + password, no confirmation e-mail; test app address)
         if: steps.cfg.outputs.ready
         run: |
