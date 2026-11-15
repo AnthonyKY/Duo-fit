@@ -5,7 +5,8 @@
   "workspaces": ["packages/*", "apps/*"],
   "engines": { "node": ">=20" },
   "scripts": {
-    "typecheck": "tsc -p packages/domain && tsc -p apps/web",
+    "typecheck": "tsc -p packages/domain && tsc -p packages/training && tsc -p apps/web",
+    "test:engine": "node scripts/extract-duofit-engine.mjs --check && tsx packages/training/test/characterize.mjs",
     "test:unit": "tsx --test packages/domain/test/*.test.ts",
     "test:db": "bash scripts/db-test.sh",
     "build:web": "npm run build -w apps/web",

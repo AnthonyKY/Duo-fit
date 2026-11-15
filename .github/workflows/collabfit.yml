@@ -10,9 +10,11 @@ permissions:
 jobs:
   code:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # the training engine is checked against the DUOFIT commit it was copied from
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -26,6 +28,13 @@ jobs:
         run: npm run build:web
       - name: Browsers for the web tests
         run: npx playwright install --with-deps chromium webkit
+      - name: Training engine = DUOFIT (copy up to date; 200 random people give identical results in DUOFIT itself)
+        env:
+          CASES: '200'
+        run: |
+          set -o pipefail
+          npm run test:engine | tee /tmp/engine
+          ! grep -Eq '^FAIL|^CRASH' /tmp/engine
       - name: Web app on iPhone SE and 16 Plus (Chromium)
         run: |
           set -o pipefail

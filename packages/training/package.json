@@ -1,0 +1,8 @@
+{
+  "name": "@collabfit/training",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "CollabFit's training engine: DUOFIT's calculation code copied verbatim (src/duofit-engine.generated.js, see scripts/extract-duofit-engine.mjs) behind a typed API, proven identical to DUOFIT by test/characterize.mjs.",
+  "exports": { ".": "./src/index.ts" }
+}
