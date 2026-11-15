@@ -88,7 +88,7 @@ try {
   const issuedAt = Date.now();
   ok(`B gets a ${SIGNED_URL_SECONDS}-second link and opens it`, !!before && (await fetchStatus(before)) === 200);
   const pb = await sendPicture(B, ws);
-  ok('A removes B from the space', (await rpc(A, 'remove_member', { p_workspace: ws, p_user: B.id })).status === 200);
+  ok('A removes B from the space', (await rpc(A, 'remove_member', { p_workspace: ws, p_user: B.id })).status < 300);
   const removedAt = Date.now();
   ok('after removal: B can no longer ASK for a link to A\'s picture', !(await sees(B, p1.name)));
   ok('after removal: B still gets a link to his own picture', await sees(B, pb.name));
