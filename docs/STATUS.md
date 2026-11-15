@@ -4,7 +4,7 @@ Chef d'orchestre : Claude. Assistant : Astra (ChatGPT), sur des branches `astra/
 Rien n'est fusionné dans `main` sans l'accord d'Invictus. DUOFIT (racine du dépôt) n'est pas modifié et reste testé.
 DUOFIT reste en place pour de bon ; toute reprise de ses données = une copie, avec l'accord d'Invictus avant (ADR 0004).
 CollabFit = app complète et autonome (entraînement + social), à commercialiser plus tard ; moteur d'entraînement = celui de DUOFIT, copié à l'identique et prouvé (ADR 0005).
-Corrections DUOFIT : PR #8 (brouillon, CI verte), fusion seulement avec l'accord d'Invictus. Aperçu à essayer sur iPhone : https://luxury-brigadeiros-384c85.netlify.app/duofit-preview/ (copie de la PR sur le site de test, données séparées du vrai DUOFIT ; `scripts/duofit-preview.mjs`).
+Corrections DUOFIT : PR #8 fusionnée dans `main` le 15/11/2026 avec l'accord d'Invictus (avance rapide, commit testé f0bd7d6 = v2026-11-15a, en ligne sur GitHub Pages, copie de version gardée ; v2026-11-14q reste disponible). Le moteur de CollabFit est copié de ce même commit. L'aperçu /duofit-preview/ est désormais identique au vrai DUOFIT : à retirer au prochain déploiement de l'app.
 App de test : https://luxury-brigadeiros-384c85.netlify.app (Supabase de test « collabfit-staging », Paris). Elle n'est reconstruite (15 crédits Netlify) que si un chemin de `scripts/app-paths.txt` change — liste unique pour Netlify et le workflow de test, vérifiée par `scripts/check-app-paths.mjs`.
 
 | Étape | Contenu | État |
