@@ -30,10 +30,13 @@ export function watchTable<T>(table: string, filter: string, onChange: (c: Chang
     ws.onmessage = ev => {
       let m: { event?: string; payload?: { status?: string; data?: { type?: Change<T>['type']; record?: T } } };
       try { m = JSON.parse(String(ev.data)); } catch { return; }
-      if (m.event === 'phx_reply' && m.payload?.status === 'ok') { attempt = 0; onState('live'); }
+      // the join is accepted first; the database subscription is active only when the "system" message says so —
+      // a change in between would be missed, so the screen re-reads when it turns live
+      if (m.event === 'phx_reply' && m.payload?.status === 'ok') attempt = 0;
       else if (m.event === 'phx_reply' && m.payload?.status === 'error') onState('off');
+      else if (m.event === 'system' && (m.payload as { extension?: string; status?: string } | undefined)?.extension === 'postgres_changes')
+        onState((m.payload as { status?: string }).status === 'ok' ? 'live' : 'off');
       else if (m.event === 'postgres_changes' && m.payload?.data?.type) onChange({ type: m.payload.data.type, record: m.payload.data.record ?? null });
-      else if (m.event === 'system' || m.event === 'phx_close' || m.event === 'phx_error') { /* the close handler reconnects */ }
     };
     ws.onclose = () => { clearInterval(beat); onState('off'); schedule(); };
     ws.onerror = () => { try { ws?.close(); } catch { /* already closed */ } };

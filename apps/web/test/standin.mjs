@@ -216,6 +216,8 @@ export function standIn() {
         if (!s.uid) return ws.send(JSON.stringify({ topic: msg.topic, event: 'phx_reply', payload: { status: 'error', response: { reason: 'invalid token' } }, ref: msg.ref }));
         db.sockets.add(s);
         ws.send(JSON.stringify({ topic: msg.topic, event: 'phx_reply', payload: { status: 'ok', response: { postgres_changes: [{ id: 1, ...pc }] } }, ref: msg.ref }));
+        // like the real service: the database subscription becomes active a moment after the join
+        setTimeout(() => ws.send(JSON.stringify({ topic: msg.topic, event: 'system', payload: { channel: msg.topic, extension: 'postgres_changes', message: 'Subscribed to PostgreSQL', status: 'ok' }, ref: null })), 50);
       } else if (msg.event === 'access_token') { s.uid = db.byToken.get(msg.payload?.access_token) ?? s.uid; }
       else if (msg.event === 'heartbeat') ws.send(JSON.stringify({ topic: 'phoenix', event: 'phx_reply', payload: { status: 'ok', response: {} }, ref: msg.ref }));
     });

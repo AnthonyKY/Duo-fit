@@ -22,9 +22,10 @@ async function phone(dev) {
   await ctx.route('**/.netlify/scripts/**', r => r.fulfill({ status: 200, contentType: 'text/javascript', body: '' })); // Netlify's badge, not the app
   const p = await ctx.newPage(); p.setDefaultTimeout(20000);
   const errs = []; p.on('pageerror', e => errs.push(e.message)); p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
+  const frames = []; p.on('websocket', ws => ws.on('framereceived', f => { if (frames.length < 8) frames.push(String(f.payload).slice(0, 220)); }));
   const text = async () => (await p.textContent('body')).replace(/[  ]/g, ' ');
   const type = (sel, v) => p.locator(sel).first().evaluate((el, v) => { el.focus(); el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); }, v);
-  return { ctx, p, errs, text, type };
+  return { ctx, p, errs, frames, text, type };
 }
 async function signUp(ph, who) {
   await ph.p.waitForSelector('#acc-title');
@@ -62,10 +63,19 @@ try {
   try { await A.p.waitForSelector('.chat[data-live=live]', { timeout: 15000 }); } catch { liveA = false; }
   try { await B.p.waitForSelector('.chat[data-live=live]', { timeout: 15000 }); } catch { liveB = false; }
   ok(tag + 'Both phones connected to Supabase Realtime (live)', liveA && liveB, `Alice ${liveA ? 'live' : 'not live'}, Bob ${liveB ? 'live' : 'not live'}`);
+  console.log('DIAG Realtime frames received by Alice:\n  ' + A.frames.join('\n  '));
 
   let t0 = Date.now();
   await B.type('.composer textarea', `Salut ${run} 👋`); await B.p.click('.composer button[type=submit]');
-  await A.p.waitForSelector(`.msg:not(.mine) >> text=Salut ${run} 👋`, { timeout: 20000 });
+  try { await A.p.waitForSelector(`.msg:not(.mine) >> text=Salut ${run} 👋`, { timeout: 20000 }); }
+  catch (e) { // diagnosis: was it sent? does a fresh read show it?
+    console.log('DIAG Bob pending:', JSON.stringify(await B.p.evaluate(() => [...document.querySelectorAll('.msg.pending')].map(x => x.getAttribute('data-pending') + ' ' + x.textContent))));
+    console.log('DIAG Bob outbox:', await B.p.evaluate(() => Object.entries(localStorage).filter(([k]) => k.startsWith('collabfit-outbox-')).map(([, v]) => v).join(' ').slice(0, 400)));
+    console.log('DIAG Bob errors:', B.errs.join(' | ').slice(0, 400));
+    await A.p.reload(); await A.p.waitForSelector('.composer');
+    console.log('DIAG Alice after reload sees it:', await A.p.isVisible(`.msg:not(.mine) >> text=Salut ${run} 👋`));
+    throw e;
+  }
   const d1 = Date.now() - t0;
   ok(tag + `Bob → Alice arrives (${(d1 / 1000).toFixed(1)} s)`, d1 < 5000, d1 >= 5000 ? 'slower than live: delivered by the 15-second re-read' : '');
   t0 = Date.now();

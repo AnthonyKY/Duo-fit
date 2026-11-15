@@ -63,10 +63,11 @@ export function Chat({ space }: { space: Space }) {
     addEventListener('online', net); addEventListener('offline', net);
     return () => { stopLive(); stopBox(); stopSent(); document.removeEventListener('visibilitychange', reread); removeEventListener('online', net); removeEventListener('offline', net); };
   }, [space.id]);
-  // without live updates (connection refused, old network), read again every 15 s while the screen is open
+  // turning live: read once more (anything sent while the subscription was starting); then a safety re-read every
+  // 30 s while live, every 15 s without live updates (connection refused, old network)
   useEffect(() => {
-    if (live === 'live') return;
-    const k = setInterval(() => { if (document.visibilityState === 'visible') latest().catch(() => { /* offline */ }); }, 15_000);
+    if (live === 'live') latest().catch(() => { /* offline */ });
+    const k = setInterval(() => { if (document.visibilityState === 'visible') latest().catch(() => { /* offline */ }); }, live === 'live' ? 30_000 : 15_000);
     return () => clearInterval(k);
   }, [live, latest]);
 
