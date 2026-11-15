@@ -18,7 +18,9 @@ async function request(path: string, init: { method?: string; token?: string; bo
   if (init.body instanceof Blob) body = init.body;
   else if (init.body !== undefined) { headers['Content-Type'] = 'application/json'; body = JSON.stringify(init.body); }
   let r: Response;
-  try { r = await fetch(config.supabaseUrl + path, { method: init.method ?? 'GET', headers, body, cache: 'no-store' }); }
+  const req: RequestInit = { method: init.method ?? 'GET', headers, cache: 'no-store' };
+  if (body !== undefined) req.body = body;
+  try { r = await fetch(config.supabaseUrl + path, req); }
   catch { throw new BackendError('offline', 0); }
   const text = await r.text();
   let json: unknown = null;
