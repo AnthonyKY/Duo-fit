@@ -5,6 +5,7 @@
 import { Trainer, type Day, type Draft, type Lang, type Programme, type WorkoutLog } from '@collabfit/training';
 import { BackendError, currentSession, onSession, rest, rpc } from '../../shared/backend.ts';
 import { readLocal, writeLocal } from '../../shared/storage.ts';
+import { announce } from '../notifications/push.ts';
 
 export type SyncState = 'saved' | 'saving' | 'offline' | 'error';
 export interface Setup { programme: Programme; level: 'beg' | 'int' | 'adv'; minutes: number; back: boolean; gear: string[]; days: number[]; goal: 'loss' | 'recomp' | 'maint' | 'gain' }
@@ -140,6 +141,7 @@ export function finishWorkout(): WorkoutLog | null {
 async function shareMoment(type: 'started' | 'completed', start: number) {
   try {
     const rows = await rest<{ workspace_id: string }[]>(`workspace_members?select=workspace_id&user_id=eq.${uid}&status=eq.active&share_workouts=is.true`);
-    for (const r of rows) await rpc('publish_workout_event', { p_workspace: r.workspace_id, p_type: type, p_workout_ref: 's' + start.toString(36) }).catch(() => { /* best effort */ });
+    for (const r of rows) await rpc<string>('publish_workout_event', { p_workspace: r.workspace_id, p_type: type, p_workout_ref: 's' + start.toString(36) })
+      .then(id => { if (typeof id === 'string') announce('workout', id); }).catch(() => { /* best effort */ });
   } catch { /* offline: the moment is not worth replaying later */ }
 }

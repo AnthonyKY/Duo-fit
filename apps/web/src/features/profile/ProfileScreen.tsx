@@ -7,6 +7,7 @@ import { loadProfile, newSeed, saveProfile } from './localProfile.ts';
 import { AccountProfile } from './AccountProfile.tsx';
 import { AuthCard } from '../auth/AuthCard.tsx';
 import { useSession } from '../../shared/useSession.ts';
+import { NotificationsCard } from '../notifications/NotificationsCard.tsx';
 
 function LanguageCard() {
   const { t, lang, setLang } = useI18n();
@@ -31,6 +32,7 @@ export function ProfileScreen() {
     <section className="screen">
       <h1>{t.profileTitle}</h1>
       {session ? <AccountProfile key={session.user.id} session={session} /> : <AuthCard defaultName={loadProfile().name} />}
+      {session && <NotificationsCard key={'push-' + session.user.id} />}
       <LanguageCard />
     </section>
   );

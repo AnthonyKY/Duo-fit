@@ -3,7 +3,7 @@ import { inviteLink } from '@collabfit/domain';
 import { useI18n } from '../../app/i18n.tsx';
 import { ConfirmButton, Note, problemText, useAction } from '../../shared/ui.tsx';
 import { PhotoOrAvatar } from '../profile/PhotoOrAvatar.tsx';
-import { block, createInvitation, leaveSpace, me, members, myBlocks, mySharing, openInvitations, removeMember, revokeInvitation, setSharing, transferOwnership, unblock,
+import { block, createInvitation, leaveSpace, me, members, myBlocks, mySharing, setMessageNotifications, openInvitations, removeMember, revokeInvitation, setSharing, transferOwnership, unblock,
   type Invitation, type Member, type Space } from './api.ts';
 
 const appUrl = () => location.origin + location.pathname;
@@ -62,19 +62,25 @@ function InvitePanel({ space, free, onChange }: { space: Space; free: number; on
   );
 }
 
-// "a commencé / a terminé sa séance" for this space: off until the person turns it on, per space
+// this space, for me: share my workouts here (off until turned on), be notified of its messages (on) and of the
+// others' workouts (off until turned on). Each switch shows at once and goes back if the server refuses.
 function ShareWorkouts({ space }: { space: Space }) {
   const { t } = useI18n();
-  const [v, setV] = useState<{ share: boolean; notify: boolean } | null>(null);
+  const [v, setV] = useState<{ share: boolean; notify: boolean; messages: boolean } | null>(null);
   const act = useAction();
-  useEffect(() => { mySharing(space.id).then(x => setV(x ? { share: x.share_workouts, notify: x.notify_workouts } : null)).catch(() => setV(null)); }, [space.id]);
+  useEffect(() => { mySharing(space.id).then(x => setV(x ? { share: x.share_workouts, notify: x.notify_workouts, messages: x.notify_messages } : null)).catch(() => setV(null)); }, [space.id]);
   if (!v) return null;
+  const change = (next: typeof v, job: () => Promise<unknown>) => { const before = v; setV(next); void act.run(job).then(okd => { if (!okd) setV(before); }); };
   return (
     <div className="card" data-share>
       <label className="check"><input type="checkbox" checked={v.share} disabled={act.busy}
-        onChange={e => { const share = e.target.checked, before = v; setV({ ...v, share }); // shown at once, put back if refused
-          void act.run(async () => { await setSharing(space.id, share, v.notify); }).then(okd => { if (!okd) setV(before); }); }} /> {t.tr.share}</label>
+        onChange={e => { const share = e.target.checked; change({ ...v, share }, () => setSharing(space.id, share, v.notify)); }} /> {t.tr.share}</label>
       <p className="muted small">{t.tr.shareHint}</p>
+      <label className="check" data-notify-messages><input type="checkbox" checked={v.messages} disabled={act.busy}
+        onChange={e => { const messages = e.target.checked; change({ ...v, messages }, () => setMessageNotifications(space.id, messages)); }} /> {t.push.spaceMessages}</label>
+      <label className="check" data-notify-workouts><input type="checkbox" checked={v.notify} disabled={act.busy}
+        onChange={e => { const notify = e.target.checked; change({ ...v, notify }, () => setSharing(space.id, v.share, notify)); }} /> {t.push.spaceWorkouts}</label>
+      <p className="muted small">{t.push.spaceHint}</p>
       <Note msg={act.msg} />
     </div>
   );

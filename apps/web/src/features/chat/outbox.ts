@@ -5,6 +5,7 @@
 import { chatMediaPath, Outbox, type OutboxItem } from '@collabfit/domain';
 import { BackendError, currentSession, insert, onSession, uploadFile } from '../../shared/backend.ts';
 import { readLocal, writeLocal } from '../../shared/storage.ts';
+import { announce } from '../notifications/push.ts';
 
 export interface Pending { workspaceId: string; body: string | null; hasPhoto: boolean; imagePath: string | null }
 export interface SentRow { id: string; client_id: string; author_id: string | null; body: string | null; image_path: string | null; created_at: string; deleted_at: string | null }
@@ -72,7 +73,7 @@ async function deliver(item: OutboxItem<Pending>, me: string): Promise<void> {
   }
   try {
     const rows = await insert('messages', { client_id: item.clientId, workspace_id: p.workspaceId, author_id: me, body: p.body, image_path: p.imagePath }, true) as SentRow[];
-    if (rows?.[0]) for (const d of delivered) d(rows[0]);
+    if (rows?.[0]) { for (const d of delivered) d(rows[0]); announce('message', rows[0].id); }
   } catch (e) {
     if (e instanceof BackendError && e.problem === 'duplicate') return; // already arrived on an earlier try
     throw e;

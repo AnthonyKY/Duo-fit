@@ -33,7 +33,9 @@ const b = await BR.launch();
 const sb = standIn();
 const webkit = (process.env.BROWSER || '') === 'webkit';
 async function phone(dev) {
-  const ctx = await b.newContext({ ...BR.dev(dev), locale: 'fr-FR', timezoneId: 'Europe/Paris' });
+  // no service worker here (it only shows notifications, tested in push.mjs): Chromium's simulated offline mode does not
+  // apply to a page a service worker is attached to, and this suite cuts the network
+  const ctx = await b.newContext({ ...BR.dev(dev), locale: 'fr-FR', timezoneId: 'Europe/Paris', serviceWorkers: 'block' });
   await ctx.addInitScript(IOS);
   await useStandIn(ctx, sb);
   if (!webkit) await ctx.grantPermissions(['clipboard-read', 'clipboard-write'], { origin: url.slice(0, -1) });

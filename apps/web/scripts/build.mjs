@@ -37,9 +37,11 @@ await build({
   logLevel: 'warning',
 });
 await copyFile(path.join(root, 'src/styles.css'), path.join(out, 'assets/app.css'));
+// home-screen app: manifest, icons, and the service worker that shows notifications (served at the site's root)
+await cp(path.join(root, 'public'), out, { recursive: true });
 const connect = ["'self'", supabaseUrl, supabaseUrl && supabaseUrl.replace('https://', 'wss://')].filter(Boolean).join(' ');
 const csp = `default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:${supabaseUrl ? ' ' + supabaseUrl : ''}; `
-  + `connect-src ${connect}; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'`;
+  + `connect-src ${connect}; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'`;
 const html = (await readFile(path.join(root, 'index.html'), 'utf8')).replace('%CSP%', csp);
 await writeFile(path.join(out, 'index.html'), html);
 await writeFile(path.join(out, 'version.txt'), (commit || 'dev') + '\n'); // lets the tests know which commit is online

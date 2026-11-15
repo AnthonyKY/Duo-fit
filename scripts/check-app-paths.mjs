@@ -19,7 +19,7 @@ const listed = p => list.some(l => p === l || p.startsWith(l + '/'));
 // 1. every listed path exists, and everything the web app is built from is listed
 const missing = list.filter(p => !existsSync(path.join(root, p)));
 ok('every path in scripts/app-paths.txt exists', !missing.length, missing.join(', '));
-const needed = new Set(['apps/web/src', 'apps/web/index.html', 'apps/web/scripts', 'apps/web/package.json', 'apps/web/tsconfig.json', 'tsconfig.base.json', 'package.json', 'package-lock.json', '_previews', 'netlify.toml']);
+const needed = new Set(['apps/web/src', 'apps/web/index.html', 'apps/web/public', 'apps/web/scripts', 'apps/web/package.json', 'apps/web/tsconfig.json', 'tsconfig.base.json', 'package.json', 'package-lock.json', '_previews', 'netlify.toml']);
 const seen = new Set(), queue = ['apps/web'];
 const dirOf = name => ['packages', 'apps'].map(d => d + '/' + name.replace('@collabfit/', '')).find(d => existsSync(path.join(root, d, 'package.json')));
 while (queue.length) {

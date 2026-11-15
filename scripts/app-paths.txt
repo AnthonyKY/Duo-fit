@@ -1,5 +1,6 @@
 apps/web/src
 apps/web/index.html
+apps/web/public
 apps/web/scripts
 apps/web/package.json
 apps/web/tsconfig.json

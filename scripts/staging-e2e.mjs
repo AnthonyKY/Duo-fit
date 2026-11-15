@@ -3,7 +3,8 @@
 //   SUPABASE_URL, SUPABASE_KEY (publishable)   node scripts/staging-e2e.mjs
 // Covers Astra's review of d23103c: a picture follows its message (new member, blocked author), signed URLs after
 // removal (one issued before, one asked after), and the complete deletion of an account with avatar + chat picture.
-import { randomBytes, randomUUID } from 'node:crypto';
+// Push notifications: the real function, its key, who is told (once), and what Apple's push service says of our signature.
+import { createECDH, randomBytes, randomUUID } from 'node:crypto';
 const URL_ = process.env.SUPABASE_URL, KEY = process.env.SUPABASE_KEY;
 if (!/^https:\/\/[a-z0-9]{20}\.supabase\.co$/.test(URL_ || '') || !KEY) { console.error('SUPABASE_URL / SUPABASE_KEY missing'); process.exit(2); }
 export const SIGNED_URL_SECONDS = 60; // what the app uses for chat pictures (re-asked each time a picture is shown)
@@ -74,6 +75,29 @@ try {
   ok('new member: its picture is hidden too (link refused even with the exact path)', !(await sees(C, p1.name)));
   const p2 = await sendPicture(A, ws);
   ok('new member: a picture posted after he joined is visible', await sees(C, p2.name));
+
+  // push notifications: made-up devices (real keys, unknown device addresses) — the push services refuse the devices,
+  // but Apple first checks the VAPID signature: "BadJwtToken" would mean ours is wrong
+  const key = await call('/functions/v1/push');
+  const raw = Buffer.from(key.json?.key ?? '', 'base64url');
+  ok('push: the function gives its public key (P-256, 65 bytes)', key.status === 200 && raw.length === 65 && raw[0] === 4, `HTTP ${key.status} ${key.text.slice(0, 120)}`);
+  const device = (endpoint) => { const k = createECDH('prime256v1'); k.generateKeys(); return { p_endpoint: endpoint, p_p256dh: k.getPublicKey().toString('base64url'), p_auth: randomBytes(16).toString('base64url'), p_lang: 'fr' }; };
+  ok('push: a device outside the known push services is refused', (await rpc(B, 'save_push_subscription', device('https://example.com/steal'))).status >= 400);
+  ok('push: B saves his (made-up) iPhone', (await rpc(B, 'save_push_subscription', device(`https://web.push.apple.com/QE2E${run}${randomBytes(24).toString('base64url')}`))).status < 300);
+  ok('push: C saves a (made-up) Android phone', (await rpc(C, 'save_push_subscription', device(`https://fcm.googleapis.com/fcm/send/e2e${run}:${randomBytes(30).toString('base64url')}`))).status < 300);
+  ok('push: nobody else sees B\'s device', ((await call('/rest/v1/push_subscriptions?select=endpoint', { token: A.token })).json ?? []).length === 0);
+  const test = await call('/functions/v1/push', { token: B.token, method: 'POST', body: { kind: 'test' } });
+  const apple = test.json?.answers?.[0] ?? '';
+  console.log(`INFO Apple's push service, for a made-up device: ${apple}`);
+  ok('push: "send me a test" reaches Apple, which accepts our signature (no BadJwtToken) and refuses only the made-up device',
+    test.status === 200 && test.json?.devices === 1 && /^web\.push\.apple\.com \d{3}/.test(apple) && !/Jwt|40[13] /i.test(apple), JSON.stringify(test.json));
+  ok('push: not signed in → refused', (await call('/functions/v1/push', { method: 'POST', body: { kind: 'test' } })).status === 401);
+  const said = await call('/rest/v1/messages', { token: A.token, method: 'POST', body: { client_id: randomUUID(), workspace_id: ws, author_id: A.id, body: 'Séance ce soir ?' }, headers: { Prefer: 'return=representation' } });
+  const mid = said.json?.[0]?.id;
+  ok('push: B cannot announce A\'s message', (await call('/functions/v1/push', { token: B.token, method: 'POST', body: { kind: 'message', id: mid } })).json?.devices === 0);
+  const ann = await call('/functions/v1/push', { token: A.token, method: 'POST', body: { kind: 'message', id: mid } });
+  ok('push: A\'s message goes to the 2 other members\' devices (B, C), each answered by its push service', ann.status === 200 && ann.json?.devices === 2 && ann.json.sent + ann.json.gone + ann.json.failed === 2 && !ann.json.answers, JSON.stringify(ann.json));
+  ok('push: announced once, even if asked again', (await call('/functions/v1/push', { token: A.token, method: 'POST', body: { kind: 'message', id: mid } })).json?.devices === 0);
 
   // case 2: a member and the pictures of an author he blocked
   ok('B sees A\'s picture', await sees(B, p1.name));

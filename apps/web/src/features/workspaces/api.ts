@@ -52,6 +52,7 @@ export const block = (user: string) => insert('user_blocks', { blocker_id: me(),
 export const unblock = (user: string) => remove('user_blocks', `blocked_id=eq.${user}`);
 
 export const mySharing = async (spaceId: string) =>
-  (await rest<{ share_workouts: boolean; notify_workouts: boolean }[]>(`workspace_members?select=share_workouts,notify_workouts&workspace_id=eq.${spaceId}&user_id=eq.${me()}&status=eq.active`))[0] ?? null;
+  (await rest<{ share_workouts: boolean; notify_workouts: boolean; notify_messages: boolean }[]>(`workspace_members?select=share_workouts,notify_workouts,notify_messages&workspace_id=eq.${spaceId}&user_id=eq.${me()}&status=eq.active`))[0] ?? null;
+export const setMessageNotifications = (spaceId: string, on: boolean) => rpc<null>('set_message_notifications', { p_workspace: spaceId, p_on: on });
 export const setSharing = (spaceId: string, share: boolean, notify: boolean) =>
   rpc<null>('set_workout_sharing', { p_workspace: spaceId, p_share: share, p_notify: notify });

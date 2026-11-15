@@ -10,7 +10,7 @@ PGBIN="${PGBIN:-$(ls -d /usr/lib/postgresql/*/bin 2>/dev/null | sort -V | tail -
 [ -x "$PGBIN/initdb" ] || { echo "PostgreSQL server binaries not found (set PGBIN)"; exit 2; }
 WORK="$(mktemp -d /tmp/collabfit-db.XXXXXX)"; PORT="${PGPORT:-54333}"
 AS=(); if [ "$(id -u)" = 0 ]; then AS=(runuser -u postgres --); chown -R postgres "$WORK"; fi
-"${AS[@]}" "$PGBIN/initdb" -D "$WORK/data" -A trust -U postgres >/dev/null
+"${AS[@]}" "$PGBIN/initdb" -D "$WORK/data" -A trust -U postgres -E UTF8 --no-locale >/dev/null # UTF-8 like Supabase
 "${AS[@]}" "$PGBIN/pg_ctl" -D "$WORK/data" -o "-p $PORT -k $WORK -c listen_addresses='' -c wal_level=logical" -l "$WORK/log" -w start >/dev/null
 trap '"${AS[@]}" "$PGBIN/pg_ctl" -D "$WORK/data" -m immediate stop >/dev/null 2>&1 || true; rm -rf "$WORK"' EXIT
 PSQL=(psql -h "$WORK" -p "$PORT" -U postgres -d postgres -X -q -t -A -v ON_ERROR_STOP=1)

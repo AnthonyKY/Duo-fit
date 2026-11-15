@@ -6,6 +6,8 @@ import { deflateSync } from 'node:zlib';
 
 export const SB = 'https://abcdefghijklmnopqrst.supabase.co';
 export const KEY = 'sb_publishable_test_only';
+// a made-up VAPID public key (a real P-256 point, generated for the tests only) for the stand-in's push function
+export const PUSH_KEY = 'BAfz6b3GjmQeaqeAFxHrIRNTfNDTcgcb4kszz99VmLkVrtGz38VU2P6UovhL1ONtAcXtk5-SyMIVb5aqQkOEvts';
 
 // WebKit does not hand uploaded bytes to Playwright: the stand-in then serves this 512×512 picture
 export const SQUARE_PNG = (() => {
@@ -17,7 +19,7 @@ export const SQUARE_PNG = (() => {
 
 export function standIn() {
   const db = { users: new Map(), byToken: new Map(), refresh: new Map(), profiles: new Map(), files: new Map(), calls: [],
-    spaces: new Map(), members: [], invites: [], blocks: [], messages: [], events: [], training: new Map(), sockets: new Set() };
+    spaces: new Map(), members: [], invites: [], blocks: [], messages: [], events: [], training: new Map(), sockets: new Set(), push: new Map(), announced: [] };
   let clock = Date.now();
   const now = () => new Date(clock += 5).toISOString(); // strictly increasing, like the server's timestamps
   const session = u => {
@@ -76,6 +78,7 @@ export function standIn() {
       return id && db.users.has(id) ? json(route, 200, session(db.users.get(id))) : json(route, 400, { error_code: 'refresh_token_not_found' });
     }
     if (m === 'POST' && p === '/auth/v1/logout') { db.byToken.delete((req.headers().authorization || '').slice(7)); return route.fulfill({ status: 204 }); }
+    if (m === 'GET' && p === '/functions/v1/push') return json(route, 200, { key: PUSH_KEY });
     if (!who || !db.users.has(who)) return json(route, 401, { code: 'PGRST301', message: 'JWT expired' });
 
     // ---------------------------------------------------------- functions (rpc)
@@ -87,7 +90,7 @@ export function standIn() {
           if (a.p_mode === 'couple' && db.members.some(x => x.user_id === who && x.status === 'active' && db.spaces.get(x.workspace_id)?.mode === 'couple')) return pgErr(route, 409, '23505', 'already in a couple space');
           const id = randomUUID(), t = now();
           db.spaces.set(id, { id, name: a.p_name.trim(), mode: a.p_mode, max_members: a.p_mode === 'couple' ? 2 : (a.p_max_members ?? 10), owner_id: who, created_at: t });
-          db.members.push({ workspace_id: id, user_id: who, role: 'owner', status: 'active', joined_at: t, share_workouts: false, notify_workouts: false });
+          db.members.push({ workspace_id: id, user_id: who, role: 'owner', status: 'active', joined_at: t, share_workouts: false, notify_workouts: false, notify_messages: true });
           return json(route, 200, id);
         }
         case 'create_invitation': {
@@ -111,7 +114,7 @@ export function standIn() {
           if (db.members.some(x => x.workspace_id === s.id && x.status === 'active' && blocked(x.user_id, who))) return pgErr(route, 400, '22023', 'invalid or expired invitation');
           if (db.members.filter(x => x.workspace_id === s.id && x.status === 'active').length >= s.max_members) return pgErr(route, 400, '23514', 'this space is full');
           const old = db.members.find(x => x.workspace_id === s.id && x.user_id === who);
-          if (old) Object.assign(old, { status: 'active', role: 'member', joined_at: now(), share_workouts: false, notify_workouts: false }); else db.members.push({ workspace_id: s.id, user_id: who, role: 'member', status: 'active', joined_at: now(), share_workouts: false, notify_workouts: false });
+          if (old) Object.assign(old, { status: 'active', role: 'member', joined_at: now(), share_workouts: false, notify_workouts: false, notify_messages: true }); else db.members.push({ workspace_id: s.id, user_id: who, role: 'member', status: 'active', joined_at: now(), share_workouts: false, notify_workouts: false, notify_messages: true });
           i.uses++; return json(route, 200, s.id);
         }
         case 'leave_workspace': { const x = active(a.p_workspace, who); if (!x) return pgErr(route, 400, 'P0002', 'not a member'); x.status = 'left'; keepOwner(a.p_workspace); return route.fulfill({ status: 204 }); }
@@ -130,6 +133,13 @@ export function standIn() {
           Object.assign(x, { body: null, image_path: null, deleted_at: now() }); publish('messages', 'UPDATE', x); return route.fulfill({ status: 204 });
         }
       }
+      if (rpc[1] === 'save_push_subscription') {
+        if (!/^https:\/\/(web\.push\.apple\.com|fcm\.googleapis\.com|updates\.push\.services\.mozilla\.com|[a-z0-9-]+\.notify\.windows\.com)\//.test(a.p_endpoint) || !/^[\w-]{87}$/.test(a.p_p256dh) || !/^[\w-]{22}$/.test(a.p_auth))
+          return pgErr(route, 400, '23514', 'violates check constraint');
+        db.push.set(a.p_endpoint, { endpoint: a.p_endpoint, user_id: who, p256dh: a.p_p256dh, auth: a.p_auth, lang: a.p_lang }); return route.fulfill({ status: 204 });
+      }
+      if (rpc[1] === 'delete_push_subscription') { const d = db.push.get(a.p_endpoint); if (d?.user_id === who) db.push.delete(a.p_endpoint); return route.fulfill({ status: 204 }); }
+      if (rpc[1] === 'set_message_notifications') { const x = active(a.p_workspace, who); if (!x) return pgErr(route, 400, 'P0002', 'not a member'); x.notify_messages = !!a.p_on; return route.fulfill({ status: 204 }); }
       if (rpc[1] === 'set_workout_sharing') { const x = active(a.p_workspace, who); if (!x) return pgErr(route, 400, 'P0002', 'not a member'); x.share_workouts = !!a.p_share; x.notify_workouts = !!a.p_notify; return route.fulfill({ status: 204 }); }
       if (rpc[1] === 'publish_workout_event') {
         const x = active(a.p_workspace, who); if (!x || !x.share_workouts) return pgErr(route, 403, '42501', 'sharing is off for this space');
@@ -179,6 +189,8 @@ export function standIn() {
     }
     if (tbl === 'workout_events' && m === 'GET')
       return json(route, 200, db.events.filter(x => x.workspace_id === eq(q, 'workspace_id') && canRead(who, x)).sort((a, b) => b.created_at.localeCompare(a.created_at)).map(x => pick(x, q.get('select'))));
+    if (tbl === 'push_subscriptions' && m === 'GET')
+      return json(route, 200, [...db.push.values()].filter(d => d.user_id === who && (!eq(q, 'endpoint') || d.endpoint === eq(q, 'endpoint'))).map(d => pick(d, q.get('select'))));
     if (tbl === 'training_profiles' && m === 'GET') { const r = db.training.get(who); return json(route, 200, r && eq(q, 'user_id') === who ? [pick({ ...r, user_id: who }, q.get('select'))] : []); }
     if (tbl === 'messages') {
       if (m === 'GET') {
@@ -213,6 +225,13 @@ export function standIn() {
       const name = sg[2], f = db.files.get(`${sg[1]}/${name}`);
       const may = f && (f.owner === who || (sg[1] === 'avatars' ? shares(who, name.split('/')[0]) : db.messages.some(x => x.image_path === name && canRead(who, x))));
       return may ? json(route, 200, { signedURL: `/object/sign/${sg[1]}/${name}?token=t` }) : json(route, 400, { statusCode: '404', error: 'not_found', message: 'Object not found' });
+    }
+
+    // ---------------------------------------------------------- push function: records what the app asked to announce
+    if (m === 'POST' && p === '/functions/v1/push') {
+      const b = body(); db.announced.push({ who, kind: b?.kind, id: b?.id ?? null });
+      const mine = [...db.push.values()].filter(d => d.user_id === who).length;
+      return json(route, 200, b?.kind === 'test' ? { devices: mine, sent: mine, gone: 0, failed: 0 } : { devices: 0, sent: 0, gone: 0, failed: 0 });
     }
 
     // ---------------------------------------------------------- account deletion function

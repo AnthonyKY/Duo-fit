@@ -26,7 +26,7 @@ jobs:
         run: node scripts/duofit-preview.mjs --check
       - name: Type check (strict TypeScript)
         run: npm run typecheck
-      - name: Unit tests (rules, outbox, DUOFIT bridge)
+      - name: Unit tests (rules, outbox, DUOFIT bridge, notification encryption against the reference implementation)
         run: npm run test:unit
       - name: Build the web app
         run: npm run build:web
@@ -58,7 +58,9 @@ jobs:
           BROWSER=webkit DEVICE="iPhone 16 Plus" node apps/web/test/spaces.mjs | tee /tmp/sp-webkit
           node apps/web/test/training.mjs | tee /tmp/tr-chromium
           BROWSER=webkit DEVICE="iPhone 16 Plus" node apps/web/test/training.mjs | tee /tmp/tr-webkit
-          ! grep -Eq '^FAIL|^CRASH' /tmp/web-csp /tmp/acc-chromium /tmp/acc-webkit /tmp/sp-chromium /tmp/sp-webkit /tmp/tr-chromium /tmp/tr-webkit
+          node apps/web/test/push.mjs | tee /tmp/push-chromium
+          BROWSER=webkit DEVICE="iPhone 16 Plus" node apps/web/test/push.mjs | tee /tmp/push-webkit
+          ! grep -Eq '^FAIL|^CRASH' /tmp/web-csp /tmp/acc-chromium /tmp/acc-webkit /tmp/sp-chromium /tmp/sp-webkit /tmp/tr-chromium /tmp/tr-webkit /tmp/push-chromium /tmp/push-webkit
       - name: Build again without a server (the next step tests the on-phone-only version)
         run: npm run build:web
       - name: Web app on iPhone 16 Plus (WebKit, Safari's engine)

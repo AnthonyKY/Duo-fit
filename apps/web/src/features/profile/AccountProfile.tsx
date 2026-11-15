@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { avatarPath, checkDisplayName } from '@collabfit/domain';
 import { useI18n } from '../../app/i18n.tsx';
+import { forgetThisDevice } from '../notifications/push.ts';
 import { BackendError, deleteAccount, myProfile, removeFile, signOut, updateProfile, uploadFile, type Profile, type Session } from '../../shared/backend.ts';
 import { PhotoOrAvatar } from './PhotoOrAvatar.tsx';
 import { newSeed } from './localProfile.ts';
@@ -90,7 +91,7 @@ export function AccountProfile({ session }: { session: Session }) {
         {photoMsg && <p className={photoMsg.ok ? 'note ok' : 'note err'} role="status">{photoMsg.text}</p>}
       </div>
       <div className="card">
-        <button type="button" className="block" disabled={busy} onClick={() => void signOut()}>{a.signOut}</button>
+        <button type="button" className="block" disabled={busy} onClick={() => void forgetThisDevice().then(signOut)}>{a.signOut}</button>
         <p className="muted small">{a.staging}</p>
       </div>
       <div className="card danger">

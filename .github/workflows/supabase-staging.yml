@@ -62,6 +62,8 @@ jobs:
           check "signed-in users: no TRUNCATE/REFERENCES/TRIGGER" "$(q "select count(*) from information_schema.role_table_grants where grantee='authenticated' and table_schema='public' and privilege_type in ('TRUNCATE','REFERENCES','TRIGGER')")" 0
           check "signed-in users: no direct UPDATE/DELETE (except un-blocking someone; profile fields are column grants)" "$(q "select string_agg(distinct table_name||':'||privilege_type, ',' order by table_name||':'||privilege_type) from information_schema.role_table_grants where grantee='authenticated' and table_schema='public' and privilege_type in ('UPDATE','DELETE')")" "user_blocks:DELETE"
           check "storage buckets private" "$(q "select string_agg(id||'='||public::text, ',' order by id) from storage.buckets where id in ('avatars','chat-media')")" "avatars=false,chat-media=false"
+          check "push devices: readable by their owner only, no direct write" "$(q "select count(*) from information_schema.role_table_grants where table_schema='public' and table_name in ('push_subscriptions','push_sent') and grantee in ('anon','authenticated') and privilege_type <> 'SELECT'")" 0
+          check "push recipients: server only" "$(q "select has_function_privilege('authenticated','public.push_targets(uuid,text,uuid)','execute')::text || has_function_privilege('service_role','public.push_targets(uuid,text,uuid)','execute')::text")" "falsetrue"
           check "live updates enabled for messages, workout events, members" "$(q "select count(*) from pg_publication_tables where pubname='supabase_realtime' and schemaname='public' and tablename in ('messages','workout_events','workspace_members')")" 3
           exit $fail
       - name: Sign-in options for staging (email + password, no confirmation e-mail; test app address)
@@ -83,7 +85,22 @@ jobs:
       - name: Deploy the account-deletion function (runs on Supabase with the server key, which never leaves Supabase)
         if: steps.cfg.outputs.ready
         run: supabase functions deploy delete-account --project-ref "$PROJECT_ID" --no-verify-jwt --use-api --yes
-      - name: End-to-end with made-up accounts (pictures follow messages, links after removal, complete account deletion)
+      - name: Notification key (VAPID) — made once on GitHub's machine, stored as a Supabase secret, never shown or kept
+        if: steps.cfg.outputs.ready
+        run: |
+          if supabase secrets list --project-ref "$PROJECT_ID" | grep -qw VAPID_PRIVATE_JWK; then echo "notification key already set (kept: a new one would cut every phone off)";
+          else
+            jwk=$(node -e 'const {privateKey}=require("crypto").generateKeyPairSync("ec",{namedCurve:"prime256v1"});process.stdout.write(JSON.stringify(privateKey.export({format:"jwk"})))')
+            echo "::add-mask::$(jq -r .d <<<"$jwk")"; echo "::add-mask::$jwk"
+            supabase secrets set --project-ref "$PROJECT_ID" "VAPID_PRIVATE_JWK=$jwk" >/dev/null && echo "notification key created and stored on Supabase"
+            unset jwk
+          fi
+          # who sends (asked by Apple and the others in every signature): the test app's address
+          if [ -n "$APP_URL" ]; then supabase secrets set --project-ref "$PROJECT_ID" "VAPID_SUBJECT=$APP_URL" >/dev/null; fi
+      - name: Deploy the notification function
+        if: steps.cfg.outputs.ready
+        run: supabase functions deploy push --project-ref "$PROJECT_ID" --no-verify-jwt --use-api --yes
+      - name: End-to-end with made-up accounts (pictures follow messages, notifications, links after removal, complete account deletion)
         if: steps.cfg.outputs.ready
         env:
           SUPABASE_URL: ${{ vars.COLLABFIT_SUPABASE_URL }}
@@ -111,7 +128,10 @@ jobs:
     steps:
       - name: Test app address set?
         id: cfg
-        run: if [[ "$APP_URL" =~ ^https://[a-z0-9-]+\.netlify\.app$ ]]; then echo "ready=1" >> "$GITHUB_OUTPUT"; else echo "::warning::COLLABFIT_STAGING_APP_URL not set — deployed app not tested."; fi
+        run: |
+          # the test site is built from one branch only; another collabfit branch updates the test database, not the site
+          if [ "$GITHUB_REF_NAME" != "claude/collabfit-foundation" ]; then echo "::notice::$GITHUB_REF_NAME is not the branch the test site is built from — deployed app not tested."; exit 0; fi
+          if [[ "$APP_URL" =~ ^https://[a-z0-9-]+\.netlify\.app$ ]]; then echo "ready=1" >> "$GITHUB_OUTPUT"; else echo "::warning::COLLABFIT_STAGING_APP_URL not set — deployed app not tested."; fi
       - if: steps.cfg.outputs.ready
         uses: actions/checkout@v4
         with:
