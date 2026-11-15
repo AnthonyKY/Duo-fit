@@ -136,8 +136,26 @@ jobs:
           fail=0
           here=$(sha256sum packages/training/src/duofit-engine.generated.js | cut -c1-64); online=$(curl -sS "$APP_URL/engine.txt" | tr -dc '0-9a-f')
           if [ "$here" = "$online" ]; then echo "PASS engine online = engine of $GITHUB_SHA ($here)"; else echo "FAIL engine online $online, expected $here"; fail=1; fi
-          here=$(sha256sum _previews/duofit/index.html | cut -c1-64); online=$(curl -sS "$APP_URL/duofit-preview/" | sha256sum | cut -c1-64)
-          if [ "$here" = "$online" ]; then echo "PASS DUOFIT preview online = $(jq -r '.commit[0:7] + " (VER " + .ver + ")"' _previews/duofit/SOURCE.json)"; else echo "FAIL DUOFIT preview online differs"; fail=1; fi
+          # the preview page must be DUOFIT's file exactly, apart from what Netlify's free plan inserts in every page
+          # (its badge script, under /.netlify/); the other files must be identical byte for byte
+          APP_URL="$APP_URL" python3 - <<'PY' || fail=1
+          import json, os, re, urllib.request
+          url, src = os.environ['APP_URL'] + '/duofit-preview/', json.load(open('_previews/duofit/SOURCE.json'))
+          get = lambda f: urllib.request.urlopen(url + f).read()
+          online = get('').decode('utf8')
+          added = re.findall(r'<script[^>]*/\.netlify/[^>]*>\s*</script>', online)
+          clean = re.sub(r'<script[^>]*/\.netlify/[^>]*>\s*</script>', '', online)
+          local = open('_previews/duofit/index.html', encoding='utf8').read()
+          bad = 0
+          if clean == local: print(f"PASS DUOFIT preview page online = DUOFIT {src['commit'][:7]} (VER {src['ver']}), Netlify added only: {added}")
+          else:
+            i = next((k for k in range(min(len(clean), len(local))) if clean[k] != local[k]), min(len(clean), len(local)))
+            print(f"FAIL DUOFIT preview page differs at {i}: online …{clean[max(0,i-80):i+160]!r} / file …{local[max(0,i-80):i+160]!r}"); bad = 1
+          for f in ['sw.js', 'manifest.webmanifest', 'icon-180.png', 'icon-192.png', 'icon-512.png']:
+            same = get(f) == open('_previews/duofit/' + f, 'rb').read()
+            print(('PASS' if same else 'FAIL') + f' DUOFIT preview {f} online = DUOFIT {src["commit"][:7]}'); bad |= not same
+          raise SystemExit(bad)
+          PY
           exit $fail
       - name: Security headers and policy served by Netlify
         if: steps.cfg.outputs.ready
