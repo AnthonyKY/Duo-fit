@@ -2,7 +2,7 @@
 // Public settings come from the environment at build time; nothing secret ever goes into the bundle.
 //   COLLABFIT_SUPABASE_URL      https://<project>.supabase.co     (stage 2, public)
 //   COLLABFIT_SUPABASE_ANON_KEY the project's PUBLISHABLE key (sb_publishable_…, public by design, protected by row level security)
-//   COLLABFIT_LEGACY_URL        where DUOFIT lives (default "../": the app sits in a sub-folder of the same site)
+//   COLLABFIT_LEGACY_URL        where DUOFIT lives (default https://anthonyky.github.io/Duo-fit/)
 import { build } from 'esbuild';
 import { mkdir, readFile, writeFile, copyFile, rm } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
@@ -19,7 +19,11 @@ const jwtRole = k => { try { return JSON.parse(Buffer.from(k.split('.')[1] ?? ''
 if (/^sb_secret_/.test(anonKey) || (anonKey.startsWith('eyJ') && jwtRole(anonKey) !== 'anon'))
   throw new Error('That is a SECRET key. Only the public "publishable" key (sb_publishable_…) may be used here.');
 if (anonKey && !/^sb_publishable_[A-Za-z0-9_-]+$/.test(anonKey) && !anonKey.startsWith('eyJ')) throw new Error('COLLABFIT_SUPABASE_ANON_KEY does not look like a Supabase publishable key');
-const config = { supabaseUrl, anonKey, legacyUrl: env.COLLABFIT_LEGACY_URL || '../', version: env.COLLABFIT_VERSION || 'dev' };
+// DUOFIT stays where it is and stays the owner's app: "Ouvrir DUOFIT" opens it at its own address
+const legacyUrl = (env.COLLABFIT_LEGACY_URL || 'https://anthonyky.github.io/Duo-fit/').trim();
+if (!/^(https:\/\/[^\s"'<>]+|\.\.?\/)$/.test(legacyUrl)) throw new Error('COLLABFIT_LEGACY_URL must be an https address (or ../)');
+const commit = (env.COLLABFIT_VERSION || env.COMMIT_REF || '').trim(); // Netlify sets COMMIT_REF
+const config = { supabaseUrl, anonKey, legacyUrl, version: commit ? commit.slice(0, 7) : 'dev' };
 
 await rm(out, { recursive: true, force: true });
 await mkdir(path.join(out, 'assets'), { recursive: true });
@@ -37,4 +41,5 @@ const csp = `default-src 'none'; script-src 'self'; style-src 'self'; img-src 's
   + `connect-src ${connect}; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'`;
 const html = (await readFile(path.join(root, 'index.html'), 'utf8')).replace('%CSP%', csp);
 await writeFile(path.join(out, 'index.html'), html);
+await writeFile(path.join(out, 'version.txt'), (commit || 'dev') + '\n'); // lets the tests know which commit is online
 console.log('built apps/web/dist', supabaseUrl ? '(backend configured)' : '(no backend configured yet)');

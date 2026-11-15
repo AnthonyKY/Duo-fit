@@ -4,9 +4,37 @@ import { useI18n } from '../../app/i18n.tsx';
 import { config } from '../../shared/config.ts';
 import { Avatar } from './Avatar.tsx';
 import { loadProfile, newSeed, saveProfile } from './localProfile.ts';
+import { AccountProfile } from './AccountProfile.tsx';
+import { AuthCard } from '../auth/AuthCard.tsx';
+import { useSession } from '../../shared/useSession.ts';
+
+function LanguageCard() {
+  const { t, lang, setLang } = useI18n();
+  return (
+    <div className="card">
+      <div className="row between"><span>{t.language}</span>
+        <span className="seg">{(['fr', 'en'] as const).map(l => <button key={l} type="button" aria-pressed={lang === l} className={lang === l ? 'on' : ''} onClick={() => setLang(l)}>{l.toUpperCase()}</button>)}</span>
+      </div>
+      <p className="muted">{t.backend} : {config.backendReady ? t.backendOn : t.backendOff} · {t.version} {config.version}</p>
+    </div>
+  );
+}
 
 export function ProfileScreen() {
-  const { t, lang, setLang } = useI18n();
+  const { t } = useI18n();
+  const session = useSession();
+  if (config.backendReady) return (
+    <section className="screen">
+      <h1>{t.profileTitle}</h1>
+      {session ? <AccountProfile key={session.user.id} session={session} /> : <AuthCard defaultName={loadProfile().name} />}
+      <LanguageCard />
+    </section>
+  );
+  return <LocalProfileScreen />;
+}
+
+function LocalProfileScreen() {
+  const { t } = useI18n();
   const [p, setP] = useState(loadProfile);
   const [name, setName] = useState(p.name);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
@@ -32,12 +60,7 @@ export function ProfileScreen() {
         <button type="button" className="primary" onClick={save}>{t.save}</button>
         {msg && <p className={msg.ok ? 'note ok' : 'note err'} role="status">{msg.text}</p>}
       </div>
-      <div className="card">
-        <div className="row between"><span>{t.language}</span>
-          <span className="seg">{(['fr', 'en'] as const).map(l => <button key={l} type="button" aria-pressed={lang === l} className={lang === l ? 'on' : ''} onClick={() => setLang(l)}>{l.toUpperCase()}</button>)}</span>
-        </div>
-        <p className="muted">{t.backend} : {config.backendReady ? t.backendOn : t.backendOff} · {t.version} {config.version}</p>
-      </div>
+      <LanguageCard />
     </section>
   );
 }

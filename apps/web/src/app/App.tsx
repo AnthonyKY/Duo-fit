@@ -3,6 +3,7 @@ import { useRoute } from './router.ts';
 import { TrainingScreen } from '../features/workouts/TrainingScreen.tsx';
 import { SpacesScreen, keepInvite } from '../features/workspaces/SpacesScreen.tsx';
 import { ProfileScreen } from '../features/profile/ProfileScreen.tsx';
+import { config } from '../shared/config.ts';
 
 function Home() {
   const { t } = useI18n();
@@ -10,8 +11,8 @@ function Home() {
     <section className="screen">
       <h1>{t.homeTitle} 👋</h1>
       <p>{t.homeIntro}</p>
-      <div className="card"><b>{t.stageNow}</b><ul>{t.stageItems.map(x => <li key={x}>✅ {x}</li>)}</ul></div>
-      <div className="card"><b>{t.stageNext}</b><ol>{t.nextItems.map(x => <li key={x}>{x}</li>)}</ol></div>
+      <div className="card"><b>{t.stageNow}</b><ul>{(config.backendReady ? t.stageItemsAccount : t.stageItems).map(x => <li key={x}>✅ {x}</li>)}</ul></div>
+      <div className="card"><b>{t.stageNext}</b><ol>{(config.backendReady ? t.nextItems.slice(1) : t.nextItems).map(x => <li key={x}>{x}</li>)}</ol></div>
     </section>
   );
 }

@@ -5,3 +5,4 @@ export * from './invite.ts';
 export * from './outbox.ts';
 export * from './legacy.ts';
 export * from './avatar.ts';
+export * from './account.ts';

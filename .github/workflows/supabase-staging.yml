@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
   push:
     branches: ['claude/collabfit-*', 'feat/collabfit-*']
-    paths: ['supabase/migrations/**', 'supabase/functions/**', 'scripts/staging-e2e.mjs', '.github/workflows/supabase-staging.yml']
+    paths: ['supabase/migrations/**', 'supabase/functions/**', 'scripts/staging-e2e.mjs', 'apps/web/**', 'packages/domain/**', 'netlify.toml', '.github/workflows/supabase-staging.yml']
 permissions:
   contents: read
 concurrency: supabase-staging
@@ -114,10 +114,22 @@ jobs:
         run: if [[ "$APP_URL" =~ ^https://[a-z0-9-]+\.netlify\.app$ ]]; then echo "ready=1" >> "$GITHUB_OUTPUT"; else echo "::warning::COLLABFIT_STAGING_APP_URL not set — deployed app not tested."; fi
       - if: steps.cfg.outputs.ready
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - if: steps.cfg.outputs.ready
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Wait until Netlify serves this commit's app (it rebuilds only when the app's code changes)
+        if: steps.cfg.outputs.ready
+        run: |
+          app='apps/web/src apps/web/index.html apps/web/scripts apps/web/package.json packages/domain/src packages/domain/package.json package.json package-lock.json'
+          for i in $(seq 1 40); do
+            d=$(curl -sS "$APP_URL/version.txt?t=$i" | tr -dc '0-9a-f')
+            if [ -n "$d" ] && git cat-file -e "$d^{commit}" 2>/dev/null && git diff --quiet "$d" HEAD -- $app; then echo "Netlify serves $d: same app code as $GITHUB_SHA"; exit 0; fi
+            echo "online: ${d:-unknown} — waiting for the new build ($i/40)"; sleep 15
+          done
+          echo "::error::Netlify does not serve this commit's app after 10 minutes (build failed or out of credits?)"; exit 1
       - name: Security headers and policy served by Netlify
         if: steps.cfg.outputs.ready
         run: |
@@ -130,18 +142,20 @@ jobs:
           check "security policy without inline code" "grep -o 'Content-Security-Policy\" content=\"[^\"]*' /tmp/page | grep -v -q unsafe-inline"
           check "security policy allows exactly this Supabase project" "grep -o 'Content-Security-Policy\" content=\"[^\"]*' /tmp/page | grep -q \"connect-src 'self' $SUPABASE_URL wss://\""
           check "no secret key in the page or its scripts" "! (cat /tmp/page; for s in \$(grep -o 'src=\"[^\"]*\.js' /tmp/page | cut -d'\"' -f2); do curl -sS \"$APP_URL/\${s#/}\"; done) | grep -Eq 'sb_secret_|service_role'"
-          echo "--- page as Netlify serves it:"; cat /tmp/page; echo; echo "---"
-          [ $fail = 0 ] || { echo "--- response:"; head -12 /tmp/h; }
+          [ $fail = 0 ] || { echo "--- response:"; head -12 /tmp/h; cat /tmp/page; }
           exit $fail
       - name: Browsers
         if: steps.cfg.outputs.ready
         run: npm ci --no-audit --no-fund && npx playwright install --with-deps chromium webkit
-      - name: Deployed app on iPhone SE and 16 Plus (Chromium), then iPhone 16 Plus (WebKit)
+      - name: Deployed app with the real Supabase — iPhone SE and 16 Plus (Chromium), iPhone 16 Plus (WebKit)
         if: steps.cfg.outputs.ready
         env:
           SMOKE_URL: ${{ vars.COLLABFIT_STAGING_APP_URL }}/
+          SUPABASE_KEY: ${{ vars.COLLABFIT_SUPABASE_ANON_KEY }}
         run: |
           set -o pipefail
-          node apps/web/test/smoke.mjs | tee /tmp/c
-          BROWSER=webkit DEVICE="iPhone 16 Plus" node apps/web/test/smoke.mjs | tee /tmp/w
-          ! grep -Eq '^FAIL|^CRASH' /tmp/c /tmp/w
+          SMOKE_ONLY=csp node apps/web/test/smoke.mjs | tee /tmp/c
+          SMOKE_ONLY=csp BROWSER=webkit DEVICE="iPhone 16 Plus" node apps/web/test/smoke.mjs | tee /tmp/w
+          node apps/web/test/deployed.mjs | tee /tmp/dc
+          BROWSER=webkit DEVICE="iPhone 16 Plus" node apps/web/test/deployed.mjs | tee /tmp/dw
+          ! grep -Eq '^FAIL|^CRASH' /tmp/c /tmp/w /tmp/dc /tmp/dw

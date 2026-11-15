@@ -19,3 +19,11 @@ button,.button{cursor:pointer;text-decoration:none;display:inline-flex;align-ite
 .tabs a{flex:1;text-align:center;padding:12px 2px;font-size:13px;color:var(--mu);text-decoration:none;min-height:48px}
 .tabs a.on{color:var(--ac);font-weight:700}
 @media (prefers-reduced-motion:no-preference){.card{animation:in .18s ease-out}@keyframes in{from{opacity:0;transform:translateY(4px)}}}
+.grow{flex:1;min-width:0}.wrap{flex-wrap:wrap}.hidden{display:none}
+h2{font-size:19px;margin:0 0 10px}
+.seg.wide{display:flex;margin-bottom:12px}.seg.wide button{flex:1}
+.field .pw{display:flex;gap:8px;margin:0;font-size:inherit;color:inherit}.field .pw input{flex:1;min-width:0}
+.ghost{background:transparent}
+button:disabled{opacity:.55;cursor:default}
+.danger{border-color:var(--err)}.danger-btn{background:transparent;color:var(--err);border-color:var(--err);font-weight:700}
+.avatar.photo{object-fit:cover;background:var(--c2)}

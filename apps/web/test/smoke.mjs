@@ -41,7 +41,7 @@ for (const dev of BR.device ? [BR.device] : ['iPhone SE', 'iPhone 16 Plus']) {
   const tag = `[${dev}] `;
 
   await p.goto(url);
-  ok(tag + 'Home in French, with what exists now and what comes next', (await text()).includes('Disponible maintenant') && (await text()).includes('Compte et connexion sécurisée'));
+  ok(tag + 'Home in French, with what exists now and what comes next', (await text()).includes('Disponible maintenant') && /Compte et connexion sécurisée|Compte sécurisé/.test(await text()));
   const csp = await p.getAttribute('meta[http-equiv="Content-Security-Policy"]', 'content');
   ok(tag + 'Strict security policy: no inline code allowed, no outside site', !csp.includes('unsafe-inline') && csp.includes("script-src 'self'") && csp.includes("connect-src 'self'"), csp);
   ok(tag + 'Fits the screen (no sideways scroll)', await fits());
@@ -74,7 +74,7 @@ for (const dev of BR.device ? [BR.device] : ['iPhone SE', 'iPhone 16 Plus']) {
   // training: read-only bridge to DUOFIT
   await p.click('nav a[href="#/training"]');await p.waitForSelector('h1:has-text("Entraînement")');
   ok(tag + 'Training tab without DUOFIT data says so', (await text()).includes('Aucune donnée DUOFIT'));
-  ok(tag + '"Ouvrir DUOFIT" leads to the DUOFIT app', (await p.getAttribute('a.button.primary', 'href')) === '../');
+  ok(tag + '"Ouvrir DUOFIT" points to DUOFIT at its own address', (await p.getAttribute('a.button.primary', 'href')) === 'https://anthonyky.github.io/Duo-fit/');
   await p.evaluate(s => localStorage.setItem('duofit', s), SAMPLE); await p.reload();
   let t = await text();
   ok(tag + 'With DUOFIT data: workouts counted, in-progress and last workout shown', t.includes('2 séances') && t.includes('Séance en cours · Séance C') && t.includes('Dernière séance : Séance B') && t.includes('52 min'), t.slice(0, 300));
