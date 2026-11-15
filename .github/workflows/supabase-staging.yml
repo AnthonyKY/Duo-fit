@@ -79,3 +79,49 @@ jobs:
           code=$(curl -s -o /tmp/r.json -w '%{http_code}' "https://$PROJECT_ID.supabase.co/rest/v1/workspaces?select=id" -H "apikey: $key")
           echo "anonymous read of workspaces: HTTP $code $(head -c 160 /tmp/r.json)"
           [ "$code" = 401 ] || [ "$code" = 403 ] || { echo "::error::anonymous read was not refused"; exit 1; }
+
+  # The test app as Netlify serves it (address in COLLABFIT_STAGING_APP_URL): the same iPhone checks as in CI, on the
+  # real deployment — security policy enforced by the browser with the real Supabase address, Netlify's security headers.
+  deployed-app:
+    needs: migrate
+    runs-on: ubuntu-24.04
+    environment: staging
+    timeout-minutes: 15
+    env:
+      APP_URL: ${{ vars.COLLABFIT_STAGING_APP_URL }}
+      SUPABASE_URL: ${{ vars.COLLABFIT_SUPABASE_URL }}
+    steps:
+      - name: Test app address set?
+        id: cfg
+        run: if [[ "$APP_URL" =~ ^https://[a-z0-9-]+\.netlify\.app$ ]]; then echo "ready=1" >> "$GITHUB_OUTPUT"; else echo "::warning::COLLABFIT_STAGING_APP_URL not set — deployed app not tested."; fi
+      - if: steps.cfg.outputs.ready
+        uses: actions/checkout@v4
+      - if: steps.cfg.outputs.ready
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Security headers and policy served by Netlify
+        if: steps.cfg.outputs.ready
+        run: |
+          curl -sSI "$APP_URL/" | tr -d '\r' > /tmp/h; curl -sS "$APP_URL/" > /tmp/page
+          fail=0; check() { if eval "$2"; then echo "PASS $1"; else echo "FAIL $1"; fail=1; fi; }
+          check "page served over HTTPS (HTTP 200)" "head -1 /tmp/h | grep -q ' 200'"
+          for h in 'x-content-type-options: nosniff' 'referrer-policy: no-referrer' 'x-frame-options: DENY' 'permissions-policy: camera=(), microphone=(), geolocation=()'; do
+            check "header $h" "grep -qi '^$h' /tmp/h"; done
+          check "strict-transport-security (HTTPS forced)" "grep -qi '^strict-transport-security:' /tmp/h"
+          check "security policy without inline code" "grep -o 'Content-Security-Policy\" content=\"[^\"]*' /tmp/page | grep -v -q unsafe-inline"
+          check "security policy allows exactly this Supabase project" "grep -o 'Content-Security-Policy\" content=\"[^\"]*' /tmp/page | grep -q \"connect-src 'self' $SUPABASE_URL wss://\""
+          check "no secret key in the page or its scripts" "! (cat /tmp/page; for s in \$(grep -o 'src=\"[^\"]*\.js' /tmp/page | cut -d'\"' -f2); do curl -sS \"$APP_URL/\${s#/}\"; done) | grep -Eq 'sb_secret_|service_role'"
+          exit $fail
+      - name: Browsers
+        if: steps.cfg.outputs.ready
+        run: npm ci --no-audit --no-fund && npx playwright install --with-deps chromium webkit
+      - name: Deployed app on iPhone SE and 16 Plus (Chromium), then iPhone 16 Plus (WebKit)
+        if: steps.cfg.outputs.ready
+        env:
+          SMOKE_URL: ${{ vars.COLLABFIT_STAGING_APP_URL }}/
+        run: |
+          set -o pipefail
+          node apps/web/test/smoke.mjs | tee /tmp/c
+          BROWSER=webkit DEVICE="iPhone 16 Plus" node apps/web/test/smoke.mjs | tee /tmp/w
+          ! grep -Eq '^FAIL|^CRASH' /tmp/c /tmp/w
