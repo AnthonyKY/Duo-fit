@@ -17,7 +17,7 @@ export const SQUARE_PNG = (() => {
 
 export function standIn() {
   const db = { users: new Map(), byToken: new Map(), refresh: new Map(), profiles: new Map(), files: new Map(), calls: [],
-    spaces: new Map(), members: [], invites: [], blocks: [], messages: [], sockets: new Set() };
+    spaces: new Map(), members: [], invites: [], blocks: [], messages: [], events: [], training: new Map(), sockets: new Set() };
   let clock = Date.now();
   const now = () => new Date(clock += 5).toISOString(); // strictly increasing, like the server's timestamps
   const session = u => {
@@ -30,7 +30,7 @@ export function standIn() {
   const active = (ws, uid) => db.members.find(m => m.workspace_id === ws && m.user_id === uid && m.status === 'active');
   const blocked = (by, other) => db.blocks.some(b => b.blocker_id === by && b.blocked_id === other);
   const shares = (a, b) => db.members.some(m => m.user_id === a && m.status === 'active' && active(m.workspace_id, b));
-  const canRead = (uid, msg) => msg.author_id === uid || (!!active(msg.workspace_id, uid) && msg.created_at >= active(msg.workspace_id, uid).joined_at && !(msg.author_id && blocked(uid, msg.author_id)));
+  const canRead = (uid, msg0) => { const msg = msg0.author_id === undefined && 'user_id' in msg0 ? { ...msg0, author_id: msg0.user_id } : msg0; return msg.author_id === uid || (!!active(msg.workspace_id, uid) && msg.created_at >= active(msg.workspace_id, uid).joined_at && !(msg.author_id && blocked(uid, msg.author_id))); };
   const pick = (row, select) => select && select !== '*' ? Object.fromEntries(select.split(',').map(k => [k, row[k]])) : row;
   const eq = (q, k) => { const v = q.get(k) || ''; return v.startsWith('eq.') ? v.slice(3) : ''; };
   const owner = ws => db.spaces.get(ws)?.owner_id;
@@ -87,7 +87,7 @@ export function standIn() {
           if (a.p_mode === 'couple' && db.members.some(x => x.user_id === who && x.status === 'active' && db.spaces.get(x.workspace_id)?.mode === 'couple')) return pgErr(route, 409, '23505', 'already in a couple space');
           const id = randomUUID(), t = now();
           db.spaces.set(id, { id, name: a.p_name.trim(), mode: a.p_mode, max_members: a.p_mode === 'couple' ? 2 : (a.p_max_members ?? 10), owner_id: who, created_at: t });
-          db.members.push({ workspace_id: id, user_id: who, role: 'owner', status: 'active', joined_at: t });
+          db.members.push({ workspace_id: id, user_id: who, role: 'owner', status: 'active', joined_at: t, share_workouts: false, notify_workouts: false });
           return json(route, 200, id);
         }
         case 'create_invitation': {
@@ -111,7 +111,7 @@ export function standIn() {
           if (db.members.some(x => x.workspace_id === s.id && x.status === 'active' && blocked(x.user_id, who))) return pgErr(route, 400, '22023', 'invalid or expired invitation');
           if (db.members.filter(x => x.workspace_id === s.id && x.status === 'active').length >= s.max_members) return pgErr(route, 400, '23514', 'this space is full');
           const old = db.members.find(x => x.workspace_id === s.id && x.user_id === who);
-          if (old) Object.assign(old, { status: 'active', role: 'member', joined_at: now() }); else db.members.push({ workspace_id: s.id, user_id: who, role: 'member', status: 'active', joined_at: now() });
+          if (old) Object.assign(old, { status: 'active', role: 'member', joined_at: now(), share_workouts: false, notify_workouts: false }); else db.members.push({ workspace_id: s.id, user_id: who, role: 'member', status: 'active', joined_at: now(), share_workouts: false, notify_workouts: false });
           i.uses++; return json(route, 200, s.id);
         }
         case 'leave_workspace': { const x = active(a.p_workspace, who); if (!x) return pgErr(route, 400, 'P0002', 'not a member'); x.status = 'left'; keepOwner(a.p_workspace); return route.fulfill({ status: 204 }); }
@@ -129,6 +129,17 @@ export function standIn() {
           if (!x) return pgErr(route, 400, 'P0002', 'message not found');
           Object.assign(x, { body: null, image_path: null, deleted_at: now() }); publish('messages', 'UPDATE', x); return route.fulfill({ status: 204 });
         }
+      }
+      if (rpc[1] === 'set_workout_sharing') { const x = active(a.p_workspace, who); if (!x) return pgErr(route, 400, 'P0002', 'not a member'); x.share_workouts = !!a.p_share; x.notify_workouts = !!a.p_notify; return route.fulfill({ status: 204 }); }
+      if (rpc[1] === 'publish_workout_event') {
+        const x = active(a.p_workspace, who); if (!x || !x.share_workouts) return pgErr(route, 403, '42501', 'sharing is off for this space');
+        const row = { id: randomUUID(), workspace_id: a.p_workspace, user_id: who, workout_ref: a.p_workout_ref, event_type: a.p_type, created_at: now() };
+        db.events.push(row); publish('workout_events', 'INSERT', row); return json(route, 200, row.id);
+      }
+      if (rpc[1] === 'save_training') {
+        const cur = db.training.get(who);
+        if (a.p_version === 0 ? !!cur : !cur || cur.version !== a.p_version) return pgErr(route, 409, '40001', 'saved meanwhile from another phone');
+        const v = (cur?.version ?? 0) + 1; db.training.set(who, { data: JSON.parse(JSON.stringify(a.p_data)), version: v }); return json(route, 200, v);
       }
       return json(route, 404, { message: 'rpc not in the stand-in: ' + rpc[1] });
     }
@@ -150,6 +161,8 @@ export function standIn() {
     if (tbl === 'workspace_members' && m === 'GET') {
       let list = db.members.filter(x => active(x.workspace_id, who) && x.status === 'active');
       if (eq(q, 'workspace_id')) list = list.filter(x => x.workspace_id === eq(q, 'workspace_id'));
+      if (eq(q, 'user_id')) list = list.filter(x => x.user_id === eq(q, 'user_id'));
+      if (q.get('share_workouts') === 'is.true') list = list.filter(x => x.share_workouts);
       return json(route, 200, list.sort((a, b) => a.joined_at.localeCompare(b.joined_at)).map(x => pick(x, q.get('select'))));
     }
     if (tbl === 'workspace_invitations' && m === 'GET')
@@ -159,6 +172,9 @@ export function standIn() {
       if (m === 'POST') { const b = body(); if (b.blocker_id !== who) return pgErr(route, 403, '42501', 'row-level security'); if (!blocked(who, b.blocked_id)) db.blocks.push({ blocker_id: who, blocked_id: b.blocked_id }); return route.fulfill({ status: 201 }); }
       if (m === 'DELETE') { db.blocks = db.blocks.filter(b => !(b.blocker_id === who && b.blocked_id === eq(q, 'blocked_id'))); return route.fulfill({ status: 204 }); }
     }
+    if (tbl === 'workout_events' && m === 'GET')
+      return json(route, 200, db.events.filter(x => x.workspace_id === eq(q, 'workspace_id') && canRead(who, x)).sort((a, b) => b.created_at.localeCompare(a.created_at)).map(x => pick(x, q.get('select'))));
+    if (tbl === 'training_profiles' && m === 'GET') { const r = db.training.get(who); return json(route, 200, r && eq(q, 'user_id') === who ? [pick({ ...r, user_id: who }, q.get('select'))] : []); }
     if (tbl === 'messages') {
       if (m === 'GET') {
         let list = db.messages.filter(x => x.workspace_id === eq(q, 'workspace_id') && canRead(who, x));

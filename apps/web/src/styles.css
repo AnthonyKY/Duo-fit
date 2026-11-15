@@ -49,3 +49,13 @@ a.button.on{background:var(--ac);color:var(--on);border:0;font-weight:700}
 .composer{position:sticky;bottom:calc(58px + env(safe-area-inset-bottom,0px));display:flex;gap:6px;align-items:flex-end;background:var(--bg);padding:8px 0;margin-top:10px}
 .composer textarea{flex:1;min-width:0;font:inherit;color:var(--tx);background:var(--cd);border:1px solid var(--bd);border-radius:12px;padding:10px;min-height:44px;max-height:30vh;resize:none}
 .composer .icon{padding:8px 10px}
+.lb{font-size:14px;color:var(--mu);margin:12px 0 6px}.stack{display:flex;flex-direction:column;gap:6px}.stack button{text-align:left;justify-content:flex-start}
+.stack .on,.seg .on{background:var(--ac);color:var(--on);border:0;font-weight:700}.seg.days button{padding:8px 4px;min-width:0}
+.check{display:flex;align-items:center;gap:8px;margin:12px 0 0}.check input{width:22px;height:22px;min-height:0}
+.exlist{margin:8px 0 12px}.tip{margin:6px 0;font-size:14px}.howto{font-size:14px;background:var(--c2);border-radius:10px;padding:8px 10px}
+.setrow{display:grid;grid-template-columns:22px 1fr 1fr 52px;gap:6px;align-items:center;margin:6px 0}.setrow input{width:100%;min-width:0}.setrow.ok input{opacity:.7}
+.rest{position:sticky;top:0;z-index:2;display:flex;justify-content:space-between;align-items:center;background:var(--ac);color:var(--on);border-radius:12px;padding:8px 12px;margin:8px 0}
+.rest button{background:transparent;color:var(--on);border-color:var(--on);min-height:36px}
+.bar{height:6px;background:var(--c2);border-radius:3px;overflow:hidden}.bar i{display:block;height:100%;background:var(--ac)}
+h3{font-size:17px;margin:0}.note{width:100%;min-height:60px;font:inherit;color:var(--tx);background:var(--cd);border:1px solid var(--bd);border-radius:12px;padding:10px;margin:8px 0}
+.evt{text-align:center;font-size:13px;color:var(--mu);margin:2px 0}

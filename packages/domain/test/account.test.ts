@@ -37,6 +37,7 @@ test('database refusals become clear cases (codes raised by the schema functions
   assert.equal(dbProblem(403, { code: '42501', message: 'only the owner can invite' }), 'not-allowed');
   assert.equal(dbProblem(400, { code: 'P0002', message: 'not a member' }), 'not-found');
   assert.equal(dbProblem(400, { code: '23514', message: 'new row violates check constraint' }), 'invalid-input');
+  assert.equal(dbProblem(409, { code: '40001', message: 'saved meanwhile from another phone' }), 'conflict');
   assert.equal(dbProblem(500, 'x'), null);
 });
 test('friends space: 2 to 20 people', () => {

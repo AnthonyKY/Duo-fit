@@ -160,4 +160,6 @@ jobs:
           BROWSER=webkit DEVICE="iPhone 16 Plus" node apps/web/test/deployed.mjs | tee /tmp/dw
           node apps/web/test/deployed-spaces.mjs | tee /tmp/sc
           BROWSER=webkit DEVICE="iPhone 16 Plus" node apps/web/test/deployed-spaces.mjs | tee /tmp/sw
-          ! grep -Eq '^FAIL|^CRASH' /tmp/c /tmp/w /tmp/dc /tmp/dw /tmp/sc /tmp/sw
+          node apps/web/test/deployed-training.mjs | tee /tmp/tc
+          BROWSER=webkit DEVICE="iPhone 16 Plus" node apps/web/test/deployed-training.mjs | tee /tmp/tw
+          ! grep -Eq '^FAIL|^CRASH' /tmp/c /tmp/w /tmp/dc /tmp/dw /tmp/sc /tmp/sw /tmp/tc /tmp/tw

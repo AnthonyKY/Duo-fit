@@ -92,7 +92,7 @@ for (const dev of BR.device ? [BR.device] : ['iPhone SE', 'iPhone 16 Plus']) {
   ok(tag + 'Photo shown through a short-lived private link', (await p.getAttribute('img.avatar.photo', 'src')).startsWith(SB + '/storage/v1/object/sign/avatars/'));
   ok(tag + 'Square 512 px', await p.evaluate(() => { const i = document.querySelector('img.avatar.photo'); return i.complete && i.naturalWidth === 512 && i.naturalHeight === 512; }));
   await p.setInputFiles('input[type=file]', { name: 'note.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4') });
-  ok(tag + 'Not a photo: refused with an explanation', (await text()).includes('Choisis une photo'));
+  ok(tag + 'Not a photo: refused with an explanation', await p.waitForSelector('text=Choisis une photo', { timeout: 4000 }).then(() => true).catch(() => false));
   await p.click('text=Retirer la photo'); await p.waitForSelector('img.avatar:not(.photo)');
   ok(tag + 'Photo removed: file deleted, generated avatar back', sb.db.files.size === 0 && sb.db.profiles.get(uid).avatar_path === null);
 

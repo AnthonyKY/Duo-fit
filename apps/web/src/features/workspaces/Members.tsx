@@ -3,7 +3,7 @@ import { inviteLink } from '@collabfit/domain';
 import { useI18n } from '../../app/i18n.tsx';
 import { ConfirmButton, Note, problemText, useAction } from '../../shared/ui.tsx';
 import { PhotoOrAvatar } from '../profile/PhotoOrAvatar.tsx';
-import { block, createInvitation, leaveSpace, me, members, myBlocks, openInvitations, removeMember, revokeInvitation, transferOwnership, unblock,
+import { block, createInvitation, leaveSpace, me, members, myBlocks, mySharing, openInvitations, removeMember, revokeInvitation, setSharing, transferOwnership, unblock,
   type Invitation, type Member, type Space } from './api.ts';
 
 const appUrl = () => location.origin + location.pathname;
@@ -62,6 +62,24 @@ function InvitePanel({ space, free, onChange }: { space: Space; free: number; on
   );
 }
 
+// "a commencé / a terminé sa séance" for this space: off until the person turns it on, per space
+function ShareWorkouts({ space }: { space: Space }) {
+  const { t } = useI18n();
+  const [v, setV] = useState<{ share: boolean; notify: boolean } | null>(null);
+  const act = useAction();
+  useEffect(() => { mySharing(space.id).then(x => setV(x ? { share: x.share_workouts, notify: x.notify_workouts } : null)).catch(() => setV(null)); }, [space.id]);
+  if (!v) return null;
+  return (
+    <div className="card" data-share>
+      <label className="check"><input type="checkbox" checked={v.share} disabled={act.busy}
+        onChange={e => { const share = e.target.checked, before = v; setV({ ...v, share }); // shown at once, put back if refused
+          void act.run(async () => { await setSharing(space.id, share, v.notify); }).then(okd => { if (!okd) setV(before); }); }} /> {t.tr.share}</label>
+      <p className="muted small">{t.tr.shareHint}</p>
+      <Note msg={act.msg} />
+    </div>
+  );
+}
+
 export function Members({ space, onChange }: { space: Space; onChange: () => void }) {
   const { t } = useI18n();
   const [list, setList] = useState<Member[] | null>(null);
@@ -109,6 +127,7 @@ export function Members({ space, onChange }: { space: Space; onChange: () => voi
         <p className="muted small">{t.sp.blockHint}</p>
         <Note msg={act.msg} />
       </div>
+      <ShareWorkouts space={space} />
       {owner && <InvitePanel space={space} free={space.max_members - list.length} onChange={refresh} />}
       <div className="card danger">
         <p className="muted small">{t.sp.leaveHint}</p>

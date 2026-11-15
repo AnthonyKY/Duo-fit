@@ -50,3 +50,8 @@ export const transferOwnership = (spaceId: string, user: string) => rpc<null>('t
 export const myBlocks = async () => new Set((await rest<{ blocked_id: string }[]>('user_blocks?select=blocked_id')).map(b => b.blocked_id));
 export const block = (user: string) => insert('user_blocks', { blocker_id: me(), blocked_id: user });
 export const unblock = (user: string) => remove('user_blocks', `blocked_id=eq.${user}`);
+
+export const mySharing = async (spaceId: string) =>
+  (await rest<{ share_workouts: boolean; notify_workouts: boolean }[]>(`workspace_members?select=share_workouts,notify_workouts&workspace_id=eq.${spaceId}&user_id=eq.${me()}&status=eq.active`))[0] ?? null;
+export const setSharing = (spaceId: string, share: boolean, notify: boolean) =>
+  rpc<null>('set_workout_sharing', { p_workspace: spaceId, p_share: share, p_notify: notify });

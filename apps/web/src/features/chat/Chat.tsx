@@ -12,6 +12,7 @@ import { onDelivered, onOutbox, pendingFor, queue, retry, drop, type SentRow } f
 export const CHAT_LINK_SECONDS = 60; // a chat picture's link is asked each time it is shown; a leaked link dies within a minute
 const PAGE = 50;
 const COLS = 'id,client_id,author_id,body,image_path,created_at,deleted_at';
+interface Moment { id: string; user_id: string | null; event_type: 'started' | 'completed'; created_at: string }
 
 function ChatImage({ path }: { path: string }) {
   const { t } = useI18n();
@@ -30,6 +31,7 @@ export function Chat({ space }: { space: Space }) {
   const { t, lang } = useI18n();
   const self = me();
   const [rows, setRows] = useState<Map<string, SentRow>>(new Map());
+  const [moments, setMoments] = useState<Map<string, Moment>>(new Map());
   const [people, setPeople] = useState<Map<string, PublicProfile>>(new Map());
   const [more, setMore] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -55,13 +57,18 @@ export function Chat({ space }: { space: Space }) {
   useEffect(() => {
     latest().then(list => setMore(list.length === PAGE)).catch(e => { setLoaded(true); setErr(problemText(t, e)); });
     const stopLive = watchTable<SentRow>('messages', `workspace_id=eq.${space.id}`, c => { if (c.record) merge([c.record]); }, setLive);
+    const addMoments = (list: Moment[]) => { setMoments(prev => { const m = new Map(prev); for (const x of list) m.set(x.id, x); return m; });
+      const ids = list.map(x => x.user_id).filter((a): a is string => !!a);
+      if (ids.length) profilesOf(ids).then(p => setPeople(prev => { const m = new Map(prev); for (const [k, v] of p) m.set(k, v); return m; })).catch(() => { /* later */ }); };
+    rest<Moment[]>(`workout_events?select=id,user_id,event_type,created_at&workspace_id=eq.${space.id}&order=created_at.desc&limit=30`).then(addMoments).catch(() => { /* none */ });
+    const stopMoments = watchTable<Moment>('workout_events', `workspace_id=eq.${space.id}`, c => { if (c.record) addMoments([c.record]); });
     const stopBox = onOutbox(() => setPending(pendingFor(space.id)));
     const stopSent = onDelivered(r => merge([r]));
     const reread = () => { if (document.visibilityState === 'visible') latest().catch(() => { /* offline */ }); };
     const net = () => { setOnline(navigator.onLine !== false); reread(); };
     document.addEventListener('visibilitychange', reread);
     addEventListener('online', net); addEventListener('offline', net);
-    return () => { stopLive(); stopBox(); stopSent(); document.removeEventListener('visibilitychange', reread); removeEventListener('online', net); removeEventListener('offline', net); };
+    return () => { stopLive(); stopMoments(); stopBox(); stopSent(); document.removeEventListener('visibilitychange', reread); removeEventListener('online', net); removeEventListener('offline', net); };
   }, [space.id]);
   // turning live: read once more (anything sent while the subscription was starting); then a safety re-read every
   // 30 s while live, every 15 s without live updates (connection refused, old network)
@@ -113,7 +120,10 @@ export function Chat({ space }: { space: Space }) {
       {err && <p className="note err" role="alert">{err}</p>}
       {loaded && !sorted.length && !waiting.length && <p className="muted center">{t.chat.empty}</p>}
       <ol className="messages">
-        {sorted.map(r => {
+        {[...sorted.map(r => ({ at: r.created_at, r })), ...[...moments.values()].map(m => ({ at: m.created_at, m }))].sort((a, b) => a.at.localeCompare(b.at)).map(item => {
+          if ('m' in item) { const m = item.m, n = (m.user_id && people.get(m.user_id)?.display_name) || '…';
+            return <li key={'e' + m.id} className="evt" data-moment={m.event_type}>{m.event_type === 'started' ? t.tr.started(n) : t.tr.completed(n)} · {time(m.created_at)}</li>; }
+          const r = item.r;
           const mine = r.author_id === self, who = r.author_id ? people.get(r.author_id) : null;
           return (
             <li key={r.id} className={mine ? 'msg mine' : 'msg'} data-client={r.client_id}>
