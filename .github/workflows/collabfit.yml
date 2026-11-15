@@ -1,0 +1,85 @@
+# CollabFit (apps/, packages/, supabase/). DUOFIT at the repository root keeps its own workflow (tests.yml).
+name: CollabFit
+on:
+  push:
+    branches: ['feat/**', 'claude/**', 'astra/**']
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  code:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # the training engine is checked against the DUOFIT commit it was copied from
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install (exact versions from package-lock.json when present)
+        run: if [ -f package-lock.json ]; then npm ci --no-audit --no-fund; else npm install --no-audit --no-fund; fi
+      - name: Test site rebuilds when (and only when) what it is built from changes — engine and DUOFIT preview included
+        run: node scripts/check-app-paths.mjs
+      - name: DUOFIT preview = the DUOFIT commit under review, unchanged
+        run: node scripts/duofit-preview.mjs --check
+      - name: Type check (strict TypeScript)
+        run: npm run typecheck
+      - name: Unit tests (rules, outbox, DUOFIT bridge, notification encryption against the reference implementation)
+        run: npm run test:unit
+      - name: Build the web app
+        run: npm run build:web
+      - name: Browsers for the web tests
+        run: npx playwright install --with-deps chromium webkit
+      - name: Training engine = DUOFIT (copy up to date; 200 random people give identical results in DUOFIT itself)
+        env:
+          CASES: '200'
+        run: |
+          set -o pipefail
+          npm run test:engine | tee /tmp/engine
+          ! grep -Eq '^FAIL|^CRASH' /tmp/engine
+      - name: Web app on iPhone SE and 16 Plus (Chromium)
+        run: |
+          set -o pipefail
+          npm run test:web | tee /tmp/web-chromium
+          ! grep -Eq '^FAIL|^CRASH' /tmp/web-chromium
+      - name: Build made for a Supabase project (fake public values) — security policy, then accounts against a stand-in Supabase
+        env:
+          COLLABFIT_SUPABASE_URL: https://abcdefghijklmnopqrst.supabase.co
+          COLLABFIT_SUPABASE_ANON_KEY: sb_publishable_test_only
+        run: |
+          set -o pipefail
+          npm run build:web
+          SMOKE_ONLY=csp npm run test:web | tee /tmp/web-csp
+          node apps/web/test/accounts.mjs | tee /tmp/acc-chromium
+          BROWSER=webkit DEVICE="iPhone 16 Plus" node apps/web/test/accounts.mjs | tee /tmp/acc-webkit
+          node apps/web/test/spaces.mjs | tee /tmp/sp-chromium
+          BROWSER=webkit DEVICE="iPhone 16 Plus" node apps/web/test/spaces.mjs | tee /tmp/sp-webkit
+          node apps/web/test/training.mjs | tee /tmp/tr-chromium
+          BROWSER=webkit DEVICE="iPhone 16 Plus" node apps/web/test/training.mjs | tee /tmp/tr-webkit
+          node apps/web/test/push.mjs | tee /tmp/push-chromium
+          BROWSER=webkit DEVICE="iPhone 16 Plus" node apps/web/test/push.mjs | tee /tmp/push-webkit
+          ! grep -Eq '^FAIL|^CRASH' /tmp/web-csp /tmp/acc-chromium /tmp/acc-webkit /tmp/sp-chromium /tmp/sp-webkit /tmp/tr-chromium /tmp/tr-webkit /tmp/push-chromium /tmp/push-webkit
+      - name: Build again without a server (the next step tests the on-phone-only version)
+        run: npm run build:web
+      - name: Web app on iPhone 16 Plus (WebKit, Safari's engine)
+        env:
+          BROWSER: webkit
+          DEVICE: iPhone 16 Plus
+        run: |
+          set -o pipefail
+          npm run test:web | tee /tmp/web-webkit
+          ! grep -Eq '^FAIL|^CRASH' /tmp/web-webkit
+      - name: Lock file to commit (printed when the repository has none yet)
+        if: always()
+        run: if ! git ls-files --error-unmatch package-lock.json >/dev/null 2>&1 && [ -f package-lock.json ]; then echo "LOCKFILE-BEGIN"; gzip -9c package-lock.json | base64 -w0; echo; echo "LOCKFILE-END"; fi
+  database:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: PostgreSQL server binaries
+        run: ls /usr/lib/postgresql/*/bin/initdb || (sudo apt-get update && sudo apt-get install -y postgresql)
+      - name: Schema, row level security and attack tests (5 users, simultaneous joins)
+        run: bash scripts/db-test.sh

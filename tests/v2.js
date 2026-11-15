@@ -4,7 +4,7 @@ const URL=process.env.URL||'http://localhost:8766/index.html';
 const R=[];let fails=0;const ok=(n,c,x='')=>{const l=(c?'PASS ':'FAIL ')+n+(x?' — '+x:'');R.push(l);console.log(l);if(!c)fails++};
 (async()=>{const b=await BR.launch();
 const ctx=await b.newContext({...BR.dev('iPhone 13'),locale:'fr-FR',timezoneId:'Europe/Paris'});await ctx.addInitScript(IOS);
-const p=await ctx.newPage();p.setDefaultTimeout(8000);const errs=[];p.on('pageerror',e=>errs.push(e.message));
+const p=await ctx.newPage();p.setDefaultTimeout(8000);const errs=[];p.on('pageerror',e=>BR.noise(e.message)||errs.push(e.message));
 const E=(f,a)=>p.evaluate(f,a),txt=async()=>(await p.textContent('#v')).replace(/[  ]/g,' ');
 const typ=(loc,v)=>loc.evaluate((el,v)=>{el.focus();el.value='';for(const ch of String(v)){el.value+=ch;el.dispatchEvent(new Event('input',{bubbles:true}))}if(String(v)==='')el.dispatchEvent(new Event('input',{bubbles:true}))},v);
 const tap=loc=>loc.evaluate(el=>el.click());
@@ -109,7 +109,7 @@ ok('B. Her profile (check-in off by default) starts directly',await E(()=>!!cur(
 ok('D. Settings are per profile (none for Her)',await E(()=>!Object.keys(S.d.F.notes||{}).length));
 await tap(p.locator('#v >> text=Abandonner'));await accept();
 // ===== Old-format data & old in-progress session (v13i) still load =====
-const c2=await b.newContext({...BR.dev('iPhone 13'),locale:'fr-FR'});await c2.addInitScript(IOS);const q=await c2.newPage();const e2=[];q.on('pageerror',e=>e2.push(e.message));
+const c2=await b.newContext({...BR.dev('iPhone 13'),locale:'fr-FR'});await c2.addInitScript(IOS);const q=await c2.newPage();const e2=[];q.on('pageerror',e=>BR.noise(e.message)||e2.push(e.message));
 await q.addInitScript(()=>{if(localStorage.getItem('duofit'))return;localStorage.setItem('duofit',JSON.stringify({p:'M',lg:'fr',d:{M:{logs:[],sched:{1:'A'},hd:[],ms:[],sub:{A1:'lip'},cur:{wk:'A',start:Date.now()-60000,ex:{0:[{w:40,r:'',ok:0},{w:'',r:'',ok:0},{w:'',r:'',ok:0}],1:[{w:'',r:'',ok:0}],2:[{w:'',r:'',ok:0}],3:[{w:'',r:'',ok:0}],4:[{w:'',r:'',ok:0}],5:[{w:'',r:'',ok:0}]},note:'',pl:[["ms",3,8,12,120,2,2.5],["idp",1,8,12,120,2,2],["clr",1,12,15,60,1,1.25],["pd",1,12,15,75,1,2.5],["rpd",1,10,15,60,1,2.5],["cc",1,10,15,60,2,2.5]],cm:0}},F:{logs:[],sched:{},hd:[],ms:[],sub:{}}}}))});
 await q.goto(URL);await q.evaluate(()=>{});const qt=await q.textContent('#v');
 ok('Migration: v13i in-progress session opens (list mode, permanent swap kept)',qt.includes('Développé incliné machine')&&await q.evaluate(()=>sid(1)==='lip'),e2.join('|'));

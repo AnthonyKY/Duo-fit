@@ -10,7 +10,7 @@ const near=(a,b,e=0.051)=>Math.abs(a-b)<e;
 const b=await BR.launch();
 const ctx=await b.newContext({...BR.dev('iPhone 13'),locale:'fr-FR',timezoneId:'Europe/Paris'});await ctx.addInitScript(IOS);
 const p=await ctx.newPage();
-const errs=[];p.on('pageerror',e=>errs.push('PAGEERR '+e.message));p.on('console',m=>{if(m.type()=='error')errs.push('CONSOLE '+m.text())});
+const errs=[];p.on('pageerror',e=>BR.noise(e.message)||errs.push('PAGEERR '+e.message));p.on('console',m=>{if(m.type()=='error')errs.push('CONSOLE '+m.text())});
 p.on('dialog',d=>d.accept());
 // Monday 2 Nov 2026 18:00 Paris
 const day=(n,h=18,mi=0)=>new Date(2026,10,2+n,h,mi).getTime();

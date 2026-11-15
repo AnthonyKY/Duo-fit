@@ -1,0 +1,20 @@
+{
+  "name": "@collabfit/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node test/smoke.mjs"
+  },
+  "dependencies": {
+    "@collabfit/domain": "*",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "@collabfit/training": "*"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0"
+  }
+}

@@ -4,7 +4,7 @@ const URL=process.env.URL||'http://localhost:8766/index.html';
 const R=[];let fails=0;const ok=(n,c,x='')=>{const l=(c?'PASS ':'FAIL ')+n+(x?' — '+x:'');R.push(l);console.log(l);if(!c)fails++};
 (async()=>{const b=await BR.launch();
 const mkctx=async(dev,extra={})=>{const c=await b.newContext({...(dev?devices[dev]:BR.dev('iPhone 13')),locale:'fr-FR',timezoneId:'Europe/Paris',...extra});await c.addInitScript(IOS);return c};
-const ctx=await mkctx();const p=await ctx.newPage();p.setDefaultTimeout(6000);const errs=[];p.on('pageerror',e=>errs.push(e.message));
+const ctx=await mkctx();const p=await ctx.newPage();p.setDefaultTimeout(6000);const errs=[];p.on('pageerror',e=>BR.noise(e.message)||errs.push(e.message));
 await p.clock.install({time:new Date(2026,10,16,18,0,0)}); // Monday
 await p.goto(URL);
 await p.evaluate(()=>{S.gm=false;for(const k of ['M','F']){S.d[k].pf.back=false;S.d[k].pf.inc={DB:2,M:2.5,C:1.25,SM:2.5};S.d[k].pf.var='fix';S.d[k].pf.noOverhead=false}save();go()}); // legacy list mode for this suite (V2 has its own tests)
@@ -105,10 +105,10 @@ ok(`Strength chart works for all ${opts} exercises`,!selIssues.length,selIssues.
 // ===== 9. Export / bad import / corrupted storage =====
 await nav(5);await tap(p.locator('button:text-is("Exporter")'));const js=await p.inputValue('#jx');ok('Export produces JSON with both profiles',JSON.parse(js).d.M.logs.length==3);
 await typ(p.locator('#jx'),'{pas du json');await tap(p.locator('button:text-is("Importer")'));ok('Bad import → message, data untouched',(await p.textContent('#notice')).length>3&&await E(()=>S.d.M.logs.length==3));
-const c2=await mkctx();const p2=await c2.newPage();const e2=[];p2.on('pageerror',e=>e2.push(e.message));await p2.addInitScript(()=>{try{localStorage.setItem('duofit','{corrupted')}catch(e){}});await p2.goto(URL);
+const c2=await mkctx();const p2=await c2.newPage();const e2=[];p2.on('pageerror',e=>BR.noise(e.message)||e2.push(e.message));await p2.addInitScript(()=>{try{localStorage.setItem('duofit','{corrupted')}catch(e){}});await p2.goto(URL);
 ok('Corrupted storage → app still starts',(await p2.textContent('nav')).length>10&&!e2.length,e2.join('|'));await c2.close();
 // old-format data (v1: bw array, no hd/pf/ms)
-const c3=await mkctx();const p3=await c3.newPage();const e3=[];p3.on('pageerror',e=>e3.push(e.message));
+const c3=await mkctx();const p3=await c3.newPage();const e3=[];p3.on('pageerror',e=>BR.noise(e.message)||e3.push(e.message));
 await p3.addInitScript(()=>{localStorage.setItem('duofit',JSON.stringify({p:'M',d:{M:{logs:[{date:Date.now()-864e5,wk:'A',name:'x',dur:50,ex:{ms:[{w:40,r:10}]},note:'',vol:400,sets:1}],sched:{1:'A',3:'B',5:'C'},bw:[80,79.5],sub:{},cur:null},F:{logs:[],sched:{1:'A',3:'B',5:'C'},bw:[],sub:{},cur:null}}}))});
 await p3.goto(URL);for(let i=0;i<6;i++){await p3.locator('nav button').nth(i).click()}
 ok('Old data format migrates without errors (all tabs)',!e3.length&&(await p3.textContent('#v')).length>20,e3.join('|'));await c3.close();

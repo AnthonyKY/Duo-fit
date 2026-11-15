@@ -1,0 +1,214 @@
+# Applies supabase/migrations to the STAGING Supabase project and sets its sign-in options. Production is a separate project,
+# never touched by this workflow. Settings live in the GitHub environment "staging" (only some branches may use it):
+#   secrets   SUPABASE_ACCESS_TOKEN (personal access token), STAGING_DB_PASSWORD
+#   variables STAGING_PROJECT_ID, COLLABFIT_STAGING_APP_URL (address of the test app, optional)
+name: Supabase staging
+on:
+  workflow_dispatch:
+  push:
+    branches: ['claude/collabfit-*', 'feat/collabfit-*']
+    paths: ['supabase/migrations/**', 'supabase/functions/**', 'scripts/staging-e2e.mjs', 'apps/web/**', 'packages/domain/**', 'packages/training/**', '_previews/**', 'scripts/app-paths.txt', 'tsconfig.base.json', 'package.json', 'package-lock.json', 'netlify.toml', '.github/workflows/supabase-staging.yml']
+permissions:
+  contents: read
+concurrency: supabase-staging
+jobs:
+  migrate:
+    runs-on: ubuntu-24.04
+    environment: staging
+    timeout-minutes: 10
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.STAGING_DB_PASSWORD }}
+      PROJECT_ID: ${{ vars.STAGING_PROJECT_ID }}
+      APP_URL: ${{ vars.COLLABFIT_STAGING_APP_URL }}
+    steps:
+      - name: Staging configured?
+        id: cfg
+        run: |
+          if [ -n "$SUPABASE_ACCESS_TOKEN" ] && [ -n "$SUPABASE_DB_PASSWORD" ] && [[ "$PROJECT_ID" =~ ^[a-z0-9]{20}$ ]]; then echo "ready=1" >> "$GITHUB_OUTPUT";
+          else echo "::warning::Staging Supabase is not configured yet (see docs/GUIDE-SUPABASE.md) — nothing done."; fi
+      - if: steps.cfg.outputs.ready
+        uses: actions/checkout@v4
+      - if: steps.cfg.outputs.ready
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Apply the migrations
+        if: steps.cfg.outputs.ready
+        # GitHub's machines have no IPv6, and the database's direct address is IPv6-only: go through Supabase's
+        # session pooler (IPv4). Its host depends on the cluster, so try the Paris ones until one answers.
+        run: |
+          export PGPASSWORD="$SUPABASE_DB_PASSWORD" PGSSLMODE=require PGCONNECT_TIMEOUT=10
+          host=""
+          for h in aws-0-eu-west-3 aws-1-eu-west-3 aws-2-eu-west-3; do
+            if psql "host=$h.pooler.supabase.com port=5432 user=postgres.$PROJECT_ID dbname=postgres" -tAc 'select 1' >/dev/null 2>&1; then host="$h.pooler.supabase.com"; break; fi
+          done
+          [ -n "$host" ] || { echo "::error::no session pooler answered for this project (check STAGING_DB_PASSWORD)"; exit 1; }
+          echo "session pooler: $host"; echo "PGHOST_POOLER=$host" >> "$GITHUB_ENV"
+          pw=$(jq -rn --arg p "$SUPABASE_DB_PASSWORD" '$p|@uri'); url="postgresql://postgres.$PROJECT_ID:$pw@$host:5432/postgres?sslmode=require"
+          echo "::add-mask::$pw"
+          supabase db push --db-url "$url" --yes
+      - name: Check the real privileges in the database (what a signed-in or anonymous app user may do)
+        if: steps.cfg.outputs.ready
+        run: |
+          export PGPASSWORD="$SUPABASE_DB_PASSWORD" PGSSLMODE=require
+          q() { psql "host=$PGHOST_POOLER port=5432 user=postgres.$PROJECT_ID dbname=postgres" -v ON_ERROR_STOP=1 -tAc "$1"; }
+          fail=0; check() { if [ "$2" = "$3" ]; then echo "PASS $1"; else echo "FAIL $1 — got '$2', expected '$3'"; fail=1; fi; }
+          files=$(ls supabase/migrations/*.sql | sed -E "s#.*/([0-9]+)_.*#'\\1'#" | paste -sd, -); n=$(ls supabase/migrations/*.sql | wc -l)
+          check "all $n migrations recorded" "$(q "select count(*) from supabase_migrations.schema_migrations where version in ($files)")" "$n"
+          check "RLS on every CollabFit table" "$(q "select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind='r' and not c.relrowsecurity")" 0
+          check "anonymous visitors: no right on any table" "$(q "select count(*) from information_schema.role_table_grants where grantee='anon' and table_schema='public'")" 0
+          check "anonymous visitors: no function callable" "$(q "select count(*) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and has_function_privilege('anon', p.oid, 'execute')")" 0
+          check "signed-in users: no TRUNCATE/REFERENCES/TRIGGER" "$(q "select count(*) from information_schema.role_table_grants where grantee='authenticated' and table_schema='public' and privilege_type in ('TRUNCATE','REFERENCES','TRIGGER')")" 0
+          check "signed-in users: no direct UPDATE/DELETE (except un-blocking someone; profile fields are column grants)" "$(q "select string_agg(distinct table_name||':'||privilege_type, ',' order by table_name||':'||privilege_type) from information_schema.role_table_grants where grantee='authenticated' and table_schema='public' and privilege_type in ('UPDATE','DELETE')")" "user_blocks:DELETE"
+          check "storage buckets private" "$(q "select string_agg(id||'='||public::text, ',' order by id) from storage.buckets where id in ('avatars','chat-media')")" "avatars=false,chat-media=false"
+          check "push devices: readable by their owner only, no direct write" "$(q "select count(*) from information_schema.role_table_grants where table_schema='public' and table_name in ('push_subscriptions','push_sent') and grantee in ('anon','authenticated') and privilege_type <> 'SELECT'")" 0
+          check "push recipients: server only" "$(q "select has_function_privilege('authenticated','public.push_targets(uuid,text,uuid)','execute')::text || has_function_privilege('service_role','public.push_targets(uuid,text,uuid)','execute')::text")" "falsetrue"
+          check "live updates enabled for messages, workout events, members" "$(q "select count(*) from pg_publication_tables where pubname='supabase_realtime' and schemaname='public' and tablename in ('messages','workout_events','workspace_members')")" 3
+          exit $fail
+      - name: Sign-in options for staging (email + password, no confirmation e-mail; test app address)
+        if: steps.cfg.outputs.ready
+        run: |
+          body='{"external_email_enabled":true,"mailer_autoconfirm":true,"password_min_length":10}'
+          if [ -n "$APP_URL" ]; then body=$(jq -c --arg u "$APP_URL" '. + {site_url:$u, uri_allow_list:$u}' <<<"$body"); fi
+          code=$(curl -sS -o /tmp/auth.json -w '%{http_code}' -X PATCH "https://api.supabase.com/v1/projects/$PROJECT_ID/config/auth" \
+            -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" -H 'Content-Type: application/json' -d "$body")
+          echo "auth settings: HTTP $code"; [ "$code" -lt 300 ] || { head -c 300 /tmp/auth.json; exit 1; }
+      - name: Check from outside that the database answers and refuses anonymous reads
+        if: steps.cfg.outputs.ready
+        run: |
+          key="${{ vars.COLLABFIT_SUPABASE_ANON_KEY }}"   # the app's public key (no Management API call: fewer moving parts)
+          code=$(curl -s -o /tmp/r.json -w '%{http_code}' "https://$PROJECT_ID.supabase.co/rest/v1/workspaces?select=id" -H "apikey: $key")
+          echo "anonymous read of workspaces: HTTP $code $(head -c 160 /tmp/r.json)"
+          [ "$code" = 401 ] || [ "$code" = 403 ] || { echo "::error::anonymous read was not refused"; exit 1; }
+
+      - name: Deploy the account-deletion function (runs on Supabase with the server key, which never leaves Supabase)
+        if: steps.cfg.outputs.ready
+        run: supabase functions deploy delete-account --project-ref "$PROJECT_ID" --no-verify-jwt --use-api --yes
+      - name: Notification key (VAPID) — made once on GitHub's machine, stored in Supabase Vault, never shown or kept
+        if: steps.cfg.outputs.ready
+        run: |
+          export PGPASSWORD="$SUPABASE_DB_PASSWORD" PGSSLMODE=require
+          conn="host=$PGHOST_POOLER port=5432 user=postgres.$PROJECT_ID dbname=postgres"
+          n=$(psql "$conn" -v ON_ERROR_STOP=1 -tAc "select count(*) from vault.secrets where name = 'collabfit_vapid'")
+          if [ "$n" = 1 ]; then echo "notification key already in the vault (kept: a new one would cut every phone off)"
+          elif [ "$n" = 0 ]; then
+            sec=$(node -e 'const {privateKey}=require("crypto").generateKeyPairSync("ec",{namedCurve:"prime256v1"});process.stdout.write(JSON.stringify({jwk:privateKey.export({format:"jwk"}),subject:process.env.APP_URL||"mailto:collabfit@example.com"}))')
+            echo "::add-mask::$(jq -r .jwk.d <<<"$sec")"
+            echo "select vault.create_secret(:'sec', 'collabfit_vapid', 'CollabFit push notifications: VAPID signing key');" | psql "$conn" -v ON_ERROR_STOP=1 -q -v sec="$sec" >/dev/null
+            unset sec; echo "notification key created and stored in the vault"
+          else echo "::error::could not tell whether the notification key exists ($n): nothing created"; exit 1; fi
+          [ "$(psql "$conn" -tAc "select length(public.push_vapid_key()) > 100")" = t ] && echo "PASS the server-only function reads it"
+      - name: Deploy the notification function
+        if: steps.cfg.outputs.ready
+        run: supabase functions deploy push --project-ref "$PROJECT_ID" --no-verify-jwt --use-api --yes
+      - name: End-to-end with made-up accounts (pictures follow messages, notifications, links after removal, complete account deletion)
+        if: steps.cfg.outputs.ready
+        env:
+          SUPABASE_URL: ${{ vars.COLLABFIT_SUPABASE_URL }}
+          SUPABASE_KEY: ${{ vars.COLLABFIT_SUPABASE_ANON_KEY }}
+        run: |
+          set -o pipefail
+          node scripts/staging-e2e.mjs | tee /tmp/e2e
+          ids=$(sed -n 's/^E2E_USERS=//p' /tmp/e2e | sed "s/[^,]*/'&'/g")
+          [ -n "$ids" ] || exit 0
+          export PGPASSWORD="$SUPABASE_DB_PASSWORD" PGSSLMODE=require
+          q() { psql "host=$PGHOST_POOLER port=5432 user=postgres.$PROJECT_ID dbname=postgres" -tAc "$1"; }
+          left=$(q "select (select count(*) from auth.users where id::text in ($ids)) + (select count(*) from storage.objects where (bucket_id='avatars' and split_part(name,'/',1) in ($ids)) or (bucket_id='chat-media' and split_part(name,'/',2) in ($ids)))")
+          if [ "$left" = 0 ]; then echo "PASS seen from the database: no test account and no file of theirs left"; else echo "FAIL $left test account(s)/file(s) left in the database"; exit 1; fi
+
+  # The test app as Netlify serves it (address in COLLABFIT_STAGING_APP_URL): the same iPhone checks as in CI, on the
+  # real deployment — security policy enforced by the browser with the real Supabase address, Netlify's security headers.
+  deployed-app:
+    needs: migrate
+    runs-on: ubuntu-24.04
+    environment: staging
+    timeout-minutes: 25
+    env:
+      APP_URL: ${{ vars.COLLABFIT_STAGING_APP_URL }}
+      SUPABASE_URL: ${{ vars.COLLABFIT_SUPABASE_URL }}
+    steps:
+      - name: Test app address set?
+        id: cfg
+        run: |
+          # the test site is built from one branch only; another collabfit branch updates the test database, not the site
+          if [ "$GITHUB_REF_NAME" != "claude/collabfit-foundation" ]; then echo "::notice::$GITHUB_REF_NAME is not the branch the test site is built from — deployed app not tested."; exit 0; fi
+          if [[ "$APP_URL" =~ ^https://[a-z0-9-]+\.netlify\.app$ ]]; then echo "ready=1" >> "$GITHUB_OUTPUT"; else echo "::warning::COLLABFIT_STAGING_APP_URL not set — deployed app not tested."; fi
+      - if: steps.cfg.outputs.ready
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - if: steps.cfg.outputs.ready
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Wait until Netlify serves this commit's app (it rebuilds only when the app's code changes)
+        if: steps.cfg.outputs.ready
+        run: |
+          app=$(cat scripts/app-paths.txt) # the same list Netlify uses to decide whether to rebuild
+          for i in $(seq 1 40); do
+            d=$(curl -sS "$APP_URL/version.txt?t=$i" | tr -dc '0-9a-f')
+            if [ -n "$d" ] && git cat-file -e "$d^{commit}" 2>/dev/null && git diff --quiet "$d" HEAD -- $app; then echo "Netlify serves $d: same app code as $GITHUB_SHA"; exit 0; fi
+            echo "online: ${d:-unknown} — waiting for the new build ($i/40)"; sleep 15
+          done
+          echo "::error::Netlify does not serve this commit's app after 10 minutes (build failed or out of credits?)"; exit 1
+      - name: The training engine and the DUOFIT preview online are this commit's
+        if: steps.cfg.outputs.ready
+        run: |
+          fail=0
+          here=$(sha256sum packages/training/src/duofit-engine.generated.js | cut -c1-64); online=$(curl -sS "$APP_URL/engine.txt" | tr -dc '0-9a-f')
+          if [ "$here" = "$online" ]; then echo "PASS engine online = engine of $GITHUB_SHA ($here)"; else echo "FAIL engine online $online, expected $here"; fail=1; fi
+          # the preview page must be DUOFIT's file exactly, apart from what Netlify's free plan inserts in every page
+          # (its badge script, under /.netlify/); the other files must be identical byte for byte
+          APP_URL="$APP_URL" python3 - <<'PY' || fail=1
+          import json, os, re, urllib.request
+          url, src = os.environ['APP_URL'] + '/duofit-preview/', json.load(open('_previews/duofit/SOURCE.json'))
+          get = lambda f: urllib.request.urlopen(url + f).read()
+          online = get('').decode('utf8')
+          added = re.findall(r'<script[^>]*/\.netlify/[^>]*>\s*</script>', online)
+          clean = re.sub(r'<script[^>]*/\.netlify/[^>]*>\s*</script>', '', online)
+          local = open('_previews/duofit/index.html', encoding='utf8').read()
+          bad = 0
+          if clean == local: print(f"PASS DUOFIT preview page online = DUOFIT {src['commit'][:7]} (VER {src['ver']}), Netlify added only: {added}")
+          else:
+            i = next((k for k in range(min(len(clean), len(local))) if clean[k] != local[k]), min(len(clean), len(local)))
+            print(f"FAIL DUOFIT preview page differs at {i}: online …{clean[max(0,i-80):i+160]!r} / file …{local[max(0,i-80):i+160]!r}"); bad = 1
+          for f in ['sw.js', 'manifest.webmanifest', 'icon-180.png', 'icon-192.png', 'icon-512.png']:
+            same = get(f) == open('_previews/duofit/' + f, 'rb').read()
+            print(('PASS' if same else 'FAIL') + f' DUOFIT preview {f} online = DUOFIT {src["commit"][:7]}'); bad |= not same
+          raise SystemExit(bad)
+          PY
+          exit $fail
+      - name: Security headers and policy served by Netlify
+        if: steps.cfg.outputs.ready
+        run: |
+          curl -sSI "$APP_URL/" | tr -d '\r' > /tmp/h; curl -sS "$APP_URL/" > /tmp/page
+          fail=0; check() { if eval "$2"; then echo "PASS $1"; else echo "FAIL $1"; fail=1; fi; }
+          check "page served over HTTPS (HTTP 200)" "head -1 /tmp/h | grep -q ' 200'"
+          for h in 'x-content-type-options: nosniff' 'referrer-policy: no-referrer' 'x-frame-options: DENY' 'permissions-policy: camera=(), microphone=(), geolocation=()'; do
+            check "header $h" "grep -qi '^$h' /tmp/h"; done
+          check "strict-transport-security (HTTPS forced)" "grep -qi '^strict-transport-security:' /tmp/h"
+          check "security policy without inline code" "grep -o 'Content-Security-Policy\" content=\"[^\"]*' /tmp/page | grep -v -q unsafe-inline"
+          check "security policy allows exactly this Supabase project" "grep -o 'Content-Security-Policy\" content=\"[^\"]*' /tmp/page | grep -q \"connect-src 'self' $SUPABASE_URL wss://\""
+          check "no secret key in the page or its scripts" "! (cat /tmp/page; for s in \$(grep -o 'src=\"[^\"]*\.js' /tmp/page | cut -d'\"' -f2); do curl -sS \"$APP_URL/\${s#/}\"; done) | grep -Eq 'sb_secret_|service_role'"
+          [ $fail = 0 ] || { echo "--- response:"; head -12 /tmp/h; cat /tmp/page; }
+          exit $fail
+      - name: Browsers
+        if: steps.cfg.outputs.ready
+        run: npm ci --no-audit --no-fund && npx playwright install --with-deps chromium webkit
+      - name: Deployed app with the real Supabase — iPhone SE and 16 Plus (Chromium), iPhone 16 Plus (WebKit)
+        if: steps.cfg.outputs.ready
+        env:
+          SMOKE_URL: ${{ vars.COLLABFIT_STAGING_APP_URL }}/
+          SUPABASE_KEY: ${{ vars.COLLABFIT_SUPABASE_ANON_KEY }}
+        run: |
+          set -o pipefail
+          SMOKE_ONLY=csp node apps/web/test/smoke.mjs | tee /tmp/c
+          SMOKE_ONLY=csp BROWSER=webkit DEVICE="iPhone 16 Plus" node apps/web/test/smoke.mjs | tee /tmp/w
+          node apps/web/test/deployed.mjs | tee /tmp/dc
+          BROWSER=webkit DEVICE="iPhone 16 Plus" node apps/web/test/deployed.mjs | tee /tmp/dw
+          node apps/web/test/deployed-spaces.mjs | tee /tmp/sc
+          BROWSER=webkit DEVICE="iPhone 16 Plus" node apps/web/test/deployed-spaces.mjs | tee /tmp/sw
+          node apps/web/test/deployed-training.mjs | tee /tmp/tc
+          BROWSER=webkit DEVICE="iPhone 16 Plus" node apps/web/test/deployed-training.mjs | tee /tmp/tw
+          ! grep -Eq '^FAIL|^CRASH' /tmp/c /tmp/w /tmp/dc /tmp/dw /tmp/sc /tmp/sw /tmp/tc /tmp/tw

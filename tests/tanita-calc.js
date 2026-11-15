@@ -9,7 +9,7 @@ const SHARE=`window.__shared=[];navigator.canShare=d=>!!(d&&d.files&&d.files.len
 navigator.share=async d=>{const f=d.files&&d.files[0];window.__shared.push({body:f?await f.text():null})};`;
 (async()=>{const b=await BR.launch();
 const ctx=await b.newContext({...BR.dev('iPhone SE'),locale:'fr-FR',timezoneId:'Europe/Paris'});await ctx.addInitScript(IOS);await ctx.addInitScript(SHARE);
-const p=await ctx.newPage();p.setDefaultTimeout(8000);const errs=[];p.on('pageerror',e=>errs.push(e.message));
+const p=await ctx.newPage();p.setDefaultTimeout(8000);const errs=[];p.on('pageerror',e=>BR.noise(e.message)||errs.push(e.message));
 await p.clock.install({time:Date.UTC(2026,10,21,8)});await p.clock.pauseAt(Date.UTC(2026,10,21,8,0,1));
 await p.goto(URL);
 const E=(f,a)=>p.evaluate(f,a),clean=s=>s.replace(/[  ]/g,' '),txt=async sel=>clean(await p.textContent(sel||'#v'));

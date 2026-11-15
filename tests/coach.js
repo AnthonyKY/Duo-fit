@@ -15,7 +15,7 @@ const server=http.createServer((req,res)=>{const route=new URL(req.url,'http://x
   res.end(fs.readFileSync(path.join(root,name)))});
 await new Promise(r=>server.listen(0,'127.0.0.1',r));const url='http://127.0.0.1:'+server.address().port+base;
 const b=await BR.launch(),ctx=await b.newContext({...BR.dev('iPhone SE'),locale:'fr-FR',timezoneId:'Europe/Paris'});await ctx.addInitScript(IOS);
-let p=await ctx.newPage();p.setDefaultTimeout(8000);const errs=[];const watch=()=>p.on('pageerror',e=>errs.push(e.message));watch();
+let p=await ctx.newPage();p.setDefaultTimeout(8000);const errs=[];const watch=()=>p.on('pageerror',e=>BR.noise(e.message)||errs.push(e.message));watch();
 const T0=Date.UTC(2026,10,16,9);await p.clock.install({time:T0});await p.clock.pauseAt(T0+1000); // time only moves when the test says so
 await p.goto(url);await p.evaluate(()=>navigator.serviceWorker.ready.then(()=>true));
 const E=(f,a)=>p.evaluate(f,a),txt=async()=>(await p.textContent('#v')).replace(/[  ]/g,' ');

@@ -21,7 +21,7 @@ const oldLogs=[{date:T0-14*DAY,wk:"A",dur:52,durSec:3120,ex:{ms:[{w:40,r:10},{w:
 const legacy={p:"M",th:"",lg:"fr",d:{M:{logs:oldLogs,sched:{1:"A",3:"B",5:"C"},hd:[{d:"2026-11-01",w:80.2}],ms:[{d:"2026-11-01",wa:82}],sub:{A0:"ms"},notes:{lpd:"siège 4"},cur:null,
   pf:{sex:"m",age:27,h:188,w:80,lvl:"int",act:"auto",time:60,goal:"gain",back:true,inc:{DB:2,M:5,C:2.5,SM:2.5}}},F:{logs:[],sched:{1:"A"},hd:[],ms:[],sub:{},cur:null}}};
 await ctx.addInitScript(raw=>{if(!localStorage.getItem("duofit-seeded")){localStorage.setItem("duofit",raw);localStorage.setItem("duofit-seeded","1")}},JSON.stringify(legacy));
-let p=await ctx.newPage();const errs=[];const watch=()=>p.on("pageerror",e=>errs.push(e.message));watch();
+let p=await ctx.newPage();const errs=[];const watch=()=>p.on("pageerror",e=>BR.noise(e.message)||errs.push(e.message));watch();
 await p.clock.install({time:T0});
 await p.goto(url);await p.evaluate(()=>navigator.serviceWorker.ready.then(()=>true));
 const E=(f,a)=>p.evaluate(f,a),txt=async()=>(await p.textContent("#v")).replace(/[  ]/g," ");

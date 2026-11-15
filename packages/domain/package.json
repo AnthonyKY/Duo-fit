@@ -1,0 +1,8 @@
+{
+  "name": "@collabfit/domain",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Framework-free CollabFit rules: types mirroring the database, validation, media paths, invitation links, offline outbox, read-only bridge to DUOFIT data.",
+  "exports": { ".": "./src/index.ts" }
+}
