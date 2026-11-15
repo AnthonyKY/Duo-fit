@@ -105,7 +105,7 @@ for (const dev of BR.device ? [BR.device] : ['iPhone SE', 'iPhone 16 Plus']) {
   // invitation links opened before accounts exist
   await p.goto(url + '#/join/abcdefghijklmnopqrstuvwxyzAB-_12');
   ok(tag + 'Valid invitation link: acknowledged, kept for this visit only', (await text()).includes('Invitation reçue') && await p.evaluate(() => sessionStorage.getItem('collabfit-invite') === 'abcdefghijklmnopqrstuvwxyzAB-_12' && localStorage.getItem('collabfit-invite') === null));
-  await p.goto(url + '#/join/<script>');
+  await p.goto(url + '#/join/<script>'); await p.waitForSelector('text=pas valide', { timeout: 4000 }).catch(() => {});
   ok(tag + 'Invalid invitation link refused', (await text()).includes('pas valide') && await p.evaluate(() => sessionStorage.getItem('collabfit-invite') === null));
   ok(tag + 'Tabs: current one marked for screen readers', (await p.getAttribute('nav a[aria-current="page"]', 'href')) === '#/spaces');
   ok(tag + 'Fits the screen everywhere', await fits());

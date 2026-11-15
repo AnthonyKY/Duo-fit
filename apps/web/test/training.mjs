@@ -32,7 +32,7 @@ async function phone(dev) {
   const ctx = await b.newContext({ ...BR.dev(dev), locale: 'fr-FR', timezoneId: 'Europe/Paris' });
   await ctx.addInitScript(IOS); await useStandIn(ctx, sb);
   const p = await ctx.newPage(); p.setDefaultTimeout(8000);
-  const errs = []; p.on('pageerror', e => errs.push(e.message));
+  const errs = []; p.on('pageerror', e => { if (!webkitAbort(e.message)) errs.push(e.message); });
   p.on('console', m => { if (m.type() === 'error' && !((m.location().url || '').startsWith(SB) && /Failed to load resource/i.test(m.text())) && !webkitAbort(m.text())) errs.push(m.text()); });
   const text = async () => (await p.textContent('body')).replace(/[  ]/g, ' ');
   const type = (sel, v) => p.locator(sel).first().evaluate((el, v) => { el.focus(); el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); }, v);

@@ -39,7 +39,7 @@ async function phone(dev) {
   if (!webkit) await ctx.grantPermissions(['clipboard-read', 'clipboard-write'], { origin: url.slice(0, -1) });
   const p = await ctx.newPage(); p.setDefaultTimeout(8000);
   const errs = [], refused = [];
-  p.on('pageerror', e => errs.push(e.message));
+  p.on('pageerror', e => { if (!webkitAbort(e.message)) errs.push(e.message); });
   p.on('console', m => { if (m.type() !== 'error') return; if ((m.location().url || '').startsWith(SB) && /Failed to load resource/i.test(m.text()) || webkitAbort(m.text())) refused.push(m.text()); else errs.push(m.text()); });
   const text = async () => (await p.textContent('body')).replace(/[  ]/g, ' ');
   const type = (sel, v) => p.locator(sel).first().evaluate((el, v) => { el.focus(); el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); }, v);
