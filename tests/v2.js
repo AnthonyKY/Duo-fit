@@ -28,7 +28,7 @@ await p.reload();
 // ===== E. Real increments in suggestions =====
 let g=await E(()=>sug('ms',P.M.A.ex[0],'A'));ok('E. Machine step 5 kg: 50 → 55 kg (10 % jump allowed)',g.w===55,JSON.stringify(g));
 await E(()=>{S.d.M.logs[0].ex.ms=[{w:40,r:12},{w:40,r:12},{w:40,r:12}];save()});
-g=await E(()=>sug('ms',P.M.A.ex[0],'A'));ok('E. 40 → 45 kg would be +12,5 %: keep 40 kg and aim 15 reps',g.w===40&&g.rep===1&&g.t.includes('15 reps'),g.t);
+g=await E(()=>sug('ms',P.M.A.ex[0],'A'));ok('E. 40 → 45 kg would be +12,5 %: keep 40 kg and aim one more rep (13), up to 15',g.w===40&&g.rep===1&&g.r===13&&g.t.includes('13 reps')&&g.t.includes('15'),g.t);
 await nav(5);await tap(p.locator('.incr').nth(1).locator('button').nth(0));
 g=await E(()=>sug('ms',P.M.A.ex[0],'A'));ok('E. After choosing 2,5 kg machine steps in Profile: 40 → 42,5 kg',g.w===42.5,JSON.stringify(g));
 await tap(p.locator('.incr').nth(1).locator('button').nth(1));

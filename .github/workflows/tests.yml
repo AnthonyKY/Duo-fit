@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        suite: [session-history.test.cjs, full.js, nut2.js, ios.js, all.js, v2.js, variety.js, pages.js, budget.test.cjs, budget-iphone.js, priorities.js, backup.js, erase.js, coach.js, tanita.js, tanita-calc.js, stabilite.js]
+        suite: [session-history.test.cjs, full.js, nut2.js, ios.js, all.js, v2.js, variety.js, pages.js, budget.test.cjs, budget-iphone.js, priorities.js, backup.js, erase.js, coach.js, tanita.js, tanita-calc.js, stabilite.js, fixes.js]
         engine: [chromium]
         device: ['']
         # the same browser suites again in WebKit (Safari's engine, used by every browser on iPhone) on an iPhone 16 Plus
@@ -35,6 +35,7 @@ jobs:
           - {suite: tanita.js, engine: webkit, device: 'iPhone 16 Plus'}
           - {suite: tanita-calc.js, engine: webkit, device: 'iPhone 16 Plus'}
           - {suite: stabilite.js, engine: webkit, device: 'iPhone 16 Plus'}
+          - {suite: fixes.js, engine: webkit, device: 'iPhone 16 Plus'}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

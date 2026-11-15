@@ -90,18 +90,18 @@ ok('Plank logged 0 kg × 30 s',JSON.stringify(logs[2].ex.pl)=='[{"w":0,"r":30}]'
 // ===== Week 2 =====
 await p.clock.setFixedTime(day(7));await p.reload();await startW('A');
 ok('A wk2: shoulder press prefilled 42.5 (+2.5 after 3×12)',await prefill('Développé épaules machine')=='42.5');
-ok('A wk2: clr stays 7.5 — next step 8.75 is a >10% jump, so aim 18 reps first (from A, not B)',await prefill('Élévation latérale poulie')=='7.5'&&(await sugText('Élévation latérale poulie')).includes('18 reps'),await prefill('Élévation latérale poulie'));
+ok('A wk2: clr stays 7.5 — next step 8.75 is a >10% jump, so one more rep first: 16 (from A, not B)',await prefill('Élévation latérale poulie')=='7.5'&&(await sugText('Élévation latérale poulie')).includes('16 reps'),await prefill('Élévation latérale poulie'));
 ok('A wk2: incline DB keeps 22.5 (reps 10,10,9 < 12)',await prefill('Développé incliné haltères (30°)')=='22.5');
-// reps placeholder = last reps
+// reps placeholder = today's target (10,10,9 in range → 10 on every set), saved when left empty
 const ph=await p.locator('.c').filter({has:p.locator('h2',{hasText:'Développé incliné haltères'})}).first().locator('.s').nth(2).locator('input').nth(1).getAttribute('placeholder');
-ok('Reps placeholder shows last time (9)',ph=='9',ph);
+ok('Reps placeholder shows today\'s target (10), not last time (9)',ph=='10',ph);
 await logSets('Développé épaules machine',[[null,9],[null,8],[null,7]]);
 // tap ✓ with empty reps uses placeholder
 await logSets('Développé incliné haltères (30°)',[[null,null],[null,null],[null,null]]);
 sum=await finish(day(7,19));
 ok('PR detected for 42.5 kg',sum.includes('42,5 kg'),sum.slice(0,250));
 logs=await E(()=>S.d.M.logs);
-ok('Placeholder reps logged as 10,10,9',JSON.stringify(logs[3].ex.idp.map(s=>s.r))=='[10,10,9]');
+ok('Empty reps saved as the target: 10,10,10',JSON.stringify(logs[3].ex.idp.map(s=>s.r))=='[10,10,10]',JSON.stringify(logs[3].ex.idp.map(s=>s.r)));
 
 // ===== Week 3 =====
 await p.clock.setFixedTime(day(14));await p.reload();await startW('A');

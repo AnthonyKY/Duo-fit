@@ -37,6 +37,12 @@ node tests/tanita-calc.js                   # what the app computes from partial
 node tests/stabilite.js                     # stability audit: profile switch with another tab / refused saves, two tabs, storage errors,
                                            # next target after a lightened end of exercise, backup round trip and failed restores,
                                            # body-composition masses heavier than the weight + margins, timers across lock / reload
+node tests/fixes.js                         # the 8 corrections after the v2026-11-14n review, one check per case (iPhone SE + 16 Plus): corrected
+                                           # history (load, date, deletion) drives the next target; guided "vise 11 reps" saves 11; exact
+                                           # 11,25 kg loads and +1 rep when the next step is > 10 %; session time vs measured exercise time,
+                                           # warm-up apart; incompatible body values flagged and dependent results suspended, bone margin,
+                                           # BMR estimate in the empty field; weekly goal from the planning; backup reminder counts body
+                                           # readings; no "NaN min" for old workouts
 node tests/pages.js                        # as GitHub Pages serves it: /Duo-fit/ sub-path, icons, offline cold start, auto-update keeps the workout
 node tests/budget-iphone.js                # 20-minute cable-only plan on iPhone SE, input-only ramp up, offline resume, history and EN
 node --test tests/budget.test.cjs          # 324 plan combinations, equipment, exclusions, time allocation, migration and session snapshots

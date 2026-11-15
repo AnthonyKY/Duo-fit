@@ -134,8 +134,10 @@ const wsrc=(r,hd)=>E(([r,hd])=>{const x=bDerive({d:'2026-11-12',...r},D().pf,hd)
 const HD=[{d:'2026-11-12',w:75}];let ws;
 ws=await wsrc({weight:72.4,muscleKg:58,musclePct:80.1,fatKg:11.2,fatPct:15.5},HD);
 ok('Weight source 1: the weight you typed wins over both pairs and the weigh-in',ws&&ws.w===72.4&&ws.c==='',JSON.stringify(ws));
-ws=await wsrc({muscleKg:58,musclePct:80.1,fatKg:11.4,fatPct:15.5},HD);
+ws=await wsrc({muscleKg:58,musclePct:80.1,fatKg:11.2,fatPct:15.5},HD);
 ok('Weight source 2: the muscle pair (its rounding moves the weight least) before the fat pair',ws&&ws.w===72.4&&ws.c==='≈',JSON.stringify(ws));
+ws=await wsrc({muscleKg:58,musclePct:80.1,fatKg:11.4,fatPct:15.5},HD);
+ok('Pairs giving different weights (72,4 vs 73,5 kg): no weight computed from them (flagged instead)',ws===null,JSON.stringify(ws));
 ws=await wsrc({fatKg:11.2,fatPct:15.5},HD);
 ok('Weight source 3: the fat pair (same measurement) before a weigh-in of that day',ws&&ws.w===72.3&&ws.c==='≈',JSON.stringify(ws));
 ws=await wsrc({fatPct:15.5},HD);
