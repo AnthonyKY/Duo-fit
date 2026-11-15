@@ -82,7 +82,7 @@ jobs:
 
       - name: Deploy the account-deletion function (runs on Supabase with the server key, which never leaves Supabase)
         if: steps.cfg.outputs.ready
-        run: supabase functions deploy delete-account --project-ref "$PROJECT_ID" --no-verify-jwt --use-api
+        run: supabase functions deploy delete-account --project-ref "$PROJECT_ID" --no-verify-jwt --use-api --yes
       - name: End-to-end with made-up accounts (pictures follow messages, links after removal, complete account deletion)
         if: steps.cfg.outputs.ready
         env:
