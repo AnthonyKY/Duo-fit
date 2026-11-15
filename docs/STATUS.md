@@ -4,8 +4,8 @@ Chef d'orchestre : Claude. Assistant : Astra (ChatGPT), sur des branches `astra/
 Rien n'est fusionné dans `main` sans l'accord d'Invictus. DUOFIT (racine du dépôt) n'est pas modifié et reste testé.
 DUOFIT reste en place pour de bon ; toute reprise de ses données = une copie, avec l'accord d'Invictus avant (ADR 0004).
 CollabFit = app complète et autonome (entraînement + social), à commercialiser plus tard ; moteur d'entraînement = celui de DUOFIT, copié à l'identique et prouvé (ADR 0005).
-Corrections DUOFIT : PR #8 (brouillon, CI verte), fusion seulement avec l'accord d'Invictus.
-App de test : https://luxury-brigadeiros-384c85.netlify.app (Supabase de test « collabfit-staging », Paris).
+Corrections DUOFIT : PR #8 (brouillon, CI verte), fusion seulement avec l'accord d'Invictus. Aperçu à essayer sur iPhone : https://luxury-brigadeiros-384c85.netlify.app/duofit-preview/ (copie de la PR sur le site de test, données séparées du vrai DUOFIT ; `scripts/duofit-preview.mjs`).
+App de test : https://luxury-brigadeiros-384c85.netlify.app (Supabase de test « collabfit-staging », Paris). Elle n'est reconstruite (15 crédits Netlify) que si un chemin de `scripts/app-paths.txt` change — liste unique pour Netlify et le workflow de test, vérifiée par `scripts/check-app-paths.mjs`.
 
 | Étape | Contenu | État |
 |-------|---------|------|
@@ -14,7 +14,7 @@ App de test : https://luxury-brigadeiros-384c85.netlify.app (Supabase de test «
 | 2 | Comptes (e-mail + mot de passe), profil, avatar ou photo, déconnexion, suppression du compte | ✅ sur l'app de test (inscription sans e-mail de confirmation sur le test uniquement) ; à valider sur l'iPhone d'Invictus |
 | 3 | Espaces Couple / Amis, invitations (lien partagé ou collé dans l'app), membres, retrait, transfert, blocage, départ | ✅ sur l'app de test, parcours réel à deux comptes vert (Chromium + WebKit) |
 | 4 | Messages en direct (Supabase Realtime), photos privées (liens 60 s), suppression, envoi hors ligne sans doublon | ✅ sur l'app de test : messages reçus en 0,3–0,9 s sur le vrai Supabase |
-| 4b | Entraînement dans CollabFit : réglages, séance du jour (moteur DUOFIT), séance guidée, historique, synchronisé au compte (choix 1A), « a commencé / a terminé sa séance » partagé si activé | ✅ sur l'app de test ; moteur identique à DUOFIT (2 822/2 822) ; parcours réel vert (Chromium + WebKit) |
+| 4b | Entraînement dans CollabFit : réglages, séance du jour (moteur DUOFIT), séance guidée, historique, synchronisé au compte (choix 1A), « a commencé / a terminé sa séance » partagé si activé | ✅ sur l'app de test ; moteur identique à DUOFIT (2 822/2 822) ; parcours réel vert (Chromium + WebKit) ; deux téléphones : séances réunies, réglages les plus récents gardés (relecture d'Astra) |
 | 5 | Notifications push (messages, séances des autres), opt-in | ⏳ prochain : manifeste + service worker CollabFit, clés VAPID, fonction d'envoi ; à tester sur iPhone (app sur l'écran d'accueil) |
 | 6 | Appels audio / vidéo | ⏳ en dernier ; décidé : relais Cloudflare (gratuit à cette échelle), compte à créer par Invictus |
 | — | Dans la séance CollabFit, encore à reprendre de DUOFIT : minuteurs d'exercice, échauffement guidé, mode « dos », remplacer / ajouter un exercice, composition corporelle, sauvegarde/import (copie) | ⏳ |

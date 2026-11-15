@@ -36,6 +36,9 @@ for (const dev of BR.device ? [BR.device] : ['iPhone SE', 'iPhone 16 Plus']) {
 
     await type('input[name=nickname]', 'Testeur iPhone'); await type('input[name=email]', email); await type('input[name=password]', pw);
     await p.click('button[type=submit]'); await p.waitForSelector('text=Connecté avec');
+    await Promise.all([p.waitForURL(DUOFIT + '**'), p.click('[data-duofit] a')]);
+    ok(tag + 'Signed in: "Ouvrir DUOFIT" in the profile opens DUOFIT at its own address', p.url().startsWith(DUOFIT) && /duo/i.test(await p.title()), p.url());
+    await p.goto(url + '#/profile'); await p.waitForSelector('text=Connecté avec');
     ok(tag + 'Real sign-up: signed in at once', (await text()).includes('Testeur iPhone') && (await text()).includes(email));
     await p.reload(); await p.waitForSelector('text=Connecté avec');
     ok(tag + 'Still signed in after reopening', true);

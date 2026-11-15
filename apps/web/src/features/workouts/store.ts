@@ -32,9 +32,18 @@ function outgoing(t: Trainer): Record<string, unknown> {
   for (const p of Object.values(s.d)) { p.body = []; p.hd = []; p.ms = []; p.cur = null; }
   return s as unknown as Record<string, unknown>;
 }
-/** two histories → one: every workout kept once (same day and time = same workout), the newer settings win */
+// the settings (programme, planning, level, length, back, equipment, goal, chosen exercises) travel as one block,
+// stamped with the time they were last changed on a phone: when two phones disagree, the latest change wins
+const SETTINGS = ['pf', 'sched', 'sub', 'notes', 'draw'] as const;
+export const settingsTime = (t: Trainer) => Number((t.state as { cfAt?: unknown }).cfAt) || 0;
+/** two phones → one state: every workout kept once (same date and day = same workout), the latest settings win */
 function merge(local: Trainer, server: unknown, lang: Lang): Trainer {
   const theirs = new Trainer(JSON.stringify(server), local.programme, lang, changed);
+  if (settingsTime(local) > settingsTime(theirs)) {
+    const S = theirs.state as Record<string, unknown>;
+    S.p = local.state.p; S.cfAt = settingsTime(local);
+    for (const p of ['M', 'F'] as const) for (const k of SETTINGS) (theirs.state.d[p] as Record<string, unknown>)[k] = structuredClone(local.state.d[p][k] as unknown);
+  }
   for (const p of ['M', 'F'] as const) {
     const a = local.state.d[p].logs, b = theirs.state.d[p].logs, seen = new Set(b.map(l => `${l.date}|${l.wk}`));
     for (const l of a) if (!seen.has(`${l.date}|${l.wk}`)) b.push(l);
@@ -105,6 +114,7 @@ export function setupTraining(x: Setup, lang: Lang): void {
   [...x.days].sort((a, b) => ((a + 6) % 7) - ((b + 6) % 7)).forEach((d, i) => { sched[d] = order[i % 3]!; });
   t.profile.sched = sched;
   t.profile.draw = {}; // a new set-up draws the exercises again
+  (t.state as Record<string, unknown>).cfAt = Date.now(); // the settings' time, for merging with another phone
   trainer = t; changed();
 }
 

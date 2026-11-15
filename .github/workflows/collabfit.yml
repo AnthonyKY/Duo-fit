@@ -20,6 +20,10 @@ jobs:
           node-version: '22'
       - name: Install (exact versions from package-lock.json when present)
         run: if [ -f package-lock.json ]; then npm ci --no-audit --no-fund; else npm install --no-audit --no-fund; fi
+      - name: Test site rebuilds when (and only when) what it is built from changes — engine and DUOFIT preview included
+        run: node scripts/check-app-paths.mjs
+      - name: DUOFIT preview = the DUOFIT commit under review, unchanged
+        run: node scripts/duofit-preview.mjs --check
       - name: Type check (strict TypeScript)
         run: npm run typecheck
       - name: Unit tests (rules, outbox, DUOFIT bridge)

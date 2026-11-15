@@ -4,9 +4,10 @@
 [build]
   command = "npm run build:web"
   publish = "apps/web/dist"
-  # Free plan: each published deploy costs 15 of the 300 monthly credits. Rebuild ONLY when the app itself changes
-  # (database, tests, workflows and docs never touch the site). Exit 0 = skip this build.
-  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- apps/web/src apps/web/index.html apps/web/scripts apps/web/package.json packages/domain/src packages/domain/package.json package.json package-lock.json"
+  # Free plan: each published deploy costs 15 of the 300 monthly credits. Rebuild ONLY when something the site is built
+  # from changes: the list is scripts/app-paths.txt (shared with the staging workflow, checked by scripts/check-app-paths.mjs).
+  # Database, tests, workflows and docs never touch the site. Exit 0 = skip this build.
+  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- $(cat scripts/app-paths.txt)"
 
 [build.environment]
   NODE_VERSION = "22"

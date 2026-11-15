@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
   push:
     branches: ['claude/collabfit-*', 'feat/collabfit-*']
-    paths: ['supabase/migrations/**', 'supabase/functions/**', 'scripts/staging-e2e.mjs', 'apps/web/**', 'packages/domain/**', 'netlify.toml', '.github/workflows/supabase-staging.yml']
+    paths: ['supabase/migrations/**', 'supabase/functions/**', 'scripts/staging-e2e.mjs', 'apps/web/**', 'packages/domain/**', 'packages/training/**', '_previews/**', 'scripts/app-paths.txt', 'tsconfig.base.json', 'package.json', 'package-lock.json', 'netlify.toml', '.github/workflows/supabase-staging.yml']
 permissions:
   contents: read
 concurrency: supabase-staging
@@ -123,13 +123,22 @@ jobs:
       - name: Wait until Netlify serves this commit's app (it rebuilds only when the app's code changes)
         if: steps.cfg.outputs.ready
         run: |
-          app='apps/web/src apps/web/index.html apps/web/scripts apps/web/package.json packages/domain/src packages/domain/package.json package.json package-lock.json'
+          app=$(cat scripts/app-paths.txt) # the same list Netlify uses to decide whether to rebuild
           for i in $(seq 1 40); do
             d=$(curl -sS "$APP_URL/version.txt?t=$i" | tr -dc '0-9a-f')
             if [ -n "$d" ] && git cat-file -e "$d^{commit}" 2>/dev/null && git diff --quiet "$d" HEAD -- $app; then echo "Netlify serves $d: same app code as $GITHUB_SHA"; exit 0; fi
             echo "online: ${d:-unknown} — waiting for the new build ($i/40)"; sleep 15
           done
           echo "::error::Netlify does not serve this commit's app after 10 minutes (build failed or out of credits?)"; exit 1
+      - name: The training engine and the DUOFIT preview online are this commit's
+        if: steps.cfg.outputs.ready
+        run: |
+          fail=0
+          here=$(sha256sum packages/training/src/duofit-engine.generated.js | cut -c1-64); online=$(curl -sS "$APP_URL/engine.txt" | tr -dc '0-9a-f')
+          if [ "$here" = "$online" ]; then echo "PASS engine online = engine of $GITHUB_SHA ($here)"; else echo "FAIL engine online $online, expected $here"; fail=1; fi
+          here=$(sha256sum _previews/duofit/index.html | cut -c1-64); online=$(curl -sS "$APP_URL/duofit-preview/" | sha256sum | cut -c1-64)
+          if [ "$here" = "$online" ]; then echo "PASS DUOFIT preview online = $(jq -r '.commit[0:7] + " (VER " + .ver + ")"' _previews/duofit/SOURCE.json)"; else echo "FAIL DUOFIT preview online differs"; fail=1; fi
+          exit $fail
       - name: Security headers and policy served by Netlify
         if: steps.cfg.outputs.ready
         run: |

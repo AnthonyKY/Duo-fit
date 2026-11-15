@@ -4,7 +4,8 @@
 //   COLLABFIT_SUPABASE_ANON_KEY the project's PUBLISHABLE key (sb_publishable_…, public by design, protected by row level security)
 //   COLLABFIT_LEGACY_URL        where DUOFIT lives (default https://anthonyky.github.io/Duo-fit/)
 import { build } from 'esbuild';
-import { mkdir, readFile, writeFile, copyFile, rm } from 'node:fs/promises';
+import { mkdir, readFile, writeFile, copyFile, rm, cp } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
@@ -42,4 +43,10 @@ const csp = `default-src 'none'; script-src 'self'; style-src 'self'; img-src 's
 const html = (await readFile(path.join(root, 'index.html'), 'utf8')).replace('%CSP%', csp);
 await writeFile(path.join(out, 'index.html'), html);
 await writeFile(path.join(out, 'version.txt'), (commit || 'dev') + '\n'); // lets the tests know which commit is online
+// fingerprint of the training engine built in: the staging tests compare it with the engine of the commit under test
+const engine = await readFile(path.join(root, '../../packages/training/src/duofit-engine.generated.js'));
+await writeFile(path.join(out, 'engine.txt'), createHash('sha256').update(engine).digest('hex') + '\n');
+// a DUOFIT version under review (see scripts/duofit-preview.mjs), on the test site only, at /duofit-preview/
+const preview = path.join(root, '../../_previews/duofit');
+await cp(preview, path.join(out, 'duofit-preview'), { recursive: true, filter: f => !f.endsWith('SOURCE.json') });
 console.log('built apps/web/dist', supabaseUrl ? '(backend configured)' : '(no backend configured yet)');

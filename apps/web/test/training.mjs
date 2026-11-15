@@ -116,6 +116,50 @@ ok(tag + 'Phone 1 saved after phone 2: merged, all 3 workouts kept (A, B, C)', l
 await A2.p.reload(); await A2.p.waitForSelector('.history');
 ok(tag + 'Phone 2 after reopening: the 3 workouts', (await A2.p.locator('.history .list li').count()) === 3);
 
+// settings changed on one phone while the other saves a workout (Astra's finding on f52f5f7): after reloading, BOTH
+// phones have the workout AND the latest settings — in both orders (the save answers are held so the race is certain)
+async function changeSettings(ph, minutes, back) {
+  await ph.p.click('nav a[href="#/training"]'); await ph.p.waitForSelector('.history');
+  await ph.p.click('button:has-text("Modifier mes réglages")'); await ph.p.waitForSelector('form.setup');
+  await ph.p.click(`form.setup .seg button:has-text("${minutes}")`);
+  if ((await ph.p.isChecked('form.setup input[type=checkbox]')) !== back) await ph.p.click('form.setup input[type=checkbox]');
+  await ph.p.click('form.setup button[type=submit]'); await ph.p.waitForSelector('.history');
+}
+async function seen(ph) { // what this phone shows after reopening the app
+  await ph.p.reload(); await ph.p.waitForSelector('.history'); await savedAll(ph);
+  const workouts = await ph.p.locator('.history .list li').count();
+  await ph.p.click('button:has-text("Modifier mes réglages")'); await ph.p.waitForSelector('form.setup');
+  const minutes = await ph.p.locator('form.setup .seg button[aria-pressed=true]').allTextContents();
+  const back = await ph.p.isChecked('form.setup input[type=checkbox]');
+  await ph.p.reload(); await ph.p.waitForSelector('.history');
+  return { workouts, minutes: minutes.find(x => /^\d+$/.test(x)), back };
+}
+const holdSaves = () => { let release; sb.db.saveGate = new Promise(r => { release = r; }); sb.db.held = 0; return () => { sb.db.saveGate = null; release(); }; };
+const waitHeld = async n => { for (let k = 0; k < 60 && (sb.db.held || 0) < n; k++) await new Promise(r => setTimeout(r, 100)); };
+await A.p.reload(); await A.p.waitForSelector('.history'); await A2.p.reload(); await A2.p.waitForSelector('.history');
+const n0 = (await seen(A)).workouts;
+// order 1: the workout reaches the account first, the settings second (they conflict, then merge)
+let free = holdSaves();
+await doWorkout(A, 'A', '35'); await A.p.click('button:has-text("Terminer et enregistrer")'); await A.p.waitForSelector('text=Séance enregistrée');
+await waitHeld(1);
+await changeSettings(A2, 45, true); await waitHeld(2);
+free(); await A.p.click('button:has-text("Retour")'); await savedAll(A); await savedAll(A2);
+await new Promise(r => setTimeout(r, 1500)); await savedAll(A); await savedAll(A2);
+let s1 = await seen(A), s2 = await seen(A2), pf = sb.db.training.get(uid).data.d.M.pf;
+ok(tag + 'Order 1 — workout on phone 1 while phone 2 sets 45 min + sensitive back: account has both', sb.db.training.get(uid).data.d.M.logs.length === n0 + 1 && pf.time === 45 && pf.back === true, JSON.stringify({ logs: sb.db.training.get(uid).data.d.M.logs.length, time: pf.time, back: pf.back }));
+ok(tag + 'Order 1 — phone 1 after reopening: the workout, 45 min, sensitive back', s1.workouts === n0 + 1 && s1.minutes === '45' && s1.back === true, JSON.stringify(s1));
+ok(tag + 'Order 1 — phone 2 after reopening: the workout, 45 min, sensitive back', s2.workouts === n0 + 1 && s2.minutes === '45' && s2.back === true, JSON.stringify(s2));
+// order 2: the settings reach the account first, the workout second
+free = holdSaves();
+await changeSettings(A2, 60, false); await waitHeld(1);
+await doWorkout(A, 'B', '36'); await A.p.click('button:has-text("Terminer et enregistrer")'); await A.p.waitForSelector('text=Séance enregistrée');
+await waitHeld(2);
+free(); await A.p.click('button:has-text("Retour")'); await savedAll(A); await savedAll(A2);
+await new Promise(r => setTimeout(r, 1500)); await savedAll(A); await savedAll(A2);
+s1 = await seen(A); s2 = await seen(A2); pf = sb.db.training.get(uid).data.d.M.pf;
+ok(tag + 'Order 2 — settings first (60 min, back off), then the workout: account has both', sb.db.training.get(uid).data.d.M.logs.length === n0 + 2 && pf.time === 60 && pf.back === false, JSON.stringify({ logs: sb.db.training.get(uid).data.d.M.logs.length, time: pf.time, back: pf.back }));
+ok(tag + 'Order 2 — both phones after reopening: both workouts, 60 min, back off', [s1, s2].every(x => x.workouts === n0 + 2 && x.minutes === '60' && x.back === false), JSON.stringify({ s1, s2 }));
+
 // sharing "a commencé / terminé sa séance" in a space
 const B = await phone(dev);
 await A.p.click('nav a[href="#/spaces"]'); await A.p.click('text=Créer notre espace Couple'); await A.p.click('form[data-create=couple] button[type=submit]');

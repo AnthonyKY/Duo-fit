@@ -10,10 +10,10 @@ const BR = require('../../../tests/browser.js');
 const IOS = require('../../../tests/iosinit.js');
 
 const dist = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'dist');
-const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.map': 'application/json' };
+const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.map': 'application/json', '.png': 'image/png', '.webmanifest': 'application/manifest+json', '.txt': 'text/plain' };
 const server = http.createServer(async (req, res) => {
   const p = new URL(req.url, 'http://x').pathname.replace(/^\/app\//, '/');
-  const file = path.join(dist, p === '/' ? 'index.html' : p);
+  const file = path.join(dist, p.endsWith('/') ? p + 'index.html' : p);
   if (!file.startsWith(dist)) { res.writeHead(403); return res.end(); }
   try { const body = await readFile(file); res.writeHead(200, { 'Content-Type': TYPES[path.extname(file)] || 'application/octet-stream' }); res.end(body); }
   catch { res.writeHead(404); res.end(); }
@@ -29,6 +29,20 @@ const SAMPLE = JSON.stringify({ p: 'M', d: { M: { logs: [{ date: Date.UTC(2026, 
 
 const b = await BR.launch();
 for (const dev of BR.device ? [BR.device] : ['iPhone SE', 'iPhone 16 Plus']) {
+  { // the DUOFIT version under review, served next to the test app (its own page, its own fresh storage)
+    const ctx = await b.newContext({ ...BR.dev(dev), locale: 'fr-FR', timezoneId: 'Europe/Paris' });
+    await ctx.addInitScript(IOS);
+    if (process.env.SMOKE_URL) await ctx.route('**/.netlify/scripts/**', r => r.fulfill({ status: 200, contentType: 'text/javascript', body: '' }));
+    const p = await ctx.newPage(); p.setDefaultTimeout(8000);
+    const errs = []; p.on('pageerror', e => errs.push(e.message)); p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
+    const want = JSON.parse(await readFile(path.join(path.dirname(fileURLToPath(import.meta.url)), '../../../_previews/duofit/SOURCE.json'), 'utf8'));
+    await p.goto(url + 'duofit-preview/'); await p.waitForTimeout(500);
+    const got = await p.evaluate(() => ({ title: document.title, ver: typeof VER === 'string' ? VER : null, host: location.host }));
+    ok(`[${dev}] DUOFIT preview (PR #${want.pr}) online at /duofit-preview/: DUOFIT ${want.ver}, on the test site, not the real DUOFIT address`,
+      got.title === 'DUOFIT' && got.ver === want.ver && got.host !== 'anthonyky.github.io', JSON.stringify(got));
+    ok(`[${dev}] DUOFIT preview runs without errors`, !errs.length && await p.evaluate(() => window.__nd.length === 0), errs.join(' | '));
+    await ctx.close();
+  }
   const ctx = await b.newContext({ ...BR.dev(dev), locale: 'fr-FR', timezoneId: 'Europe/Paris' });
   await ctx.addInitScript(IOS);
   const p = await ctx.newPage(); p.setDefaultTimeout(8000);

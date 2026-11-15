@@ -61,6 +61,7 @@ for (const dev of BR.device ? [BR.device] : ['iPhone SE', 'iPhone 16 Plus']) {
 
   await type('input[name=password]', pw); await p.click('button[type=submit]');
   await p.waitForSelector('text=Connecté avec');
+  ok(tag + 'Signed in: "Ouvrir DUOFIT" still in the profile, to DUOFIT\'s own address', (await p.getAttribute('[data-duofit] a', 'href')) === 'https://anthonyky.github.io/Duo-fit/');
   ok(tag + 'Sign-up: signed in at once, name kept', (await text()).includes('Alice') && (await text()).includes(email));
   ok(tag + 'Session kept on this phone only (not in session storage, password never stored)',
     await p.evaluate(pw => { const s = localStorage.getItem('collabfit-session') || ''; return s.includes('refresh_token') && !s.includes(pw) && !JSON.stringify(sessionStorage).includes(pw) && !JSON.stringify(localStorage).includes(pw); }, pw));

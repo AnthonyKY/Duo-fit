@@ -11,12 +11,16 @@ import { useSession } from '../../shared/useSession.ts';
 function LanguageCard() {
   const { t, lang, setLang } = useI18n();
   return (
+    <>
+    {/* DUOFIT stays the owner's own app, at its own address (ADR 0004): always one tap away, signed in or not */}
+    <div className="card" data-duofit><a className="button block duofit-link" href={config.legacyUrl}>{t.openDuofit}</a></div>
     <div className="card">
       <div className="row between"><span>{t.language}</span>
         <span className="seg">{(['fr', 'en'] as const).map(l => <button key={l} type="button" aria-pressed={lang === l} className={lang === l ? 'on' : ''} onClick={() => setLang(l)}>{l.toUpperCase()}</button>)}</span>
       </div>
       <p className="muted">{t.backend} : {config.backendReady ? t.backendOn : t.backendOff} · {t.version} {config.version}</p>
     </div>
+    </>
   );
 }
 
