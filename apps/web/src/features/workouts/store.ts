@@ -17,7 +17,7 @@ let draft: Draft | null = null;
 const k = (what: string) => `collabfit-${what}-${uid}`;
 const emit = () => { for (const l of listeners) l(); };
 
-export const onTraining = (l: Listener) => { listeners.add(l); return () => listeners.delete(l); };
+export const onTraining = (l: Listener): (() => void) => { listeners.add(l); return () => { listeners.delete(l); }; };
 export const training = () => ({ trainer, loaded, sync, draft, needsSetup: loaded && !trainer });
 
 function keepLocal() {
