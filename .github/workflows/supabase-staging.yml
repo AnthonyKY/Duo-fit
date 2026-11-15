@@ -85,18 +85,20 @@ jobs:
       - name: Deploy the account-deletion function (runs on Supabase with the server key, which never leaves Supabase)
         if: steps.cfg.outputs.ready
         run: supabase functions deploy delete-account --project-ref "$PROJECT_ID" --no-verify-jwt --use-api --yes
-      - name: Notification key (VAPID) — made once on GitHub's machine, stored as a Supabase secret, never shown or kept
+      - name: Notification key (VAPID) — made once on GitHub's machine, stored in Supabase Vault, never shown or kept
         if: steps.cfg.outputs.ready
         run: |
-          if supabase secrets list --project-ref "$PROJECT_ID" | grep -qw VAPID_PRIVATE_JWK; then echo "notification key already set (kept: a new one would cut every phone off)";
-          else
-            jwk=$(node -e 'const {privateKey}=require("crypto").generateKeyPairSync("ec",{namedCurve:"prime256v1"});process.stdout.write(JSON.stringify(privateKey.export({format:"jwk"})))')
-            echo "::add-mask::$(jq -r .d <<<"$jwk")"; echo "::add-mask::$jwk"
-            supabase secrets set --project-ref "$PROJECT_ID" "VAPID_PRIVATE_JWK=$jwk" >/dev/null && echo "notification key created and stored on Supabase"
-            unset jwk
-          fi
-          # who sends (asked by Apple and the others in every signature): the test app's address
-          if [ -n "$APP_URL" ]; then supabase secrets set --project-ref "$PROJECT_ID" "VAPID_SUBJECT=$APP_URL" >/dev/null; fi
+          export PGPASSWORD="$SUPABASE_DB_PASSWORD" PGSSLMODE=require
+          conn="host=$PGHOST_POOLER port=5432 user=postgres.$PROJECT_ID dbname=postgres"
+          n=$(psql "$conn" -v ON_ERROR_STOP=1 -tAc "select count(*) from vault.secrets where name = 'collabfit_vapid'")
+          if [ "$n" = 1 ]; then echo "notification key already in the vault (kept: a new one would cut every phone off)"
+          elif [ "$n" = 0 ]; then
+            sec=$(node -e 'const {privateKey}=require("crypto").generateKeyPairSync("ec",{namedCurve:"prime256v1"});process.stdout.write(JSON.stringify({jwk:privateKey.export({format:"jwk"}),subject:process.env.APP_URL||"mailto:collabfit@example.com"}))')
+            echo "::add-mask::$(jq -r .jwk.d <<<"$sec")"
+            echo "select vault.create_secret(:'sec', 'collabfit_vapid', 'CollabFit push notifications: VAPID signing key');" | psql "$conn" -v ON_ERROR_STOP=1 -q -v sec="$sec" >/dev/null
+            unset sec; echo "notification key created and stored in the vault"
+          else echo "::error::could not tell whether the notification key exists ($n): nothing created"; exit 1; fi
+          [ "$(psql "$conn" -tAc "select length(public.push_vapid_key()) > 100")" = t ] && echo "PASS the server-only function reads it"
       - name: Deploy the notification function
         if: steps.cfg.outputs.ready
         run: supabase functions deploy push --project-ref "$PROJECT_ID" --no-verify-jwt --use-api --yes

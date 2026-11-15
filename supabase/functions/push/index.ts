@@ -1,5 +1,5 @@
-// Push notifications. Runs on Supabase (Deno) with the project's server key and the VAPID key, both stored as
-// Supabase secrets (set by the staging workflow, never in Git, never shown).
+// Push notifications. Runs on Supabase (Deno) with the project's server key (a Supabase secret) and the VAPID signing
+// key (Supabase Vault, written once by the staging workflow, read through push_vapid_key; never in Git, never shown).
 //   GET  /functions/v1/push                       → { key }: the public key a phone needs to subscribe
 //   POST /functions/v1/push {kind, id}            → announces a message / workout the CALLER just posted, or a test
 //        Authorization: Bearer <the user's session token>          kind = 'message' | 'workout' | 'test'
@@ -19,13 +19,13 @@ const cors = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers
 const reply = (status: number, body: unknown, extra: Record<string, string> = {}) =>
   new Response(JSON.stringify(body), { status, headers: { ...cors, 'Content-Type': 'application/json', ...extra } });
 
-const vapid: Vapid | null = (() => {
-  try {
-    const jwk = JSON.parse(Deno.env.get('VAPID_PRIVATE_JWK') ?? '') as JsonWebKey;
-    if (jwk.kty !== 'EC' || jwk.crv !== 'P-256' || !jwk.d || !jwk.x || !jwk.y) return null;
-    return { jwk, subject: Deno.env.get('VAPID_SUBJECT') || 'mailto:collabfit@example.com' };
-  } catch { return null; }
-})();
+// the signing key, from Supabase Vault through a server-only database function (read once per start of the function)
+let vapidLoad: Promise<Vapid | null> | null = null;
+const loadVapid = () => vapidLoad ??= rpc<string | null>('push_vapid_key', {}).then(t => {
+  const v = JSON.parse(t ?? 'null') as { jwk?: JsonWebKey; subject?: string } | null;
+  if (!v?.jwk || v.jwk.kty !== 'EC' || v.jwk.crv !== 'P-256' || !v.jwk.d || !v.jwk.x || !v.jwk.y) { vapidLoad = null; return null; }
+  return { jwk: v.jwk, subject: v.subject && /^(https:|mailto:)/.test(v.subject) ? v.subject : 'mailto:collabfit@example.com' };
+}).catch(e => { console.error('push key', String(e)); vapidLoad = null; return null; });
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 type Target = { endpoint: string; p256dh: string; auth: string; lang: string; title: string; body: string; url: string; tag: string };
 
@@ -38,6 +38,7 @@ async function rpc<T>(fn: string, args: unknown): Promise<T> {
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: cors });
+  const vapid = await loadVapid();
   if (!vapid) return reply(503, { error: 'notifications are not configured on this server' });
   if (req.method === 'GET') return reply(200, { key: vapidPublicKey(vapid.jwk) }, { 'Cache-Control': 'public, max-age=3600' });
   if (req.method !== 'POST') return reply(405, { error: 'GET or POST' });

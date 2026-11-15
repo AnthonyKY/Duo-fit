@@ -73,6 +73,7 @@ select t.as_user(:'b'); select public.set_workout_sharing(:'ws', false, true);
 select t.as_user(:'a');
 select t.send(:'ws', 'Séance à 18 h ?') as m1 \gset
 select t.fails(format('select * from public.push_targets(%L, ''message'', %L)', :'a', :'m1'), 'permission denied', 'a phone cannot ask who will be notified (server only)');
+select t.fails('select public.push_vapid_key()', 'permission denied', 'a phone cannot read the signing key (server only)');
 reset role;
 update public.workspace_members set joined_at = now() + interval '1 second' where workspace_id = :'ws' and user_id = :'d'; -- Dan arrives after
 set local role service_role;
