@@ -76,7 +76,9 @@ select 'Client needs no trigger-definition privilege on workspace tables',
 -- users can. Seed as the fixture owner so write privileges do not affect this test.
 insert into storage.objects(bucket_id,name,owner) values
   ('chat-media', :'space' || '/' || :'creator' || '/' || gen_random_uuid() || '.jpg', :'creator')
-  returning id as photo \gset
+  returning id as photo, name as photo_name \gset
+-- since 202611150002 a picture follows its message: attach it to a message the active member can read
+insert into public.messages (client_id, workspace_id, author_id, image_path) values (gen_random_uuid(), :'space', :'creator', :'photo_name');
 set local role authenticated;
 select t.as_user(:'earlier');
 insert into review_results select 'Removed member sees no space photo',

@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
   push:
     branches: ['claude/collabfit-*', 'feat/collabfit-*']
-    paths: ['supabase/migrations/**', '.github/workflows/supabase-staging.yml']
+    paths: ['supabase/migrations/**', 'supabase/functions/**', 'scripts/staging-e2e.mjs', '.github/workflows/supabase-staging.yml']
 permissions:
   contents: read
 concurrency: supabase-staging
@@ -79,6 +79,24 @@ jobs:
           code=$(curl -s -o /tmp/r.json -w '%{http_code}' "https://$PROJECT_ID.supabase.co/rest/v1/workspaces?select=id" -H "apikey: $key")
           echo "anonymous read of workspaces: HTTP $code $(head -c 160 /tmp/r.json)"
           [ "$code" = 401 ] || [ "$code" = 403 ] || { echo "::error::anonymous read was not refused"; exit 1; }
+
+      - name: Deploy the account-deletion function (runs on Supabase with the server key, which never leaves Supabase)
+        if: steps.cfg.outputs.ready
+        run: supabase functions deploy delete-account --project-ref "$PROJECT_ID" --no-verify-jwt --use-api
+      - name: End-to-end with made-up accounts (pictures follow messages, links after removal, complete account deletion)
+        if: steps.cfg.outputs.ready
+        env:
+          SUPABASE_URL: ${{ vars.COLLABFIT_SUPABASE_URL }}
+          SUPABASE_KEY: ${{ vars.COLLABFIT_SUPABASE_ANON_KEY }}
+        run: |
+          set -o pipefail
+          node scripts/staging-e2e.mjs | tee /tmp/e2e
+          ids=$(sed -n 's/^E2E_USERS=//p' /tmp/e2e | sed "s/[^,]*/'&'/g")
+          [ -n "$ids" ] || exit 0
+          export PGPASSWORD="$SUPABASE_DB_PASSWORD" PGSSLMODE=require
+          q() { psql "host=$PGHOST_POOLER port=5432 user=postgres.$PROJECT_ID dbname=postgres" -tAc "$1"; }
+          left=$(q "select (select count(*) from auth.users where id::text in ($ids)) + (select count(*) from storage.objects where (bucket_id='avatars' and split_part(name,'/',1) in ($ids)) or (bucket_id='chat-media' and split_part(name,'/',2) in ($ids)))")
+          if [ "$left" = 0 ]; then echo "PASS seen from the database: no test account and no file of theirs left"; else echo "FAIL $left test account(s)/file(s) left in the database"; exit 1; fi
 
   # The test app as Netlify serves it (address in COLLABFIT_STAGING_APP_URL): the same iPhone checks as in CI, on the
   # real deployment — security policy enforced by the browser with the real Supabase address, Netlify's security headers.

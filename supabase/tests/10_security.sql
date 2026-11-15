@@ -141,7 +141,11 @@ select t.fails(format('insert into storage.objects (bucket_id, name, owner) valu
 select t.fails(format('insert into storage.objects (bucket_id, name, owner) values (%L, %L, %L)', 'chat-media', :'ws' || '/' || :'B' || '/44444444-4444-4444-8444-444444444444.html', :'B'),
   'row-level security', 'only pictures (jpg, png, webp)');
 select t.as_user(:'A');
-select t.ok(t.n(format('select * from storage.objects where name = %L', :'pic')) = 1, 'Alice can open Bob''s picture');
+select t.ok(t.n(format('select * from storage.objects where name = %L', :'pic')) = 0, 'a picture not yet sent in a message stays private to its uploader');
+select t.as_user(:'B');
+insert into public.messages (client_id, workspace_id, author_id, image_path) values (gen_random_uuid(), :'ws', :'B', :'pic');
+select t.as_user(:'A');
+select t.ok(t.n(format('select * from storage.objects where name = %L', :'pic')) = 1, 'Alice can open Bob''s picture once it is sent');
 \set apic :ws/:A/66666666-6666-4666-8666-666666666666.jpg
 insert into storage.objects (bucket_id, name, owner) values ('chat-media', :'apic', :'A');
 select t.as_user(:'B');
