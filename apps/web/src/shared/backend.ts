@@ -2,13 +2,14 @@
 // library to trust. Only the PUBLIC key is used; every right is enforced by the database (row level security).
 // The session (short-lived access token + refresh token) stays on this phone so the app opens signed in; the strict
 // security policy (no inline or outside script) is what keeps other code from reading it.
-import { authProblem, type AuthProblem } from '@collabfit/domain';
+import { authProblem, dbProblem, type AuthProblem, type DbProblem } from '@collabfit/domain';
 import { config } from './config.ts';
 import { readLocal, writeLocal } from './storage.ts';
 
 export interface Session { access_token: string; refresh_token: string; expires_at: number; user: { id: string; email: string } }
+export type Problem = AuthProblem | DbProblem;
 export class BackendError extends Error {
-  constructor(public problem: AuthProblem, public status: number) { super(problem); }
+  constructor(public problem: Problem, public status: number) { super(problem); }
 }
 const KEY = 'collabfit-session';
 
@@ -25,7 +26,7 @@ async function request(path: string, init: { method?: string; token?: string; bo
   const text = await r.text();
   let json: unknown = null;
   try { json = text ? JSON.parse(text) : null; } catch { /* not JSON */ }
-  if (!r.ok) throw new BackendError(authProblem(r.status, json), r.status);
+  if (!r.ok) throw new BackendError((path.startsWith('/rest/') && r.status !== 401 ? dbProblem(r.status, json) : null) ?? authProblem(r.status, json), r.status);
   return json;
 }
 
@@ -119,3 +120,11 @@ export async function deleteAccount(): Promise<void> {
   await asUser('/functions/v1/delete-account', { method: 'POST', body: { confirm: 'DELETE' } });
   set(null);
 }
+
+// ---------------------------------------------------------------- database: reads (row level security) and actions (functions)
+export const rest = <T>(pathAndQuery: string): Promise<T> => asUser(`/rest/v1/${pathAndQuery}`) as Promise<T>;
+export const rpc = <T>(fn: string, args: Record<string, unknown>): Promise<T> =>
+  asUser(`/rest/v1/rpc/${fn}`, { method: 'POST', body: args }) as Promise<T>;
+export const insert = (table: string, row: Record<string, unknown>, returning = false) =>
+  asUser(`/rest/v1/${table}`, { method: 'POST', body: row, headers: { Prefer: returning ? 'return=representation' : 'return=minimal' } });
+export const remove = (table: string, query: string) => asUser(`/rest/v1/${table}?${query}`, { method: 'DELETE', headers: { Prefer: 'return=minimal' } });

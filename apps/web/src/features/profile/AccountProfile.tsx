@@ -1,24 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { avatarPath, checkDisplayName } from '@collabfit/domain';
 import { useI18n } from '../../app/i18n.tsx';
-import { BackendError, deleteAccount, myProfile, removeFile, signOut, signedUrl, updateProfile, uploadFile, type Profile, type Session } from '../../shared/backend.ts';
-import { Avatar } from './Avatar.tsx';
+import { BackendError, deleteAccount, myProfile, removeFile, signOut, updateProfile, uploadFile, type Profile, type Session } from '../../shared/backend.ts';
+import { PhotoOrAvatar } from './PhotoOrAvatar.tsx';
 import { newSeed } from './localProfile.ts';
 import { squarePhoto } from './photo.ts';
 
-const AVATAR_LINK_SECONDS = 3600;
 type Msg = { ok: boolean; text: string } | null;
-
-function PhotoOrAvatar({ p, size = 72 }: { p: Profile; size?: number }) {
-  const [src, setSrc] = useState<string | null>(null);
-  useEffect(() => {
-    let live = true; setSrc(null);
-    if (p.avatar_path) signedUrl('avatars', p.avatar_path, AVATAR_LINK_SECONDS).then(u => { if (live) setSrc(u); }).catch(() => { /* generated avatar */ });
-    return () => { live = false; };
-  }, [p.avatar_path]);
-  return src ? <img className="avatar photo" src={src} width={size} height={size} alt="" onError={() => setSrc(null)} />
-    : <Avatar seed={p.avatar_seed} name={p.display_name} size={size} />;
-}
 
 export function AccountProfile({ session }: { session: Session }) {
   const { t } = useI18n();

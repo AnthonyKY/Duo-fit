@@ -41,7 +41,9 @@ jobs:
           SMOKE_ONLY=csp npm run test:web | tee /tmp/web-csp
           node apps/web/test/accounts.mjs | tee /tmp/acc-chromium
           BROWSER=webkit DEVICE="iPhone 16 Plus" node apps/web/test/accounts.mjs | tee /tmp/acc-webkit
-          ! grep -Eq '^FAIL|^CRASH' /tmp/web-csp /tmp/acc-chromium /tmp/acc-webkit
+          node apps/web/test/spaces.mjs | tee /tmp/sp-chromium
+          BROWSER=webkit DEVICE="iPhone 16 Plus" node apps/web/test/spaces.mjs | tee /tmp/sp-webkit
+          ! grep -Eq '^FAIL|^CRASH' /tmp/web-csp /tmp/acc-chromium /tmp/acc-webkit /tmp/sp-chromium /tmp/sp-webkit
       - name: Build again without a server (the next step tests the on-phone-only version)
         run: npm run build:web
       - name: Web app on iPhone 16 Plus (WebKit, Safari's engine)

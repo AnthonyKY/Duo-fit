@@ -27,3 +27,28 @@ export async function squarePhoto(file: File, size = 512): Promise<Blob | PhotoP
   } catch { return 'unreadable'; }
   finally { URL.revokeObjectURL(url); }
 }
+
+/** A chat picture: longest side at most 1600 px, JPEG, re-drawn on the phone (same privacy as the profile photo). */
+export async function chatPhoto(file: File, maxSide = 1600): Promise<Blob | PhotoProblem> {
+  const c = checkImage({ type: file.type, size: Math.min(file.size, 1) }, 'chat');
+  if (!c.ok) return c.error;
+  if (file.size > SOURCE_MAX) return 'size';
+  const url = URL.createObjectURL(file);
+  try {
+    const img = new Image();
+    img.src = url;
+    await img.decode();
+    const w = img.naturalWidth, h = img.naturalHeight;
+    if (!w || !h) return 'unreadable';
+    const k = Math.min(1, maxSide / Math.max(w, h));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(w * k); canvas.height = Math.round(h * k);
+    const g = canvas.getContext('2d');
+    if (!g) return 'unreadable';
+    g.imageSmoothingQuality = 'high';
+    g.drawImage(img, 0, 0, canvas.width, canvas.height);
+    const out = await new Promise<Blob | null>(r => canvas.toBlob(r, 'image/jpeg', 0.82));
+    return out && out.size > 0 ? out : 'unreadable';
+  } catch { return 'unreadable'; }
+  finally { URL.revokeObjectURL(url); }
+}

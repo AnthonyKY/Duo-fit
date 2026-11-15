@@ -104,7 +104,7 @@ jobs:
     needs: migrate
     runs-on: ubuntu-24.04
     environment: staging
-    timeout-minutes: 15
+    timeout-minutes: 25
     env:
       APP_URL: ${{ vars.COLLABFIT_STAGING_APP_URL }}
       SUPABASE_URL: ${{ vars.COLLABFIT_SUPABASE_URL }}
@@ -158,4 +158,6 @@ jobs:
           SMOKE_ONLY=csp BROWSER=webkit DEVICE="iPhone 16 Plus" node apps/web/test/smoke.mjs | tee /tmp/w
           node apps/web/test/deployed.mjs | tee /tmp/dc
           BROWSER=webkit DEVICE="iPhone 16 Plus" node apps/web/test/deployed.mjs | tee /tmp/dw
-          ! grep -Eq '^FAIL|^CRASH' /tmp/c /tmp/w /tmp/dc /tmp/dw
+          node apps/web/test/deployed-spaces.mjs | tee /tmp/sc
+          BROWSER=webkit DEVICE="iPhone 16 Plus" node apps/web/test/deployed-spaces.mjs | tee /tmp/sw
+          ! grep -Eq '^FAIL|^CRASH' /tmp/c /tmp/w /tmp/dc /tmp/dw /tmp/sc /tmp/sw

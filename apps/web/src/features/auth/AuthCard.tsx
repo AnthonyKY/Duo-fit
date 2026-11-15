@@ -2,6 +2,10 @@ import { useState, type FormEvent } from 'react';
 import { checkDisplayName, checkEmail, checkPassword } from '@collabfit/domain';
 import { useI18n } from '../../app/i18n.tsx';
 import { BackendError, signIn, signUp } from '../../shared/backend.ts';
+import { readSession } from '../../shared/storage.ts';
+
+// signed in with an invitation waiting: show it straight away
+const toInvite = () => { if (readSession('collabfit-invite')) location.hash = '#/spaces'; };
 
 // Sign-up / sign-in with e-mail + password. Real <form> fields with the right autocomplete hints, so the iPhone offers
 // a strong password and saves it in the Keychain. The page never navigates (the security policy forbids form posts).
@@ -29,8 +33,8 @@ export function AuthCard({ defaultName }: { defaultName: string }) {
     try {
       if (mode === 'up') {
         const r = await signUp(m.value, pw, n.ok ? n.value : '');
-        if (r === 'check-email') setMsg({ ok: true, text: a.checkEmail });
-      } else await signIn(m.value, pw);
+        if (r === 'check-email') setMsg({ ok: true, text: a.checkEmail }); else toInvite();
+      } else { await signIn(m.value, pw); toInvite(); }
     } catch (err) {
       setMsg({ ok: false, text: a.problem[err instanceof BackendError ? err.problem : 'unknown'] });
     } finally { setBusy(false); }

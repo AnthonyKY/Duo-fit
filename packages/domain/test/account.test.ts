@@ -26,3 +26,19 @@ test('Supabase Auth answers become a few clear cases', () => {
   assert.equal(authProblem(0, null), 'offline');
   assert.equal(authProblem(500, 'oops'), 'unknown');
 });
+
+import { dbProblem, friendsCapacity } from '../src/index.ts';
+test('database refusals become clear cases (codes raised by the schema functions)', () => {
+  assert.equal(dbProblem(400, { code: '23514', message: 'this space is full' }), 'space-full');
+  assert.equal(dbProblem(400, { code: '22023', message: 'invalid or expired invitation' }), 'invite-invalid');
+  assert.equal(dbProblem(409, { code: '23505', message: 'already in a couple space' }), 'already-couple');
+  assert.equal(dbProblem(409, { code: '23505', message: 'duplicate key value violates unique constraint' }), 'duplicate');
+  assert.equal(dbProblem(400, { code: '54000', message: 'too many messages, wait a minute' }), 'too-many');
+  assert.equal(dbProblem(403, { code: '42501', message: 'only the owner can invite' }), 'not-allowed');
+  assert.equal(dbProblem(400, { code: 'P0002', message: 'not a member' }), 'not-found');
+  assert.equal(dbProblem(400, { code: '23514', message: 'new row violates check constraint' }), 'invalid-input');
+  assert.equal(dbProblem(500, 'x'), null);
+});
+test('friends space: 2 to 20 people', () => {
+  assert.equal(friendsCapacity(1), 2); assert.equal(friendsCapacity(25), 20); assert.equal(friendsCapacity('8'), 8); assert.equal(friendsCapacity('abc'), 10);
+});
