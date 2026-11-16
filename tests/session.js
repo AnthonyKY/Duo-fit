@@ -4,7 +4,8 @@
 //    EXERCISE (named) when the exercise is finished, the cardio, or that everything is done
 // 3) supersets chosen in the gym ("faire des exos en parallèle"): pair the exercise with another one, alternate set by set
 //    with a 15-second transition, split again; the programme itself is never changed
-// 4) a note per exercise (machine settings…), longer (200 characters) and on several lines, kept for next time
+// 4) the note per exercise keeps its usual look (⚙️ réglages machine, one line, 80 characters), as Invictus prefers
+// 5) a timer for each set of the exercises measured in seconds (plank; side plank: each side, 5 s to switch)
 // Guided and list modes, FR and EN, an old workout in progress, iPhone SE and 16 Plus (strict iPhone simulation).
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http');
 const BR=require('./browser.js');const IOS=require('./iosinit.js');
@@ -131,22 +132,67 @@ await E(()=>{const c=cur();Object.values(c.ex).forEach(a=>a.forEach(s=>{s.w=s.w|
 const lg=await E(()=>D().logs.at(-1));
 ok(tag+'3. Saved workout: every exercise with its sets',Object.keys(lg.ex).length===q.length&&Object.values(lg.ex).every(a=>a.length>0),Object.keys(lg.ex).length+'/'+q.length);
 
-// ======================================================================= 4. a longer note per exercise
+// ======================================================================= 4. the note per exercise, as Invictus prefers it (⚙️, as before)
 await startA(true);
 q=await plan();
-ok(tag+'4. The note is offered as "📝 Ajouter une note (réglages machine…)"',(await txt()).includes('📝 Ajouter une note (réglages machine…)'));
+ok(tag+'4. The note keeps its usual look: "⚙️ Ajouter les réglages machine"',(await txt()).includes('Ajouter les réglages machine')&&!(await txt()).includes('📝'));
 await tap(p.locator('#v .nlink').first());
-const note='Siège 4, dossier 2\nPoignées basses, pieds écartés — '+'x'.repeat(170);
-await type(`#note_${q[0].id}`,note);
-const saved=await E(id=>D().notes[id],q[0].id);
-ok(tag+'4. Several lines, up to 200 characters, saved as typed',saved===note.slice(0,200)&&saved.includes('\n'),saved.length);
-await tap(p.locator('#v .nt button:has-text("OK")'));
-ok(tag+'4. Shown on the exercise afterwards',(await txt()).includes('📝 Siège 4, dossier 2'));
+ok(tag+'4. One line, 80 characters, as before',await E(id=>{const e=document.getElementById('note_'+id);return e.tagName==='INPUT'&&e.maxLength===80},q[0].id));
+await type(`#note_${q[0].id}`,'siège 4, dossier 2');await tap(p.locator('#v .nt button:has-text("OK")'));
+ok(tag+'4. Saved and shown with the gear',await E(id=>D().notes[id],q[0].id)==='siège 4, dossier 2'&&(await txt()).includes('⚙️ siège 4, dossier 2'));
+await tap(p.locator('#v .nlink').first());await type(`#note_${q[0].id}`,'x'.repeat(80));await tap(p.locator('#v .nt button:has-text("OK")'));
+ok(tag+'4. A very long word wraps instead of widening the screen',await E(()=>document.documentElement.scrollWidth<=innerWidth),await E(()=>document.documentElement.scrollWidth+'/'+innerWidth));
 await p.reload();
-ok(tag+'4. Still there after reopening, and next time this exercise comes up',await E(id=>D().notes[id],q[0].id)===note.slice(0,200));
-ok(tag+'4. Fits the screen, the note on its lines (even a long word wraps)',await E(()=>document.documentElement.scrollWidth<=innerWidth)&&await E(()=>getComputedStyle(document.querySelector('.nt .nlink')).whiteSpace==='pre-wrap'),await E(()=>document.documentElement.scrollWidth+'/'+innerWidth));
-await tap(p.locator('#v .nlink').first());
-ok(tag+'4. Editing a long note: fits the screen too',await E(()=>document.documentElement.scrollWidth<=innerWidth),await E(()=>document.documentElement.scrollWidth+'/'+innerWidth));
+ok(tag+'4. Kept after reopening',await E(id=>D().notes[id],q[0].id)==='x'.repeat(80));
+
+// ======================================================================= 5. a timer per set for the holds
+// side plank first (two sides), plank third, as the person would meet them
+await fresh(true);
+await E(()=>{D().pf.time=60;save();start('A');const c=cur();c.cm=0;ensurePl();
+  c.pl[0]=['sp',3,20,45,60,2,c.pl[0][6],c.pl[0][7]];c.ex[0]=Array.from({length:3},()=>({w:0,r:'',ok:0}));
+  c.pl[2]=['pl',3,30,60,60,2,c.pl[2][6],c.pl[2][7]];c.ex[2]=Array.from({length:3},()=>({w:0,r:'',ok:0}));
+  c.swp={};U.gi=0;save();go()});
+const hold=()=>E(()=>cur().hold?{ph:cur().hold.ph,side:cur().hold.side,held:cur().hold.held}:null);
+const tgSp=await E(()=>+tgr('sp',cx()[0],0,cur().wk));
+ok(tag+'5. Side plank: "⏱ Chrono · série 1 (objectif … s)" above "Valider"',(await txt()).includes(`Chrono · série 1 (objectif ${tgSp} s)`),tgSp);
+await E(()=>{const c=cur();c.rest={totalMs:90000,remainingMs:90000,end:Date.now()+90000,withSession:false};save();go()});
+await tap(p.locator('#v button.hold-b'));
+ok(tag+'5. Tap: 3 seconds to get in position (the rest timer stops: the set starts)',(await hold()).ph==='ready'&&(await txt()).includes('En position')&&await E(()=>!cur().rest));
+await p.clock.runFor(3200);
+ok(tag+'5. Then the hold counts, side 1/2, target shown',(await hold()).ph==='hold'&&(await txt()).includes('Côté 1/2')&&(await txt()).includes('/ '+Math.floor(tgSp/60)+':'+String(tgSp%60).padStart(2,'0')));
+await p.clock.runFor(tgSp*1000+500);
+ok(tag+'5. At the target: "Objectif atteint", it keeps counting',(await txt()).includes('Objectif atteint')&&(await p.textContent('#hold-clock'))===Math.floor((tgSp)/60)+':'+String(tgSp%60).padStart(2,'0'),await p.textContent('#hold-clock'));
+await p.clock.runFor(4000);
+await tap(p.locator('#v .hold button.big'));
+let h=await hold();
+ok(tag+'5. "Stop" on side 1: 5 s to switch sides',h.ph==='switch'&&h.held[0]===tgSp+4&&(await txt()).includes('Change de côté'),JSON.stringify(h));
+await p.clock.runFor(5200);
+ok(tag+'5. Side 2 starts by itself',(await hold()).ph==='hold'&&(await txt()).includes('Côté 2/2'));
+await p.clock.runFor((tgSp-3)*1000+300);
+await tap(p.locator('#v .hold button.big'));
+let st=await E(()=>cur().ex[0][0]);
+ok(tag+'5. "Stop" on side 2: the set keeps the shorter side and is logged; the rest starts',st.ok===1&&+st.r===tgSp-3&&await E(()=>!cur().hold&&!!cur().rest),JSON.stringify(st));
+// lock the phone during a hold: no time lost (reopened 12 s later)
+await tap(p.locator('#v button.hold-b'));await tap(p.locator('#v .hold button.big'));   // "Go" skips the 3 s
+ok(tag+'5. "Go" skips the countdown',(await hold()).ph==='hold');
+await p.clock.runFor(12000);await p.reload();
+ok(tag+'5. Phone locked or app reopened: the hold is still running, time kept',(await hold())?.ph==='hold'&&(await p.textContent('#hold-clock'))==='0:12',await p.textContent('#hold-clock'));
+await tap(p.locator('#v .hold button[aria-label="Annuler le chrono"]'));
+ok(tag+'5. ✕ cancels: nothing saved for the set',await E(()=>!cur().hold&&cur().ex[0][1].ok===0&&cur().ex[0][1].r===''));
+// plank (one side), list mode, stopped before the target
+await E(()=>{S.gm=false;save();go()});
+const plank=p.locator('#v .c',{hasText:'Gainage (secondes)'}).first();
+ok(tag+'5. List mode: the plank has its own timer button',await plank.locator('button.hold-b').count()===1);
+ok(tag+'5. …and the exercises with repetitions have none (one button per timed exercise still to do)',await E(()=>document.querySelectorAll('#v button.hold-b').length===cx().filter((_,i)=>isT(sid(i))&&cur().ex[i].some(x=>!x.ok)).length&&cx().some((_,i)=>!isT(sid(i)))),await E(()=>JSON.stringify(cx().map((_,i)=>sid(i)))));
+await tap(plank.locator('button.hold-b'));await p.clock.runFor(3200+17000);
+ok(tag+'5. Plank: one side only (no switch)',!(await txt()).includes('Côté 1/2'));
+await tap(plank.locator('.hold button.big'));
+st=await E(()=>cur().ex[2][0]);
+ok(tag+'5. Stopped before the target: the seconds really held are saved (17 s)',st.ok===1&&+st.r===17,JSON.stringify(st));
+ok(tag+'5. Fits the screen',await E(()=>document.documentElement.scrollWidth<=innerWidth));
+await E(()=>{S.lg='en';save();go()});
+ok(tag+'5. English',(await txt()).includes('⏱ Timer · set 2'));
+await E(()=>{S.lg='fr';save();go()});
 
 ok(tag+'No errors, no native dialogs',!errs.length&&await E(()=>window.__nd.length===0),errs.join(' | '));
 await ctx.close();
