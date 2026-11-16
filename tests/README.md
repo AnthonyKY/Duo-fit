@@ -38,6 +38,7 @@ node tests/stabilite.js                     # stability audit: profile switch wi
                                            # next target after a lightened end of exercise, backup round trip and failed restores,
                                            # body-composition masses heavier than the weight + margins, timers across lock / reload
 node tests/fixes.js                         # the 8 corrections after the v2026-11-14n review, one check per case (iPhone SE + 16 Plus): corrected
+node tests/session.js                       # v2026-11-16 (asked in the gym): reset one exercise after a confirmation, end-of-rest message (next set / partner / next exercise / cardio / done), supersets chosen in the session, 200-character notes (iPhone SE + 16 Plus)
                                            # history (load, date, deletion) drives the next target; guided "vise 11 reps" saves 11; exact
                                            # 11,25 kg loads and +1 rep when the next step is > 10 %; session time vs measured exercise time,
                                            # warm-up apart; incompatible body values flagged and dependent results suspended, bone margin,
