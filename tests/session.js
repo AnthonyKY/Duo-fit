@@ -4,7 +4,7 @@
 //    EXERCISE (named) when the exercise is finished, the cardio, or that everything is done
 // 3) supersets chosen in the gym ("faire des exos en parallèle"): pair the exercise with another one, alternate set by set
 //    with a 15-second transition, split again; the programme itself is never changed
-// 4) a note per exercise (machine settings…), longer (200 characters) and on several lines, kept for next time
+// 4) the note per exercise keeps its usual look (⚙️ réglages machine, one line, 80 characters), as Invictus prefers
 // Guided and list modes, FR and EN, an old workout in progress, iPhone SE and 16 Plus (strict iPhone simulation).
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http');
 const BR=require('./browser.js');const IOS=require('./iosinit.js');
@@ -131,22 +131,18 @@ await E(()=>{const c=cur();Object.values(c.ex).forEach(a=>a.forEach(s=>{s.w=s.w|
 const lg=await E(()=>D().logs.at(-1));
 ok(tag+'3. Saved workout: every exercise with its sets',Object.keys(lg.ex).length===q.length&&Object.values(lg.ex).every(a=>a.length>0),Object.keys(lg.ex).length+'/'+q.length);
 
-// ======================================================================= 4. a longer note per exercise
+// ======================================================================= 4. the note per exercise, as Invictus prefers it (⚙️, as before)
 await startA(true);
 q=await plan();
-ok(tag+'4. The note is offered as "📝 Ajouter une note (réglages machine…)"',(await txt()).includes('📝 Ajouter une note (réglages machine…)'));
+ok(tag+'4. The note keeps its usual look: "⚙️ Ajouter les réglages machine"',(await txt()).includes('Ajouter les réglages machine')&&!(await txt()).includes('📝'));
 await tap(p.locator('#v .nlink').first());
-const note='Siège 4, dossier 2\nPoignées basses, pieds écartés — '+'x'.repeat(170);
-await type(`#note_${q[0].id}`,note);
-const saved=await E(id=>D().notes[id],q[0].id);
-ok(tag+'4. Several lines, up to 200 characters, saved as typed',saved===note.slice(0,200)&&saved.includes('\n'),saved.length);
-await tap(p.locator('#v .nt button:has-text("OK")'));
-ok(tag+'4. Shown on the exercise afterwards',(await txt()).includes('📝 Siège 4, dossier 2'));
+ok(tag+'4. One line, 80 characters, as before',await E(id=>{const e=document.getElementById('note_'+id);return e.tagName==='INPUT'&&e.maxLength===80},q[0].id));
+await type(`#note_${q[0].id}`,'siège 4, dossier 2');await tap(p.locator('#v .nt button:has-text("OK")'));
+ok(tag+'4. Saved and shown with the gear',await E(id=>D().notes[id],q[0].id)==='siège 4, dossier 2'&&(await txt()).includes('⚙️ siège 4, dossier 2'));
+await tap(p.locator('#v .nlink').first());await type(`#note_${q[0].id}`,'x'.repeat(80));await tap(p.locator('#v .nt button:has-text("OK")'));
+ok(tag+'4. A very long word wraps instead of widening the screen',await E(()=>document.documentElement.scrollWidth<=innerWidth),await E(()=>document.documentElement.scrollWidth+'/'+innerWidth));
 await p.reload();
-ok(tag+'4. Still there after reopening, and next time this exercise comes up',await E(id=>D().notes[id],q[0].id)===note.slice(0,200));
-ok(tag+'4. Fits the screen, the note on its lines (even a long word wraps)',await E(()=>document.documentElement.scrollWidth<=innerWidth)&&await E(()=>getComputedStyle(document.querySelector('.nt .nlink')).whiteSpace==='pre-wrap'),await E(()=>document.documentElement.scrollWidth+'/'+innerWidth));
-await tap(p.locator('#v .nlink').first());
-ok(tag+'4. Editing a long note: fits the screen too',await E(()=>document.documentElement.scrollWidth<=innerWidth),await E(()=>document.documentElement.scrollWidth+'/'+innerWidth));
+ok(tag+'4. Kept after reopening',await E(id=>D().notes[id],q[0].id)==='x'.repeat(80));
 
 ok(tag+'No errors, no native dialogs',!errs.length&&await E(()=>window.__nd.length===0),errs.join(' | '));
 await ctx.close();
