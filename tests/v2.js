@@ -53,7 +53,7 @@ ok('C. Warm-up from 45 kg: 25 × 8 · 30 × 4 · 40 × 2',tx.includes('25 kg × 
 await tap(p.locator('.chip').first());ok('C. Warm-up chip ticks',await E(()=>cur().wu[0]===true));
 // ===== D. Machine settings =====
 await tap(p.locator('.nlink').first());await typ(p.locator('#note_ms'),'siège 4, dossier 2');await tap(p.locator('.nt button',{hasText:'OK'}));
-ok('D. Machine settings saved and shown',await E(()=>S.d.M.notes.ms==='siège 4, dossier 2')&&(await txt()).includes('⚙️ siège 4, dossier 2'));
+ok('D. Machine settings saved and shown',await E(()=>S.d.M.notes.ms==='siège 4, dossier 2')&&(await txt()).includes('📝 siège 4, dossier 2'));
 // ===== F. Steppers + Valider =====
 await tap(p.locator('.stp').nth(0).locator('button').nth(1));ok('F. + weight → 50 kg (machine step 5)',await p.inputValue('#w0_0')==='50');
 await tap(p.locator('.stp').nth(0).locator('button').nth(0));ok('F. − weight → 45 kg',await p.inputValue('#w0_0')==='45');

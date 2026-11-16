@@ -15,11 +15,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        suite: [session-history.test.cjs, full.js, nut2.js, ios.js, all.js, v2.js, variety.js, pages.js, budget.test.cjs, budget-iphone.js, priorities.js, backup.js, erase.js, coach.js, tanita.js, tanita-calc.js, stabilite.js, fixes.js]
+        suite: [session-history.test.cjs, full.js, nut2.js, ios.js, all.js, v2.js, variety.js, pages.js, budget.test.cjs, budget-iphone.js, priorities.js, backup.js, erase.js, coach.js, tanita.js, tanita-calc.js, stabilite.js, fixes.js, session.js]
         engine: [chromium]
         device: ['']
         # the same browser suites again in WebKit (Safari's engine, used by every browser on iPhone) on an iPhone 16 Plus
         include:
+          - {suite: session.js, engine: webkit, device: 'iPhone 16 Plus'}
           - {suite: full.js, engine: webkit, device: 'iPhone 16 Plus'}
           - {suite: nut2.js, engine: webkit, device: 'iPhone 16 Plus'}
           - {suite: ios.js, engine: webkit, device: 'iPhone 16 Plus'}
