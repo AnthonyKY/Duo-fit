@@ -144,7 +144,9 @@ await tap(p.locator('#v .nt button:has-text("OK")'));
 ok(tag+'4. Shown on the exercise afterwards',(await txt()).includes('📝 Siège 4, dossier 2'));
 await p.reload();
 ok(tag+'4. Still there after reopening, and next time this exercise comes up',await E(id=>D().notes[id],q[0].id)===note.slice(0,200));
-ok(tag+'4. Fits the screen',await E(()=>document.documentElement.scrollWidth<=innerWidth));
+ok(tag+'4. Fits the screen, the note on its lines (even a long word wraps)',await E(()=>document.documentElement.scrollWidth<=innerWidth)&&await E(()=>getComputedStyle(document.querySelector('.nt .nlink')).whiteSpace==='pre-wrap'),await E(()=>document.documentElement.scrollWidth+'/'+innerWidth));
+await tap(p.locator('#v .nlink').first());
+ok(tag+'4. Editing a long note: fits the screen too',await E(()=>document.documentElement.scrollWidth<=innerWidth),await E(()=>document.documentElement.scrollWidth+'/'+innerWidth));
 
 ok(tag+'No errors, no native dialogs',!errs.length&&await E(()=>window.__nd.length===0),errs.join(' | '));
 await ctx.close();
