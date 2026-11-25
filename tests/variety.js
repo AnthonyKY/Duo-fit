@@ -68,7 +68,7 @@ ok('5. Notice shown',(await p.textContent('#notice')).includes('Nouveaux exercic
 
 // ===== 6. Not in my gym (during a session) =====
 await E(()=>{U.pick='A';go();begin('A')});const lat=await E(()=>sid(2));
-await tap(p.locator('#v .c:not(.wuc)').nth(2).locator('button[aria-label^="Remplacer"]'));
+await tap(p.locator('#v .c:not(.wuc):not(.prec)').nth(2).locator('button[aria-label^="Remplacer"]'));
 await tap(p.locator('#v .swp button:has-text("Pas dans ma salle")'));
 const lat2=await E(()=>sid(2));
 ok('6. "Pas dans ma salle" replaces it today and excludes it',lat2!==lat&&await E(id=>S.d.M.pf.no.includes(id),lat),lat+' → '+lat2);
@@ -84,7 +84,7 @@ await tap(p.locator('#ll .c').filter({hasText:'Élévation latérale machine'}).
 
 // ===== 7. Pin =====
 await E(()=>{U.tab='today';U.pick='A';go();begin('A')});const pinned=await E(()=>sid(3));
-await tap(p.locator('#v .c:not(.wuc)').nth(3).locator('button[aria-label^="Remplacer"]'));await tap(p.locator('#v .swp button:has-text("Garder à chaque fois")'));
+await tap(p.locator('#v .c:not(.wuc):not(.prec)').nth(3).locator('button[aria-label^="Remplacer"]'));await tap(p.locator('#v .swp button:has-text("Garder à chaque fois")'));
 ok('7. 📌 keeps the exercise in its slot',await E(id=>S.d.M.sub.A3===id,pinned));
 await doSession2();async function doSession2(){await E(()=>{cx().forEach((e,i)=>{setv(i,0,'w',isBW(sid(i))?'':'20');setv(i,0,'r',String(e[2]));done(i,0)})});await E(()=>fin());await accept();await E(()=>{U.sum=null;go()})}
 await advance(2);
@@ -139,7 +139,7 @@ await tap(p.locator('#v >> text=Abandonner'));await accept();await E(()=>{S.gm=f
 const sp=await E(()=>{S.p='M';D().sub.A5='sp';const e=eff('A').ex[5];delete D().sub.A5;return e.slice(1,4)});
 ok('11. Side plank in the core slot gets seconds (20-45)',sp[1]===20&&sp[2]===45,JSON.stringify(sp));
 await E(()=>{D().sub.C5='sp';U.pick='C';go();begin('C');if(U.chk)start('C',0)});
-ok('11. Side plank card labelled in seconds',(await p.locator('#v .c:not(.wuc)').filter({hasText:'Gainage latéral'}).first().textContent()).includes('20–45 s'));
+ok('11. Side plank card labelled in seconds',(await p.locator('#v .c:not(.wuc):not(.prec)').filter({hasText:'Gainage latéral'}).first().textContent()).includes('20–45 s'));
 await tap(p.locator('#v >> text=Abandonner'));await accept();await E(()=>{delete D().sub.C5;save()});
 
 // ===== 12. Her profile =====

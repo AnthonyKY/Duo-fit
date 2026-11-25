@@ -37,16 +37,16 @@ ok('Him has 3 sessions, Her has 3 sessions',await E(()=>S.d.M.logs.length==3&&S.
 // ===== 2. Guide + Swap on every exercise of every workout =====
 let swapIssues=[],guideIssues=[];
 for(const pf of ['M','F']){await E(pf=>{S.p=pf;go()},pf);
- for(const w of ['A','B','C']){await pickW(w);await tap(p.locator('text=Commencer la séance'));const n=await p.locator('#v .c:not(.wuc) h2').count();
-  for(let i=0;i<n;i++){const card=p.locator('#v .c:not(.wuc)').filter({has:p.locator('h2')}).nth(i);const name=(await card.locator('h2').textContent()).trim();
+ for(const w of ['A','B','C']){await pickW(w);await tap(p.locator('text=Commencer la séance'));const n=await p.locator('#v .c:not(.wuc):not(.prec) h2').count();
+  for(let i=0;i<n;i++){const card=p.locator('#v .c:not(.wuc):not(.prec)').filter({has:p.locator('h2')}).nth(i);const name=(await card.locator('h2').textContent()).trim();
    if(name.startsWith('🚶'))continue;
-   await tap(card.locator('.hb >> text=Guide'));const g=await p.locator('#v .c:not(.wuc)').filter({has:p.locator('h2')}).nth(i).textContent();if(!g.includes('Exécution')||!g.includes('À éviter'))guideIssues.push(pf+w+i);
-   await tap(p.locator('#v .c:not(.wuc)').filter({has:p.locator('h2')}).nth(i).locator('.hb >> text=Guide'));
-   const sb=p.locator('#v .c:not(.wuc)').filter({has:p.locator('h2')}).nth(i).locator('.hb >> text=⇄');if(!(await sb.count())){swapIssues.push(`${pf}${w}${i} no ⇄ button`);continue}
-   await tap(sb);const alts=await p.locator('#v .c:not(.wuc)').filter({has:p.locator('h2')}).nth(i).locator('.swr').count();if(!alts){if(!(await p.locator('#v .swp >> text=Garder à chaque fois').count()))swapIssues.push(`${pf}${w}${i} panel without pin`);await tap(p.locator('#v .swp button:has-text("Annuler")'));continue}
-   await tap(p.locator('#v .c:not(.wuc)').filter({has:p.locator('h2')}).nth(i).locator('.swr button:has-text("Toujours")').first());const n2=(await p.locator('#v .c:not(.wuc)').filter({has:p.locator('h2')}).nth(i).locator('h2').textContent()).trim();
+   await tap(card.locator('.hb >> text=Guide'));const g=await p.locator('#v .c:not(.wuc):not(.prec)').filter({has:p.locator('h2')}).nth(i).textContent();if(!g.includes('Exécution')||!g.includes('À éviter'))guideIssues.push(pf+w+i);
+   await tap(p.locator('#v .c:not(.wuc):not(.prec)').filter({has:p.locator('h2')}).nth(i).locator('.hb >> text=Guide'));
+   const sb=p.locator('#v .c:not(.wuc):not(.prec)').filter({has:p.locator('h2')}).nth(i).locator('.hb >> text=⇄');if(!(await sb.count())){swapIssues.push(`${pf}${w}${i} no ⇄ button`);continue}
+   await tap(sb);const alts=await p.locator('#v .c:not(.wuc):not(.prec)').filter({has:p.locator('h2')}).nth(i).locator('.swr').count();if(!alts){if(!(await p.locator('#v .swp >> text=Garder à chaque fois').count()))swapIssues.push(`${pf}${w}${i} panel without pin`);await tap(p.locator('#v .swp button:has-text("Annuler")'));continue}
+   await tap(p.locator('#v .c:not(.wuc):not(.prec)').filter({has:p.locator('h2')}).nth(i).locator('.swr button:has-text("Toujours")').first());const n2=(await p.locator('#v .c:not(.wuc):not(.prec)').filter({has:p.locator('h2')}).nth(i).locator('h2').textContent()).trim();
    if(n2==name)swapIssues.push(`${pf}${w}${i} ${name} did not swap`);
-   if(alts){await tap(p.locator('#v .c:not(.wuc)').filter({has:p.locator('h2')}).nth(i).locator('.hb >> text=⇄'));await tap(p.locator('#v .c:not(.wuc)').filter({has:p.locator('h2')}).nth(i).locator('.swr').filter({hasText:name}).locator('button:has-text("Toujours")').first());const n3=(await p.locator('#v .c:not(.wuc)').filter({has:p.locator('h2')}).nth(i).locator('h2').textContent()).trim();if(n3!=name)swapIssues.push(`${pf}${w}${i} swap back gave ${n3}`)}}
+   if(alts){await tap(p.locator('#v .c:not(.wuc):not(.prec)').filter({has:p.locator('h2')}).nth(i).locator('.hb >> text=⇄'));await tap(p.locator('#v .c:not(.wuc):not(.prec)').filter({has:p.locator('h2')}).nth(i).locator('.swr').filter({hasText:name}).locator('button:has-text("Toujours")').first());const n3=(await p.locator('#v .c:not(.wuc):not(.prec)').filter({has:p.locator('h2')}).nth(i).locator('h2').textContent()).trim();if(n3!=name)swapIssues.push(`${pf}${w}${i} swap back gave ${n3}`)}}
   await tap(p.locator('#v >> text=Abandonner'));await tap(p.locator('#action-accept'))}}
 ok('Guide opens/closes on every exercise (both profiles, all workouts)',!guideIssues.length,guideIssues.join(','));
 ok('Swap → alternative and back on every exercise',!swapIssues.length,swapIssues.join(' | '));
